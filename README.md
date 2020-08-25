@@ -17,7 +17,7 @@ Nota: Se não souberes muito de JavaScript ou código em geral, não te aconselh
 
 [Distube](https://distube.js.org/) - Module para a música. Muito fácil de usar, e é Open Source! <------- Nota: Os comandos de música pararam de funcionar, depois vou ver se voltam a funcionar, mas a library continua a funcionar, por isso podes usá-la nos teus bots. Se tiveres alguma dúvida ou precisares de ajuda relacionada com o Distube, podes entrar no Server de Suporte ---> [Link](https://discord.gg/X3NY853).
 
-[Server de Suporte do Bot](https://discord.gg/DRnnZPS) - Caso venhas a ter alguma dúvida ou o bot não esteja a funcionar bem, entra no server e faz a tua pergunta.
+[Server de Suporte do Bot](https://discord.gg/DRnnZPS) - Caso venhas a ter alguma dúvida ou o bot não esteja a funcionar bem, entra no server e faz a tua pergunta ou diz o erro que está a acontecer.
 
 [Invite do bot](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot) - Convida o bot para o teu server!
 
