@@ -1,0 +1,42 @@
+{
+  "name": "bot-dos-bostas",
+  "version": "2.3.0",
+  "description": "o meu grande bot. por favor agora não aconteça nada",
+  "main": "index.js",
+  "dependencies": {
+    "@discordjs/opus": "^0.3.2",
+    "canvacord": "^3.0.9",
+    "cheerio": "^1.0.0-rc.3",
+    "common-tags": "^1.8.0",
+    "date-format": "^3.0.0",
+    "dateformat": "^3.0.3",
+    "discord-jokes": "^1.0.12",
+    "discord.js": "^12.2.0",
+    "discord.js-minesweeper": "^1.0.6",
+    "distube": "^2.4.3",
+    "fs": "^0.0.1-security",
+    "giphy-js-sdk-core": "^1.0.6",
+    "got": "^11.5.2",
+    "imageapi.js": "^1.0.9",
+    "moment": "^2.27.0",
+    "ms": "^2.1.2",
+    "node-fetch": "^2.6.0",
+    "node-superfetch": "^0.1.10",
+    "novelcovid": "^3.0.0",
+    "querystring": "^0.2.0",
+    "request": "^2.88.2",
+    "simple-fortnite-api": "^0.1.9",
+    "something-random-on-discord": "^0.0.2",
+    "superagent": "^5.3.1",
+    "urban": "^0.3.2",
+    "weather-js": "^2.0.0",
+    "yt-search": "^2.1.8",
+    "ytdl-core-discord": "^1.2.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "TonaS",
+  "license": "ISC"
+}
