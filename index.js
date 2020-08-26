@@ -23,7 +23,7 @@ const Canvacord = require("canvacord");
 const canva = new Canvacord();
 const { calculator, formatDate } = require("../Bot dos Bostas/functions");
 const fortnite = require("simple-fortnite-api")
-const Client = new fortnite("7f72eb91-2fb4-4143-b75d-a0d0fa6d1306");//token da api do fortnite-tracker
+const Client = new fortnite("");//token da api do fortnite-tracker
 const got = require("got");
 client.once("ready", () => {
     console.log(`${client.user.username} is ready to operate! ${version}`);
@@ -1343,7 +1343,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         message.delete();
     }
     if (command === "steam") {
-        const token = "F8BEC15D1BCE2CBB0F182E8F47B6D683";
+        const token = "";
         if (!args[0]) return message.channel.send("Por favor especifica um nome de conta!");
         const url = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${token}&vanityurl=${args.join(" ")}`;
         fetch(url).then(res => res.json()).then(body => {
