@@ -8,5 +8,8 @@ module.exports = {
     if (operator == "+") return num1 + num2;
     if (operator == "-") return num1 - num2;
     if (operator == "/") return num1 / num2;
-  }
+  },
+  formatDate: function(date) {
+    return new Intl.DateTimeFormat('PT').format(date)
+  },
 }
