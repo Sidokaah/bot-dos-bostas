@@ -1,6 +1,6 @@
 const Discord = require('discord.js'),
     DisTube = require('distube')
-    const client = new Discord.Client()
+const client = new Discord.Client()
 const distube = new DisTube(client, { searchSongs: true, emitNewSongOnly: true, highWaterMark: 1 << 24 });
 const Minesweeper = require('discord.js-minesweeper');
 const fetch = require('node-fetch');
@@ -10,25 +10,20 @@ const cheerio = require("cheerio");
 const request = require("request");
 const moment = require("moment");
 var version = "v.2.3.5" //também podes mudar para a que quiseres
-const formData = require("form-data")
-const fs = require('fs');
 const superagent = require("superagent");
 const ms = require("ms");
 const querystring = require("querystring");
 const { search } = require('superagent');
 var dateFormat = require('dateformat');
-const oneLine = require("common-tags")
-const os = require('os');
 const api = require("imageapi.js");
-const giveMeAJoke = require("discord-jokes");
 const weather = require("weather-js")
 const { Random } = require("something-random-on-discord")
 const random = new Random();
 const Canvacord = require("canvacord");
 const canva = new Canvacord();
-const { calculator } = require("../Bot dos Bostas/functions");
+const { calculator, formatDate } = require("../Bot dos Bostas/functions");
 const fortnite = require("simple-fortnite-api")
-const Client = new fortnite("");//token da api do fortnite-tracker
+const Client = new fortnite("7f72eb91-2fb4-4143-b75d-a0d0fa6d1306");//token da api do fortnite-tracker
 const got = require("got");
 client.once("ready", () => {
     console.log(`${client.user.username} is ready to operate! ${version}`);
@@ -64,6 +59,7 @@ client.on("guildMemberAdd", async (member) => {
     let emoji = await member.guild.emojis.cache.find(emoji => emoji.name === "HammerAndickle"); //podes mudar
     let emoji1 = await member.guild.emojis.cache.find(emoji => emoji.name === "dogey_smile"); //podes mudar
     var cdate = moment.utc(member.user.createdAt).format("dddd, MMMM Do YYYY, HH:mm");
+    const created = formatDate(member.user.createdAt);
     if (guild != member.guild) {
         return console.log("Sem boas-vindas pra você! Sai daqui saco pela.");
     } else {
@@ -79,8 +75,8 @@ client.on("guildMemberAdd", async (member) => {
         const embed1 = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setAuthor(member.user.tag, member.user.displayAvatarURL())
-            .addField("Conta criada", `${member.user.createdAt}`)
-            .setDescription(`:inbox_tray: ${member.user} entrou no server.`)
+            .addField("Conta criada", `${created}`)
+            .setDescription(`:inbox_tray: ${member.user} **entrou no server.**`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
             .setFooter(`ID do usuário: ${member.user.id}`)
             .setTimestamp();
@@ -107,7 +103,7 @@ client.on("guildMemberRemove", async (member) => {
         const embed1 = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setAuthor(member.user.tag, member.user.displayAvatarURL())
-            .setDescription(`:outbox_tray: ${member.user} saiu do server.`)
+            .setDescription(`:outbox_tray: ${member.user} **saiu do server.**`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
             .setFooter(`ID do usuário: ${member.user.id}`)
             .setTimestamp();
@@ -123,6 +119,7 @@ client.on("message", async (message) => {
     if (["play", "Play", "PLAY", "p", "P"].includes(command)) {
         distube.options.searchSongs = false
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
@@ -130,6 +127,7 @@ client.on("message", async (message) => {
             return message.channel.send(embed)
         }
         if (!args.join(" ")) {
+            message.react("❌")
             message.channel.send("❌ | Diz-me alguma coisa para eu procurar!")
         }
         try {
@@ -137,9 +135,10 @@ client.on("message", async (message) => {
         } catch (e) {
             const embed = new Discord.MessageEmbed()
                 .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
-                .setTitle("❌ Erro ❌")
+                .setTitle(`❌ Ocorreu um erro ❌`)
+                .setDescription("```\n" + "Ocorreu um erro: " + err + "```")
                 .setColor("#F93A2F")
-                .addField(`Ocorreu um erro:`, `\`${e}\``)
+                .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
                 .setTimestamp()
             message.channel.send(embed)
         }
@@ -147,6 +146,7 @@ client.on("message", async (message) => {
     }
     if (["search", "Search", "SEARCH"].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
@@ -154,6 +154,7 @@ client.on("message", async (message) => {
             return message.channel.send(embed)
         }
         if (!args.join(" ")) {
+            message.react("❌")
             message.channel.send("❌ | Diz-me alguma coisa para eu procurar!")
         }
         try {
@@ -161,9 +162,10 @@ client.on("message", async (message) => {
         } catch (e) {
             const embed = new Discord.MessageEmbed()
                 .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
-                .setTitle("❌ Erro ❌")
+                .setTitle(`❌ Ocorreu um erro ❌`)
+                .setDescription("```\n" + "Ocorreu um erro: " + err + "```")
                 .setColor("#F93A2F")
-                .addField(`Ocorreu um erro:`, `\`${e}\``)
+                .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
                 .setTimestamp()
             message.channel.send(embed)
         }
@@ -171,6 +173,7 @@ client.on("message", async (message) => {
     }
     if (["np", "NP", "Np", "nowplaying", "Nowplaying", "NowPlaying", "NOWPLAYING", "current", "Current", "CURRENT"].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para veres o que está a tocar!`)
@@ -189,12 +192,11 @@ client.on("message", async (message) => {
                 { name: 'Queue:', value: `${queue.songs.length} música(s) - \`${queue.formattedDuration}\``, inline: true }
             )
             .setColor("RANDOM")
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
-            .setTimestamp()
         message.channel.send(npembed)
     }
     if (["repeat", "loop", "Repeat", "Loop", "REPEAT", "LOOP"].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para repetires música!`)
@@ -208,6 +210,7 @@ client.on("message", async (message) => {
     }
     if (["stop", "leave", "Stop", "Leave", "STOP", "LEAVE", "disconnect", "Disconnect", "DISCONNECT"].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para parares música!`)
@@ -236,7 +239,8 @@ client.on("message", async (message) => {
     if (["skip", "Skip", "SKIP"].includes(command)) {
         distube.skip(message);
         message.channel.send(":track_next: | Dei skip à música!")
-        if (!message.member.voice) {
+        if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para dares skip à música!`)
@@ -247,6 +251,7 @@ client.on("message", async (message) => {
     }
     if (["pause", "Pause", "PAUSE"].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para pausares música!`)
@@ -258,6 +263,7 @@ client.on("message", async (message) => {
     }
     if (["resume", "Resume", "RESUME"].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
@@ -269,6 +275,7 @@ client.on("message", async (message) => {
     }
     if ([`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`, `haas`, `flanger`, `gate`, `reverse`].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para mudares filters!`)
@@ -280,6 +287,7 @@ client.on("message", async (message) => {
     }
     if ([`changevolume`, `ChangeVolume`, `CHANGEVOLUME`, `cv`, `CV`].includes(command)) {
         if (!message.member.voice.channelID) {
+            message.react("❌")
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
                 .setDescription(`Precisas de estar num voice chat para mudares o volume música!`)
@@ -287,90 +295,100 @@ client.on("message", async (message) => {
             return message.channel.send(embed)
         }
         if (!distube.isPlaying(message)) return message.channel.send("❌ | Não está nada a tocar!")
-        if (isNaN(args[0])) return message.channel.send("❌ | Por favor espeficifica um número")
+        if (isNaN(args[0])) {
+            message.react("❌")
+            return message.channel.send("❌ | Por favor espeficifica um número")
+        }
         distube.setVolume(message, args[0]);
         if (args[0] > 200) {
             distube.setVolume(message, 200);
-            message.channel.send(`❌ | O máximo de volume é **200%**, então pus o volume a **200%** e não **${args[0]}**.`)
+            message.channel.send(`❌ | O máximo de volume é **200%**, então pus o volume a **200%** e não **${args[0]}%**.`)
         } else {
             distube.setVolume(message, args[0]);
             message.channel.send(`:loud_sound: | Mudei o volume para: **${args[0]}%**`)
         }
-    if ([`volume`, `Volume`, `VOLUME`, `v`, `V`].includes(command)) {
-        if (!message.member.voice.channelID) {
-            const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
-                .setDescription(`Precisas de estar num voice chat para veres o volume da música!`)
-                .setTimestamp()
-            return message.channel.send(embed)
+        if ([`volume`, `Volume`, `VOLUME`, `v`, `V`].includes(command)) {
+            if (!message.member.voice.channelID) {
+                message.react("❌")
+                const embed = new Discord.MessageEmbed()
+                    .setColor("#F93A2F")
+                    .setDescription(`Precisas de estar num voice chat para veres o volume da música!`)
+                    .setTimestamp()
+                return message.channel.send(embed)
+            }
+            let queue = distube.getQueue(message);
+            message.channel.send(`:loud_sound: | O volume da música está a: **${queue.volume}%**`)
         }
-        let queue = distube.getQueue(message);
-        message.channel.send(`:loud_sound: | O volume da música está a: **${queue.volume}%**`)
-    }
-    if (["shuffle", "Shuffle", "SHUFFLE"].includes(command)) {
-        if (!message.member.voice.channelID) {
-            const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
-                .setDescription(`Precisas de estar num voice chat para misturares o queue!`)
-                .setTimestamp()
-            return message.channel.send(embed)
+        if (["shuffle", "Shuffle", "SHUFFLE"].includes(command)) {
+            if (!message.member.voice.channelID) {
+                message.react("❌")
+                const embed = new Discord.MessageEmbed()
+                    .setColor("#F93A2F")
+                    .setDescription(`Precisas de estar num voice chat para misturares o queue!`)
+                    .setTimestamp()
+                return message.channel.send(embed)
+            }
+            let queue = distube.getQueue(message);
+            distube.shuffle(message)
+            message.channel.send(`:twisted_rightwards_arrows: | Misturei as **${queue.songs.length} músicas** que estão no queue!`)
         }
-        let queue = distube.getQueue(message);
-        distube.shuffle(message)
-        message.channel.send(`:twisted_rightwards_arrows: | Misturei as **${queue.songs.length} músicas** que estão no queue!`)
-    }
-    if (["jump", "Jump", "JUMP"].includes(command)) {
-        if (!message.member.voice.channelID) {
-            const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
-                .setDescription(`Precisas de estar num voice chat para passares para outra música!`)
-                .setTimestamp()
-            return message.channel.send(embed)
+        if (["jump", "Jump", "JUMP"].includes(command)) {
+            if (!message.member.voice.channelID) {
+                message.react("❌")
+                const embed = new Discord.MessageEmbed()
+                    .setColor("#F93A2F")
+                    .setDescription(`Precisas de estar num voice chat para passares para outra música!`)
+                    .setTimestamp()
+                return message.channel.send(embed)
+            }
+            message.channel.send(`⬆️ | Saltei para o número ${parseInt(args[0])} no queue!`)
+            distube.jump(message, parseInt(args[0]))
+                .catch(_err => message.channel.send(":warning: | Número inválido para saltar."));
         }
-        message.channel.send(`⬆️ | Saltei para o número ${parseInt(args[0])} no queue!`)
-        distube.jump(message, parseInt(args[0]))
-            .catch(_err => message.channel.send(":warning: | Número inválido para saltar."));
-    }
-    if (["autoplay", "Autoplay", "AUTOPLAY", "ap", "AP"].includes(command)) {
-        if (!message.member.voice.channelID) {
-            const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
-                .setDescription(`Precisas de estar num voice chat para usares autoplay!`)
-                .setTimestamp()
-            return message.channel.send(embed)
+        if (["autoplay", "Autoplay", "AUTOPLAY", "ap", "AP"].includes(command)) {
+            if (!message.member.voice.channelID) {
+                message.react("❌")
+                const embed = new Discord.MessageEmbed()
+                    .setColor("#F93A2F")
+                    .setDescription(`Precisas de estar num voice chat para usares autoplay!`)
+                    .setTimestamp()
+                return message.channel.send(embed)
+            }
+            let mode = distube.toggleAutoplay(message);
+            message.channel.send("Autoplay está agora: `" + (mode ? "On" : "Off") + "`");
         }
-        let mode = distube.toggleAutoplay(message);
-        message.channel.send("Autoplay está agora: `" + (mode ? "On" : "Off") + "`");
-    }
-    if (["playSkip", "PlaySkip", "playskip", "PLAYSKIP"].includes(command)) {
-        if (!message.member.voice.channelID) {
-            const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
-                .setDescription(`Precisas de estar num voice chat para resumires música!`)
-                .setTimestamp()
-            return message.channel.send(embed)
+        if (["playSkip", "PlaySkip", "playskip", "PLAYSKIP"].includes(command)) {
+            if (!message.member.voice.channelID) {
+                message.react("❌")
+                const embed = new Discord.MessageEmbed()
+                    .setColor("#F93A2F")
+                    .setDescription(`Precisas de estar num voice chat para resumires música!`)
+                    .setTimestamp()
+                return message.channel.send(embed)
+            }
+            distube.playSkip(message, args.join(" "));
+            message.channel.send(":track_next: | Vou dar skip à música que está a tocar e começar a tocar a que escolheres!")
         }
-        distube.playSkip(message, args.join(" "));
-        message.channel.send(":track_next: | Vou dar skip à música que está a tocar e começar a tocar a que escolheres!")
-    }
-    if (command === "bitch") {
-        if (!message.member.voice.channelID) {
-            const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
-                .setDescription(`Precisas de estar num voice chat para resumires música!`)
-                .setTimestamp()
-            return message.channel.send(embed)
-        }
-        message.channel.send('🎶 | A carregar a playlist...').then((resultMessage) => {
-            const ping = resultMessage.createdTimestamp - message.createdTimestamp
-            resultMessage.edit(`🎶 | Playlist carregada: **Bitch Lasagna Playlist**!`)
-        })
-        let songs = ["https://www.youtube.com/watch?v=6Dh-RL__uN4", "https://www.youtube.com/watch?v=YNNXTs6adIs", "https://www.youtube.com/watch?v=BuNmXYmTRQE", "https://www.youtube.com/watch?v=0oq7805Fxfw", "https://www.youtube.com/watch?v=Z9uLwuGTTFk", "https://www.youtube.com/watch?v=uoww4ou3Ark",
-            "https://www.youtube.com/watch?v=KprzFp9A0kc", "https://www.youtube.com/watch?v=eoK-Ew_0Nw8", "https://www.youtube.com/watch?v=i20TUj4d8sw", "https://www.youtube.com/watch?v=34WnaTTGIKw", "https://www.youtube.com/watch?v=5FusviCrZOk", "https://www.youtube.com/watch?v=52_hLibBRzY", "https://www.youtube.com/watch?v=0uCgyy1pjyo", "https://www.youtube.com/watch?v=qlZvOytosLc"];
-        distube.playCustomPlaylist(message, songs, { title: "Bitch Lasagna Playlist" });
+        if (command === "bitch") {
+            if (!message.member.voice.channelID) {
+                message.react("❌")
+                const embed = new Discord.MessageEmbed()
+                    .setColor("#F93A2F")
+                    .setDescription(`Precisas de estar num voice chat para resumires música!`)
+                    .setTimestamp()
+                return message.channel.send(embed)
+            }
+            message.channel.send('🎶 | A carregar a playlist...').then((resultMessage) => {
+                const ping = resultMessage.createdTimestamp - message.createdTimestamp
+                resultMessage.edit(`🎶 | Playlist carregada: **Bitch Lasagna Playlist**!`)
+            })
+            let songs = ["https://www.youtube.com/watch?v=6Dh-RL__uN4", "https://www.youtube.com/watch?v=YNNXTs6adIs", "https://www.youtube.com/watch?v=BuNmXYmTRQE", "https://www.youtube.com/watch?v=0oq7805Fxfw", "https://www.youtube.com/watch?v=Z9uLwuGTTFk", "https://www.youtube.com/watch?v=uoww4ou3Ark",
+                "https://www.youtube.com/watch?v=KprzFp9A0kc", "https://www.youtube.com/watch?v=eoK-Ew_0Nw8", "https://www.youtube.com/watch?v=i20TUj4d8sw", "https://www.youtube.com/watch?v=34WnaTTGIKw", "https://www.youtube.com/watch?v=5FusviCrZOk", "https://www.youtube.com/watch?v=52_hLibBRzY", "https://www.youtube.com/watch?v=0uCgyy1pjyo", "https://www.youtube.com/watch?v=qlZvOytosLc"];
+            distube.playCustomPlaylist(message, songs, { title: "Bitch Lasagna Playlist" });
         }
     }
     if (command === "playlist") {
+        message.react("❌")
         if (!message.member.voice.channelID) {
             const embed = new Discord.MessageEmbed()
                 .setColor("#F93A2F")
@@ -398,8 +416,10 @@ client.on("message", async (message) => {
     }
     if (command === "reddit") {
         let Subreddit = message.content.slice(8);
-        if (!Subreddit)
+        if (!Subreddit) {
+            message.react("❌")
             return message.channel.send(`**Não especificaste um Subreddit!**`);
+        }
         let img = await api(Subreddit, true);
         const Embed = new Discord.MessageEmbed()
             .setTitle(`Um meme aleatório do r/${Subreddit}`)
@@ -579,6 +599,9 @@ client.on("message", async (message) => {
             embed.setTimestamp()
             message.channel.send(embed);
         })
+        if (data.isNullOrUndefined) {
+            message.channel.send("Ocorreu um erro")
+        }
     }
     if (command === "food") {
         const embed = new Discord.MessageEmbed()
@@ -656,14 +679,14 @@ client.on("message", async (message) => {
             message.channel.send(embed);
         })
     }
-    if (message.content === `${config.prefix}help`) {
+    if (message.content === `${config.prefix}categorias`) {
         const help = new Discord.MessageEmbed()
             .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
             .setTitle("Comandos do Bot dos Bostas")
             .setDescription("Bot feito por: TonaS#9344")
             .addFields(
                 { name: ":laughing: Fun:", value: `\`-help fun\``, inline: true },
-                { name: ":wrench: Info:", value: `\`-help info\``, inline: true },
+                { name: ":wrench: Info e Mod:", value: `\`-help info\``, inline: true },
                 { name: ":dog: Animais", value: `\`-help animais\``, inline: true },
                 { name: ":musical_note: Música", value: `\`-help música\``, inline: true },
                 { name: ":rofl: Meme", value: `\`-help meme\``, inline: true },
@@ -674,23 +697,27 @@ client.on("message", async (message) => {
             .setFooter(`Usa sempre - antes de todos os comandos`, client.user.displayAvatarURL())
         message.channel.send(help)
     }
-    if (message.content === `${config.prefix}help all`) {
+    if (message.content === `${config.prefix}help`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setColor("RANDOM")
-            .setTitle("Todos os comandos do Bot")
-            .addField("Info", `\`userinfo\`, \`clear\`, \`poll\`, \`announce\`, \`ping\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`covid\`, \`uptime\`, \`steam\`, \`help-eng\`, \`invite\`, \`weather\`, \`instagram\`, \`lock\`, \`stats\`, \`yt\`, \`math\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`urban\`, \`fortnite\`, \`slowmode\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`.`)
-            .addField("Imagens", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
-            .addField("Diversão", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
-            .addField("Meme", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
-            .addField("Música", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`.`)
-            .addField("Animais", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`.`)
+            .setAuthor("Lista de Comandos", client.user.displayAvatarURL())
+            .setDescription(`❯ **Server de Suporte:** [Link](https://discord.gg/fnvdugV)\n❯ **Invite do Bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n❯ **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
+            .addField(":information_source: Info", `\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\``)
+            .addField(":gear: Mod", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`help-eng\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`.`)
+            .addField(":camera: Imagens", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
+            .addField(":laughing: Fun", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
+            .addField(":rofl: Meme", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
+            .addField(":musical_note: Música", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`.`)
+            .addField(":dog: Animais", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`.`)
             .setFooter(`Pedido por(a): ${message.member.displayName}`, message.author.displayAvatarURL())
+            .setTimestamp()
         message.channel.send(userEmbed);
     }
     if (message.content === `${config.prefix}help imagens`) {
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
-            .setColor('BLUE')
+            .setColor('RANDOM')
             .addField("Comandos:", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
             .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
@@ -698,15 +725,15 @@ client.on("message", async (message) => {
     if (message.content === `${config.prefix}help animais`) {
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
-            .setColor('BLUE')
+            .setColor('RANDOM')
             .addField("Comandos:", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`.`)
             .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help info`) {
+    if (message.content === `${config.prefix}help infomod`) {
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
-            .setColor('BLUE')
+            .setColor('RANDOM')
             .addField("Comandos:", `\`userinfo\`, \`clear\`, \`poll\`, \`announce\`, \`ping\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`covid\`, \`uptime\`, \`steam\`, \`help-eng\`, \`invite\`, \`weather\`, \`instagram\`, \`lock\`, \`stats\`, \`yt\`, \`math\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`urban\`, \`fortnite\`, \`slowmode\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`.`)
             .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
@@ -714,7 +741,7 @@ client.on("message", async (message) => {
     if (message.content === `${config.prefix}help meme`) {
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
-            .setColor('BLUE')
+            .setColor('RANDOM')
             .addField("Comandos:", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
             .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
@@ -722,30 +749,34 @@ client.on("message", async (message) => {
     if (message.content === `${config.prefix}help fun`) {
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
-            .setColor('BLUE')
-            .addField("Comandos:", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
+            .setColor('RANDOM')
+            .addField("Comandos:", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`, \`riccroll\`, \`bob\``)
             .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
     if (message.content === `${config.prefix}help música`) {
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
-            .setColor('BLUE')
-            .addField("Comandos de música:", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`.`)
+            .setColor('RANDOM')
+            .addField("Comandos de música:", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`np ou nowplaying\`.`)
             .addField("Filtros de música:", `\`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`.`)
             .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (command === "help-eng") {
+    if (message.content === `${config.prefix}help-eng`) {
         const userEmbed = new Discord.MessageEmbed()
-            .setAuthor("Bot dos Bostas commands:", client.user.displayAvatarURL())
-            .setDescription(`The bot's prefix is: ${config.prefix}`)
+            .setColor("RANDOM")
+            .setAuthor("Command List", client.user.displayAvatarURL())
+            .setDescription(`❯ **Support Server:** [Link](https://discord.gg/fnvdugV)\n❯ **Invite the bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n❯ **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
+            .addField(":information_source: Info", `\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\``)
+            .addField(":gear: Mod", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`help-eng\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`.`)
+            .addField(":camera: Images", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
+            .addField(":laughing: Fun", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
+            .addField(":rofl: Meme", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
+            .addField(":musical_note: Music", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`.`)
+            .addField(":dog: Animals", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`.`)
+            .setFooter(`Requested by: ${message.member.displayName}`, message.author.displayAvatarURL())
             .setTimestamp()
-            .setColor('BLUE')
-            .addField(":musical_note: Music:", `\`play or p\`, \`stop or leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue or q\`, \`volume\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`jump\`, \`repeat or loop\`, \`playlist\`, \`bitch\`.`)
-            .addField(':information_source: :wrench: Info and Utility:', `\`userinfo\`, \`clear\`, \`poll\`, \`announce\`, \`ping\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`covid\`, \`uptime\`, \`steam\`, \`help\`, \`invite\`, \`weather\`, \`instagram\`, \`lock\`, \`stats\`, \`yt\`, \`math\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`urban\`, \`fortnite\`.`)
-            .addField(":laughing: Fun:", `\`meme\`, \`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`,  \`crepper\`, \`cursedimg\`, \`dogs\`, \`cats\`, \`food\`, \`minecraft\`, \`badjoke\`, \`advice\`, \`reddit\`, \`animepunch\`, \`kpop\`, \`isretarded\`, \`rps\`, \`say\`, \`isgamer\`,  \`inverse\`, \`wanted\`, \`shit\`, \`isgay\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`issimp\`, \`lenny\`.`)
-            .setFooter("Bot made by: TonaS#9344")
         message.channel.send(userEmbed);
     }
     if (command === "userinfo") {
@@ -764,7 +795,7 @@ client.on("message", async (message) => {
         const userEmbed = new Discord.MessageEmbed()
             .setAuthor(member.user.tag, member.user.displayAvatarURL())
             .setTimestamp()
-            .setColor('BLUE')
+            .setColor('RANDOM')
             .setImage(member.user.displayAvatarURL())
             .addField("Member ID", member.id)
             .addField('Roles', `<@&${member._roles.join('> <@&')}>`)
@@ -773,8 +804,11 @@ client.on("message", async (message) => {
             .addField("Estado", status)
         message.channel.send(userEmbed);
     }
-    if ([command === "riccroll", "rickroll"].includes(command)) {
+    if (["riccroll", "rickroll"].includes(command)) {
         message.channel.send("**Ah, You just got Ricc Rolled**\n\nWe're no strangers to love\nYou know the rules and so do I\nA full commitment's what I'm thinking of\nYou wouldn't get this from any other guy\nI just wanna tell you how I'm feeling\nGotta make you understand\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nWe've known each other for so long\nYour heart's been aching but you're too shy to say it\nInside we both know what's been going on\nWe know the game and we're gonna play it\nAnd if you ask me how I'm feeling\nDon't tell me you're too blind to see\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give, never gonna give\n(Give you up)\n(Ooh) Never gonna give, never gonna give\n(Give you up)\nWe've known each other for so long\nYour heart's been aching but you're too shy to say it\nInside we both know what's been going on\nWe know the game and we're gonna play it\nI just wanna tell you how I'm feeling\nGotta make you understand\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry")
+    }
+    if (command === "bob") {
+        message.channel.send("░░░░░▄▄▄░░▄██▄░░░\n░░░░░▐▀█▀▌░░░░▀█▄░░░\n░░░░░▐█▄█▌░░░░░░▀█▄░░\n░░░░░░▀▄▀░░░▄▄▄▄▄▀▀░░\n░░░░▄▄▄██▀▀▀▀░░░░░░░\n░░░█▀▄▄▄█▀▀░░\n░░░▌░▄▄▄▐▌▀▀▀░░ Este é o Bob\n▄░▐░░░▄▄░█░▀▀ ░░\n▀█▌░░░▄░▀█▀▀ ░░ Copia-o e cola-o em todos os servers\n░░░░░░░▄▄▐▌▄▄░░░ Para que ele possa\n░░░░░░░▀███▀█░▄░░ Dominar o Discord\n░░░░░░▐▌▀▄▀▄▀▐▄░░ Só não o spames\n░░░░░░▐▀░░░░░░▐▌░░ \n░░░░░░█░░░░░░░░█░░░░░░░\n░░░░░░█░░░░░░░░█░░░░░░░\n░░░░░░█░░░░░░░░█░░░░░░░")
     }
     if (command == "randomfacts") {
         const messages = [
@@ -845,8 +879,10 @@ pensava que sabia tudo ahaha.`
     if (command === "8ball") {
         let args = message.content.split(" ").slice(0);
         let question = args.slice(1).join(" ");
-        if (!question) return message.reply('Precisas de especificar uma pergunta!');
-        else {
+        if (!question) {
+            message.react("❌")
+            return message.reply('Precisas de especificar uma pergunta!');
+        } else {
             let answers = ["Sim.", "Não.", "Talvez.", "Claro!", "Não sei.", "Provavelmente.", "Provavelmente não.", "Claro que não!", "Não me digas :/.", "Fode-te.", "Snão.", "És gay."]
             let response = answers[Math.floor(Math.random() * answers.length)];
             let embed = new Discord.MessageEmbed()
@@ -860,11 +896,14 @@ pensava que sabia tudo ahaha.`
         }
     }
     if (command === "slap") {
+        let answers = ["https://media1.tenor.com/images/3c161bd7d6c6fba17bb3e5c5ecc8493e/tenor.gif?itemid=5196956", "https://media1.tenor.com/images/49de17c6f21172b3abfaf5972fddf6d6/tenor.gif?itemid=10206784", "https://tenor.com/view/slap-slow-motion-slap-gif-10048943", "https://media1.tenor.com/images/bc858e69d5022807b84554b2d4583c10/tenor.gif?itemid=5122019"
+        , "https://media1.tenor.com/images/725a604e470a6c2768149c64fd166292/tenor.gif?itemid=16095505", "https://media1.tenor.com/images/31f29b3fcc20a486f44454209914266a/tenor.gif?itemid=17942299", "https://media1.tenor.com/images/4c87273e872b4a7fc23a37868b3f3577/tenor.gif?itemid=15003911", "https://thumbs.gfycat.com/ForkedFamousGalapagoshawk-size_restricted.gif"]
+        let response = answers[Math.floor(Math.random() * answers.length)];
         const personTagged = message.mentions.members.first();
         const userEmbed = new Discord.MessageEmbed()
             .setTitle(message.author.username + ' deu uma chapada a ' + personTagged.displayName)
             .setColor('RED')
-            .setImage("https://thumbs.gfycat.com/ForkedFamousGalapagoshawk-size_restricted.gif")
+            .setImage(response)
             .setFooter("Quem está a ler isto é gay hehe")
             .setTimestamp()
         message.channel.send(userEmbed);
@@ -882,7 +921,7 @@ pensava que sabia tudo ahaha.`
         const messages = [
             `You all know ${message.member.user}\’s is my first and most longtime friend I have. What you may not know is that he’s also the first and most longtime customer of ProActive Acne Systems. `,
             `Good lord this is an ugly group of people. Holy shit, you know the crowd is ugly when we invited ${message.member.user}\’s as eye candy. `,
-            `And ${member.user}\’s you’re looking pretty rough this evening. ${message.member.user} looks like if sweatpants were a person. `,
+            `And ${message.member.user}\’s you’re looking pretty rough this evening. ${message.member.user} looks like if sweatpants were a person. `,
             `Getting married to you must’ve been rough. What was your wedding song? “How Much Is That Doggy In The Window?” `,
             `${message.member.user}\’s is so ugly he’s been the only one ever rejected from Queer Eye for the Straight guy. `,
             `${message.member.user}\’s is so ugly in October when he went to the haunted house they handed his an application. `,
@@ -893,9 +932,9 @@ pensava que sabia tudo ahaha.`
 You’re like if Al Borland from Home Improvement learned to program a computer.`,
             `The way ${message.member.user} dresses looks like the first half of a commercial for antidepressants. `,
             `${message.member.user} is actually pretty good looking, but has a boring personality. Good looks but boring personality, you’re like real life clickbait. `,
-            `${member.user} has worn the same outfit for like 10 years. Holy shit….the only person who’s worn the same clothes longer than you is Bart Simpson. `,
-            `${member.user} I’m glad you and your dull personality could be here. I’m excited to hear your speech at the wedding. With your personality, I’m sure your speech will combine the thrill of talking, with the excitement of standing there. `,
-            `${member.user}\'s outfit was recently featured on the cover of Yawn Magazine. `,
+            `${message.member.user} has worn the same outfit for like 10 years. Holy shit….the only person who’s worn the same clothes longer than you is Bart Simpson. `,
+            `${message.member.user} I’m glad you and your dull personality could be here. I’m excited to hear your speech at the wedding. With your personality, I’m sure your speech will combine the thrill of talking, with the excitement of standing there. `,
+            `${message.member.user}\'s outfit was recently featured on the cover of Yawn Magazine. `,
             `We are doing this roast tonight to help ${message.member.user} live out one of his sexual fantasies, to have a room full of his friends shit all over him. `,
             `A little known fact is that a long time ago ${message.member.user} used to work at McDonald’s. It was the last time anyone said about your work, “I’m lovin’ it.” `,
             `This is exciting ${message.member.user} right?? Well tell your face. `,
@@ -916,6 +955,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === 'urban') {
         let image = "https://is4-ssl.mzstatic.com/image/thumb/Purple111/v4/7e/49/85/7e498571-a905-d7dc-26c5-33dcc0dc04a8/source/512x512bb.jpg"
         if (!args.length) {
+            message.react("❌")
             return message.channel.send('Precisas de especificar um termo!')
         }
         const { list } = await fetch(`https://api.urbandictionary.com/v0/define?${query}`).then(response => response.json());
@@ -928,7 +968,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
                 .setDescription(list[0].definition)
                 .setColor("BLUE")
                 .setTimestamp()
-                .setFooter(`Pedido por(a): ${message.member.user}`, message.member.user.displayAvatarURL())
+                .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
             message.channel.send(embed);
         }
         catch (error) {
@@ -1303,7 +1343,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         message.delete();
     }
     if (command === "steam") {
-        const token = ""; // token da steam
+        const token = "F8BEC15D1BCE2CBB0F182E8F47B6D683";
         if (!args[0]) return message.channel.send("Por favor especifica um nome de conta!");
         const url = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${token}&vanityurl=${args.join(" ")}`;
         fetch(url).then(res => res.json()).then(body => {
@@ -1344,13 +1384,13 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const embed = new Discord.MessageEmbed()
             .setColor("#F93A2F")
             .setAuthor(`${message.member.user.username}, aqui está tudo sobre o ${client.user.username}!`, message.member.user.displayAvatarURL())
-            .setDescription(`Olá, eu sou o **${client.user.username}**! Sou um bot multiusos feito pelo TonaS#9344! Sou feito com a library [Discord.js](https://discord.js.org/#/) e com o Module de música [Distube](https://distube.js.org/)! Escreve \`${config.prefix}help\` para veres os meus comandos.\n[Convida-me](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot) para o teu server!\n O Bot foi criado a - ${moment.utc(client.user.createdAt).format("dddd, MMMM Do YYYY")}.`)
+            .setDescription(`Olá, eu sou o **${client.user.username}**! Sou um Bot Multiusos feito pelo TonaS#9344! Sou feito com a library [Discord.js](https://discord.js.org/#/) e com o Module de música [Distube](https://distube.js.org/)! Escreve \`${config.prefix}help\` para veres os meus comandos.\n[Convida-me](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot) para o teu server!\n O Bot foi criado a - ${moment.utc(client.user.createdAt).format("dddd, MMMM Do YYYY")}.`)
             .setThumbnail(client.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
             .addField("Tenho comandos de diversos tópicos, como:", "```\n🎶 de Música\n🤣 de Memes\n🐶 de Animais\n📷 de Imagens\n😆 de Entretenimento\n🔧 de Informação!```")
             .addFields(
                 { name: "Com:", value: `${client.users.cache.size} pessoas`, inline: true },
-                { name: "Estou em:", value: `${client.guilds.cache.size} servers`, inline: true },
-                { name: "Com cerca de:", value: `120 comandos`, inline: true }
+                { name: "Em:", value: `${client.guilds.cache.size} servers`, inline: true },
+                { name: "Com:", value: `${client.options.shards.length} shard(s)`, inline: true }
             )
             .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
             .setTimestamp()
@@ -1369,6 +1409,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "instagram") {
         const name = args.join(" ");
         if (!name) {
+            message.react("❌")
             return message.reply("Se calhar dava jeito procurares algum nome...!")
                 .then(m => m.delete(5000));
         }
@@ -1418,11 +1459,6 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     }
     if (command === "lock") {
         if (!message.member.hasPermission('ADMINISTRATOR')) return message.reply("Não podes usar isso!");
-        var user = message.mentions.users.first();
-        if (!user) return message.reply('Não mencionaste ninguém!');
-        var member;
-        if (!member) return message.reply('Essa pessoa não está no server.');
-        if (member.hasPermission('MANAGE_MESSAGES')) return message.reply('Não podes kickar essa pessoa!');
         const channels = message.guild.channels.cache.filter(ch => ch.type !== 'category');
         if (args[0] === 'on') {
             let channel1 = await client.channels.cache.get("746067012341596231");
@@ -1466,7 +1502,10 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "weather") {
         weather.find({ search: args.join(" "), degreeType: 'C' }, function (error, result) {
             if (error) return message.channel.send(error);
-            if (!args[0]) return message.channel.send('Por favor especifica um sítio!')
+            if (!args[0]) {
+                message.react("❌")
+                return message.channel.send('Por favor especifica um sítio!')
+            }
             if (result === undefined || result.length === 0) return message.channel.send('**Cidade** Inválida!');
             var current = result[0].current;
             var location = result[0].location;
@@ -1481,8 +1520,6 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
                 .addField('Vento', current.winddisplay, true)
                 .addField('Parece que estão', `${current.feelslike}°`, true)
                 .addField('Humidade', `${current.humidity}%`, true)
-                .setTimestamp()
-                .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.username)
             message.channel.send(weatherinfo)
         })
     }
@@ -1491,8 +1528,14 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const random = Math.floor((Math.random() * acceptedReplies.length));
         const result = acceptedReplies[random];
         const choice = args[0];
-        if (!choice) return message.channel.send(`Como jogar: \`${config.prefix}rps <pedra|papel|tesoura>\``);
-        if (!acceptedReplies.includes(choice)) return message.channel.send(`Só estas respostas são permitidas: \`${acceptedReplies.join(', ')}\``);
+        if (!choice) {
+            message.react("❌")
+            return message.channel.send(`Como jogar: \`${config.prefix}rps <pedra|papel|tesoura>\``);
+        }
+        if (!acceptedReplies.includes(choice)) {
+            message.react("❌")
+            return message.channel.send(`Só estas respostas são permitidas: \`${acceptedReplies.join(', ')}\``);
+        }
         if (result === choice) return message.reply("**É um empate!** Tivemos a mesma opção.");
         switch (choice) {
             case 'pedra': {
@@ -1512,13 +1555,13 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             }
         }
     }
-    if (message.content.startsWith(`${config.prefix}stats`)) {
+    if (command === "serverinfo") {
         const { guild } = message;
         const embed = new Discord.MessageEmbed()
             .setAuthor(`${guild.name} (${guild.id})`, guild.iconURL())
             .setThumbnail(guild.iconURL())
             .addField('Criado a', guild.createdAt.toLocaleString(), true)
-            .addField('Dono do Server', guild.owner.user.tag)
+            .addField('Dono do Server', guild.owner.user)
             .addField('Membros Totais', guild.memberCount, true)
             .addField('Membros Totais Reais', guild.members.cache.filter(member => !member.user.bot).size, true)
             .addField('Bots Totais', guild.members.cache.filter(member => member.user.bot).size, true)
@@ -1530,11 +1573,14 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
             .setDescription(`${guild.roles.cache.map(role => role.toString()).join(' ')}`);
         message.channel.send(embed);
-        
+
     }
     if (command === "yt") {
         let name = args.join(" ");
-        if (!name) return message.channel.send("Nome de Canal Desconhecido.");
+        if (!name) {
+            message.react("❌")
+            return message.channel.send("Nome de Canal Desconhecido.");
+        }
         const channel = await fecth.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${name}&key=${config.google}&maxResults=1&type=channel`)
             .catch(() => message.channel.send("Erro no canal desconhecido."));
         if (!channel.body.items[0]) return message.channel.send("Sem resultado de um canal.");
@@ -1617,11 +1663,20 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         return message.channel.send(attachment)
     }
     if (message.content.startsWith(`${config.prefix}math`)) {
-        if (!args[0]) return message.channel.send("Não especificaste o primeiro número!")
-        if (!args[1]) return message.channel.send("Não especificaste o tipo de operação!")
-        if (!args[2]) return message.channel.send("Não especificaste o segundo número!")
+        if (!args[0]) {
+            message.react("❌")
+            return message.channel.send("Não especificaste o primeiro número!")
+        }
+        if (!args[1]) {
+            message.react("❌")
+            return message.channel.send("Não especificaste o tipo de operação!")
+        }
+        if (!args[2]) {
+            message.react("❌")
+            return message.channel.send("Não especificaste o segundo número!")
+        }
         const embed = new Discord.MessageEmbed()
-            .setColor("#0099E1")
+            .setColor("RANDOM")
             .setTitle("A Resposta é:")
             .setDescription(calculator(args[0], args[1], args[2]))
             .setTimestamp()
@@ -1629,32 +1684,35 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         message.channel.send(embed)
     }
     if (command === "giveaway") {
-        if (!args[0]) return message.channel.send(`Não especificaste o tempo do giveaway!`);
-        if (
-            !args[0].endsWith("d") &&
-            !args[0].endsWith("h") &&
-            !args[0].endsWith("m")
-        )
-            return message.channel.send(
-                `Não usaste o formato correto do tempo!`
-            );
-        if (isNaN(args[0][0])) return message.channel.send(`Isso não é um número!`);
+        if (!args[0]) {
+            message.react("❌")
+            return message.channel.send(`Não especificaste o tempo do giveaway!`);
+        }
+        if (!args[0].endsWith("d") && !args[0].endsWith("h") && !args[0].endsWith("m")) {
+            message.react("❌")
+            return message.channel.send(`Não usaste o formato correto do tempo!`);
+        }
+        if (isNaN(args[0][0])) {
+            message.react("❌")
+            return message.channel.send(`Isso não é um número!`);
+        }
         let channel = message.mentions.channels.first();
-        if (!channel)
-            return message.channel.send(
-                `Não consegui encontrar esse channel neste server!`
-            );
+        if (!channel) {
+            message.react("❌")
+            return message.channel.send(`Não consegui encontrar esse channel neste server!`);
+        }
         let prize = args.slice(2).join(" ");
-        if (!prize) return message.channel.send(`Nenhum prémio especificado!`);
+        if (!prize) {
+            message.react("❌")
+            return message.channel.send(`Nenhum prémio especificado!`);
+        }
         message.channel.send(`*Giveaway criado em ${channel}*`);
         let Embed = new Discord.MessageEmbed()
             .setTitle(`Giveaway novo!`)
-            .setDescription(
-                `O ${message.author} está a fazer um giveaway de: **${prize}**`
-            )
+            .setDescription(`O ${message.author} está a fazer um giveaway de: **${prize}**`)
             .setTimestamp(Date.now() + ms(args[0]))
             .setFooter(`O giveaway vai demorar ${args[0]}, acaba --------->`)
-            .setColor(`#0099E1`);
+            .setColor(`RANDOM`);
         let m = await channel.send(Embed);
         m.react("🎉");
         setTimeout(() => {
@@ -1700,7 +1758,8 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "giverole") {
         const targetUser = message.mentions.users.first()
         if (!targetUser) {
-            message.reply('Please specify someone to give a role to.')
+            message.react("❌")
+            message.reply('Por favor especifica alguém para dar o role.')
             return
         }
         args.shift()
@@ -1710,7 +1769,8 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             return role.name === roleName
         })
         if (!role) {
-            message.reply(`There is no role with the name "${roleName}"`)
+            message.react("❌")
+            message.reply(`Não há nenhum role chamado: "${roleName}"`)
             return
         }
         const member = guild.members.cache.get(targetUser.id)
@@ -1731,6 +1791,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         if (!message.member.hasPermission('ADMINISTRATOR')) return message.reply("Não podes usar isso!");
         const targetUser = message.mentions.users.first()
         if (!targetUser) {
+            message.react("❌")
             message.reply('Por favor especifica uma pessoa para tirar um role.')
             return
         }
@@ -1741,6 +1802,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             return role.name === roleName
         })
         if (!role) {
+            message.react("❌")
             message.reply(`Não há nenhum role com o nome: **"${roleName}"**`)
             return
         }
@@ -1766,6 +1828,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         if (!message.member.hasPermission('ADMINISTRATOR')) return message.reply("Não podes usar isso!");
         const targetUser = message.mentions.users.first()
         if (!targetUser) {
+            message.react("❌")
             message.reply('Por favor especifica alguém para ver se tem um role.')
             return
         }
@@ -1776,6 +1839,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             return role.name === roleName
         })
         if (!role) {
+            message.react("❌")
             message.reply(`Não há nenhum role com o nome: **"${roleName}"**.`)
             return
         }
@@ -1787,110 +1851,88 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         }
     }
     if (command === "issimp") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const simp = Math.random() * 100;
         const simpIndex = Math.floor(simp / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Simp Machine 2020`)
-            .setDescription(`${member.user.username} é ${Math.floor(simp)}% simp.`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(simp)}% simp.`)
         message.channel.send(embed);
     }
     if (command === "isgay") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const gay = Math.random() * 100;
         const gayIndex = Math.floor(gay / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`🏳️‍🌈 Gay Machine 2020 🏳️‍🌈`)
-            .setDescription(`${member.user.username} é ${Math.floor(gay)}% gay.`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(gay)}% gay.`)
         message.channel.send(embed);
     }
     if (command === "isgamer") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const gamer = Math.random() * 100;
         const gamerIndex = Math.floor(gamer / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`⌨️ Gamer Machine 2020 🖱️`)
-            .setDescription(`${member.user.username} é ${Math.floor(gamer)}% gamer. **Épico**!`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(gamer)}% gamer. **Épico**!`)
         message.channel.send(embed);
     }
     if (command === "isretarded") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const retard = Math.random() * 100;
         const retardIndex = Math.floor(retard / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Retards Machine 2020`)
-            .setDescription(`${member.user.username} é ${Math.floor(retard)}% retardado lmao.`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(retard)}% retardado lmao.`)
         message.channel.send(embed);
     }
     if (command === "isloli") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const loli = Math.random() * 100;
         const loliIndex = Math.floor(loli / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Loli Machine 2020`)
-            .setDescription(`${member.user.username} é ${Math.floor(loli)}% uma loli. 🤣`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(loli)}% uma loli. 🤣`)
         message.channel.send(embed);
     }
     if (command === "isanimegirl") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const animegirl = Math.random() * 100;
         const animegirlIndex = Math.floor(animegirl / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Loli Machine 2020`)
-            .setDescription(`${member.user.username} é ${Math.floor(animegirl)}% uma anime girl. 💁`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(animegirl)}% uma anime girl. 💁`)
         message.channel.send(embed);
     }
     if (command === "iswaifu") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const waifu = Math.random() * 100;
         const waifugirlIndex = Math.floor(waifu / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Loli Machine 2020`)
-            .setDescription(`${member.user.username} é ${Math.floor(waifu)}% uma waifu. 😥`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(waifu)}% uma waifu. 😥`)
         message.channel.send(embed);
     }
     if (command === "isdank") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const dank = Math.random() * 100;
         const dankIndex = Math.floor(dank / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Dank Memer Machine 2020`)
-            .setDescription(`${member.user.username} é ${Math.floor(dank)}% um dank memer xD.`)
+            .setDescription(`${message.member.user.username} é ${Math.floor(dank)}% um dank memer xD.`)
         message.channel.send(embed);
     }
     if (command == "lenny") {
-        const messages = [
-            "( ͡° ͜ʖ ͡°)", "¯\_( ͡° ͜ʖ ͡°)_/¯", "( ͠° ͟ʖ ͡°)", "( ͡° ʖ̯ ͡°)", "( ಠ ͜ʖಠ)", "(╯ ͠° ͟ʖ ͡°)╯┻━┻", "(ง ͠° ͟ل͜ ͡°)ง", "( ͡°( ͡° ͜ʖ ͡°( ͡° ͜ʖ ͡°) ͡° ͜ʖ ͡°) ͡°)", "凸 ( ° ͜ʖ ° )凸", "( ͠° ͜ʖ͠° )", "( ͠° ‿‿͠° )", "(︡° ͜ʖ°︠)", " ° ͜ʖ ° ", " ͠° ͜ʖ ͡°", "( ͡° ͜ʖ ͡°)╭∩╮", "(͠≖ ͜ʖ͠≖)", "ᕦ( ͡° ͜ʖ ͡°)ᕤ", "(☞ ͡° ͜ʖ ͡°)☞", "ಥ_ಥ", "( ✧≖ ͜ʖ≖)", "(▀̿Ĺ̯▀̿ ̿)", "( ͡°Ĺ̯ ͡° )", "̿'̿'\̵͇̿̿\з=( ͠° ͟ʖ ͡°)=ε/̵͇̿̿/'̿̿ ̿ ̿ ̿ ̿ ̿", '/╲/\╭( ͡° ͡° ͜ʖ ͡° ͡°)╮/\╱', "(° ͡ ͜ ͡ʖ ͡ °)", "( ͡°╭͜ʖ╮͡° )", "┬┴┬┴┤ ͜ʖ ͡°) ├┬┴┬┴", "(͡ ͡° ͜ つ ͡͡°)", "┬┴┬┴┤(･ω├┬┴┬┴", "( ̿ ̿ ̿ ̿ ̿ ̿ ̿ ̿°̿ ̿ ̿ ̿ ̿ ̿ ̿ ̿ ͜ʖ ̿ ̿ ̿ ̿ ̿ ̿ ̿°̿ ̿ ̿ ̿ ̿ ̿ ̿ )", "(̿ ̿ ̿ ̿ ̿'̿̿ ̿ ̿ ̿ ͜ʖ ̿ ̿ ̿ ̿ ̿ ̿'̿ ̿̿ ̿)"]
+        const messages = ["( ͡° ͜ʖ ͡°)", "¯\_( ͡° ͜ʖ ͡°)_/¯", "( ͠° ͟ʖ ͡°)", "( ͡° ʖ̯ ͡°)", "( ಠ ͜ʖಠ)", "(╯ ͠° ͟ʖ ͡°)╯┻━┻", "(ง ͠° ͟ل͜ ͡°)ง", "( ͡°( ͡° ͜ʖ ͡°( ͡° ͜ʖ ͡°) ͡° ͜ʖ ͡°) ͡°)", "凸 ( ° ͜ʖ ° )凸", "( ͠° ͜ʖ͠° )", "( ͠° ‿‿͠° )", "(︡° ͜ʖ°︠)", " ° ͜ʖ ° ", " ͠° ͜ʖ ͡°", "( ͡° ͜ʖ ͡°)╭∩╮", "(͠≖ ͜ʖ͠≖)", "ᕦ( ͡° ͜ʖ ͡°)ᕤ", "(☞ ͡° ͜ʖ ͡°)☞", "ಥ_ಥ", "( ✧≖ ͜ʖ≖)", "(▀̿Ĺ̯▀̿ ̿)", "( ͡°Ĺ̯ ͡° )", "̿'̿'\̵͇̿̿\з=( ͠° ͟ʖ ͡°)=ε/̵͇̿̿/'̿̿ ̿ ̿ ̿ ̿ ̿", '/╲/\╭( ͡° ͡° ͜ʖ ͡° ͡°)╮/\╱', "(° ͡ ͜ ͡ʖ ͡ °)", "( ͡°╭͜ʖ╮͡° )", "┬┴┬┴┤ ͜ʖ ͡°) ├┬┴┬┴", "(͡ ͡° ͜ つ ͡͡°)", "┬┴┬┴┤(･ω├┬┴┬┴", "( ̿ ̿ ̿ ̿ ̿ ̿ ̿ ̿°̿ ̿ ̿ ̿ ̿ ̿ ̿ ̿ ͜ʖ ̿ ̿ ̿ ̿ ̿ ̿ ̿°̿ ̿ ̿ ̿ ̿ ̿ ̿ )", "(̿ ̿ ̿ ̿ ̿'̿̿ ̿ ̿ ̿ ͜ʖ ̿ ̿ ̿ ̿ ̿ ̿'̿ ̿̿ ̿)"]
         const randomMessage = messages[Math.floor(Math.random() * messages.length)];
         message.channel.send(randomMessage)
     }
     if (message.content.startsWith(`${config.prefix}slowmode`)) {
         var time = message.content.split(" ").slice(1).join(" ")
-        if (!time) return message.reply("precisas de especificar o tempo para o slowmode!")
+        if (!time) {
+            message.react("❌")
+            return message.reply("precisas de especificar o tempo para o slowmode!")
+        }
         const embed = new Discord.MessageEmbed()
             .setTitle(`O slowmode deste channel é agora ${time}.`)
             .setColor("RANDOM");
@@ -1900,6 +1942,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "acrónimo") {
         var text = args;
         if (args.length < 1) {
+            message.react("❌")
             message.reply("Por favor adiciona um termo para eu procurar. ^^\nEg: -acronym rofl");
         }
         else {
@@ -1952,6 +1995,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "gif") {
         var text = args;
         if (args.length < 1) {
+            message.react("❌")
             message.reply("Especifica algum termo para eu procurar um gif. :grin:");
         }
         else {
@@ -1980,6 +2024,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "sticker") {
         var text = args;
         if (args.length < 1) {
+            message.react("❌")
             message.reply("Adiciona o termo para eu procurar depois do comando. ^^")
         }
         else {
@@ -2038,6 +2083,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "define") {
         var text = args;
         if (args.length < 1) {
+            message.react("❌")
             message.reply("Adiciona uma palavra depois do comando par eu saber o que queres que eu defina. \nEg: `-define technology`")
         }
         else {
@@ -2070,6 +2116,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "name") {
         var text = args;
         if (args.length < 1) {
+            message.react("❌")
             message.reply("Adiciona um nome depois do comando para eu saber o que procurar. :eyes:\nEg: -name silvia")
         }
         else {
@@ -2127,7 +2174,8 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     }
     if (command === "captcha") {
         if (args.length < 1) {
-            message.reply("Precisas de pôr algum texto depois do comando para eu procurar. :eyes:\nEg: `-captcha hi there`");
+            message.react("❌")
+            message.reply(`Precisas de pôr algum texto depois do comando para eu procurar. :eyes:\nEg: \`${config.prefix}captcha hi there\``);
         }
         else {
             var text = args;
@@ -2155,7 +2203,8 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "rhymer") {
         var text = args;
         if (args.length < 1) {
-            message.reply("Tenta incluir um palavra depois do comando, sendo a palavra inglesa.\`Eg: -rhyme code\`");
+            message.react("❌")
+            message.reply(`Tenta incluir um palavra depois do comando, sendo a palavra inglesa.\`Eg: ${config.prefix}rhyme code\``);
         }
         else {
             var msg_array = text
@@ -2187,16 +2236,13 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         }
     }
     if (command === "pp") {
-        let userArray = message.content.split(" ");
-        let userArgs = userArray.slice(1);
-        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const love = Math.random() * 15;
         const loveIndex = Math.floor(love / 1);
         const loveLevel = "=".repeat(loveIndex)
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`PP Size`)
-            .setDescription(`${member.user.username}\'s pp size:` + `\n8${loveLevel}D`);
+            .setDescription(`${message.member.user.username}\'s pp size:` + `\n8${loveLevel}D`);
         message.channel.send(embed);
     }
     if (command === 'minesweeper') {
@@ -2204,13 +2250,16 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const columns = parseInt(args[1]);
         const mines = parseInt(args[2]);
         if (!rows) {
-            return message.channel.send(':warning: Please provide the number of rows.');
+            message.react("❌")
+            return message.channel.send(':warning: Por favor especifica o número de filas.');
         }
         if (!columns) {
-            return message.channel.send(':warning: Please provide the number of columns.');
+            message.react("❌")
+            return message.channel.send(':warning: Por favor especifica o número de colunas.');
         }
         if (!mines) {
-            return message.channel.send(':warning: Please provide the number of mines.');
+            message.react("❌")
+            return message.channel.send(':warning: Por favor especifica um número de minas.');
         }
         const minesweeper = new Minesweeper({ rows, columns, mines });
         const matrix = minesweeper.start();
@@ -2225,8 +2274,9 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             : message.channel.send(':warning: You have provided invalid data.');
     }
     if (command === "die") {
-        if (message.author.id !== "343491235975135243") { //mudas aqui o teu id, acho que podes pôr mais pessoas
-            return message.channel.send("Não és o owner do Bot!") // para ninguém a não seres tu dar restart ao bot
+        if (message.author.id !== "343491235975135243") {
+            message.react("❌") //mudas aqui o teu id, acho que podes pôr mais pessoas
+            return message.channel.send("Não és o owner do Bot! Achavas que ias conseguir desligar o bot hehehhee.") // para ninguém a não seres tu dar restart ao bot
         }
         await message.channel.send("A dar restart ao bot!")
         process.exit();
@@ -2240,13 +2290,6 @@ client.on('message', async message => {
             break;
     }
 });
-function newFunction(command, message, args) {
-    if (["add", "Add", "ADD"].includes(command)) {
-        distube._addToQueue(message, args.join(" "));
-        message.channel.send(`🎶 **${args.join(" ")}** foi adicionado ao queue! 🎶`);
-    }
-}
-
 function cat(message) {
     var options = {
         url: "http://results.dogpile.com/serp?qc=images&q=" + "cute cats",
