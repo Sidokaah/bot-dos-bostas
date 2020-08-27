@@ -1,6 +1,6 @@
 const Discord = require('discord.js'),
     DisTube = require('distube')
-const client = new Discord.Client()
+const client = new Discord.Client();
 const distube = new DisTube(client, { searchSongs: true, emitNewSongOnly: true, highWaterMark: 1 << 24 });
 const Minesweeper = require('discord.js-minesweeper');
 const fetch = require('node-fetch');
@@ -10,6 +10,7 @@ const cheerio = require("cheerio");
 const request = require("request");
 const moment = require("moment");
 var version = "v.2.3.5" //também podes mudar para a que quiseres
+//const mongo = require("./mongo")
 const superagent = require("superagent");
 const ms = require("ms");
 const querystring = require("querystring");
@@ -21,12 +22,13 @@ const { Random } = require("something-random-on-discord")
 const random = new Random();
 const Canvacord = require("canvacord");
 const canva = new Canvacord();
+const fs = require("fs")
 const { calculator, formatDate } = require("../Bot dos Bostas/functions");
 const fortnite = require("simple-fortnite-api")
-const Client = new fortnite("");//token da api do fortnite-tracker
+const Client = new fortnite("7f72eb91-2fb4-4143-b75d-a0d0fa6d1306");//token da api do fortnite-tracker
 const got = require("got");
-client.once("ready", () => {
-    console.log(`${client.user.username} is ready to operate! ${version}`);
+client.once("ready", async () => {
+    console.log(`${client.user.tag} está pronto para ser usado! ${version}`);
     setInterval(() => { //podes mudar os estados
         const statuses = [
             `Counter Strike: Global Offensive | ${config.prefix}help`,
@@ -39,6 +41,13 @@ client.once("ready", () => {
         const status = statuses[Math.floor(Math.random() * statuses.length)]
         client.user.setActivity(status, { type: "PLAYING" })
     }, 5000)
+    //await mongo().then((mongoose) => {
+    //    try {
+    //      console.log('Conectado ao mongodb!')
+    //    } finally {
+    //      mongoose.connection.close()
+    //    }
+    //})
 });
 client.on('guildCreate', guild => {
     const channel = guild.channels.cache.find(channel => channel.type === 'text') //não te aconselho a mudares isto
@@ -46,9 +55,9 @@ client.on('guildCreate', guild => {
         .setAuthor("Bot dos Bostas:")
         .setColor("#F93A2F")
         .setDescription(`Sup everyone, eu sou o **Bot dos Bostas**. Obrigado por me adicionarem ao vosso server. Para verem os comandos em português, faz ${config.prefix}help. Para os veres em inglês, faz ${config.prefix}help-eng.`)
-        .addField("Coisas importantes:", "[Server de Suporte](https://discord.gg/DRnnZPS) - Caso tenhas alguma dúvida ou esteja a haver algum erro ou bug, estás à vontade para entrar no server!")
-        .addField("Discord.js:", `[Site](https://discord.js.org/#/) - Library em que o bot foi baseado.!`)
-        .addField("Criador: TonaS#9344", "Disfruta dos mais de 120 comandos!")
+        .addField("Coisas importantes:", "❯ [Server de Suporte](https://discord.gg/DRnnZPS) - Caso tenhas alguma dúvida ou esteja a haver algum erro ou bug, estás à vontade para entrar no server!")
+        .addField("❯ Discord.js:", `[Site](https://discord.js.org/#/) - Library em que o bot foi baseado.!`)
+        .addField("❯ Criador: TonaS#9344", "Disfruta dos mais de 120 comandos!")
         .setTimestamp()
     channel.send(embed)
 });
@@ -111,11 +120,37 @@ client.on("guildMemberRemove", async (member) => {
     }
 });
 client.on("message", async (message) => {
+    let prefixes = JSON.parse(fs.readFileSync("./prefixes.json", "utf8"));
+    if(!prefixes[message.guild.id]){
+        prefixes[message.guild.id] = {
+            prefixes : config.prefix
+        };
+    }
+    let prefix = prefixes [message.guild.id].prefixes;
     if (message.author.bot) return;
-    if (!message.content.startsWith(config.prefix)) return;
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+    if (!message.content.startsWith(prefix)) return;
+    const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift();
     const query = querystring.stringify({ term: args.join(' ') });
+    if(command === "setprefix") {
+        if(!message.member.hasPermission("MANAGE_GUILD")) return message.reply("não podes usar isso")
+        if(!args[0] || args[0 == "help"]) return message.channel.send("Como usar: -setprefix (prefix)")
+        let prefixes = JSON.parse(fs.readFileSync("./prefixes.json", "utf8"))
+        prefixes[message.guild.id] = {
+            prefixes: args[0]
+        };
+        fs.writeFile("./prefixes.json", JSON.stringify(prefixes), (err) => {
+            if(err) console.log(err)
+        });
+        const embed = new Discord.MessageEmbed()
+            .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
+            .setTitle("Successo!")
+            .setDescription(`Mudaste o prefix do server para: ${args[0]}`)
+            .setTimestamp()
+            .setFooter(client.user.username, client.user.displayAvatarURL())
+            .setColor("RANDOM")
+        message.channel.send(embed)
+    }
     if (["play", "Play", "PLAY", "p", "P"].includes(command)) {
         distube.options.searchSongs = false
         if (!message.member.voice.channelID) {
@@ -285,6 +320,19 @@ client.on("message", async (message) => {
         let filter = distube.setFilter(message, command);
         message.channel.send("Filtro do queue atual: " + (filter || "Off"));
     }
+    if(["queue", "Queue", "QUEUE", "q", "Q"].includes(command)) {
+        let queue = distube.getQueue(message);
+        if (message.member.voice.channel) {
+            message.channel.send(`🎶 Queue Atual | ${queue.songs.length} música(s) | \`${queue.formattedDuration}\` | 🎶`)
+            const embed = new Discord.MessageEmbed()
+                .setTitle("📄 Queue 📄")
+                .setDescription('\n' + queue.songs.map((song, id) => `**${id + 1}** - [${song.name}](${song.url}) - \`${song.formattedDuration}\``).join("\n"))
+                .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
+                .setTimestamp()
+                .setColor("#F93A2F")
+            message.channel.send(embed)
+        } 
+    }
     if ([`changevolume`, `ChangeVolume`, `CHANGEVOLUME`, `cv`, `CV`].includes(command)) {
         if (!message.member.voice.channelID) {
             message.react("❌")
@@ -307,85 +355,85 @@ client.on("message", async (message) => {
             distube.setVolume(message, args[0]);
             message.channel.send(`:loud_sound: | Mudei o volume para: **${args[0]}%**`)
         }
-        if ([`volume`, `Volume`, `VOLUME`, `v`, `V`].includes(command)) {
-            if (!message.member.voice.channelID) {
-                message.react("❌")
-                const embed = new Discord.MessageEmbed()
-                    .setColor("#F93A2F")
-                    .setDescription(`Precisas de estar num voice chat para veres o volume da música!`)
-                    .setTimestamp()
-                return message.channel.send(embed)
-            }
-            let queue = distube.getQueue(message);
-            message.channel.send(`:loud_sound: | O volume da música está a: **${queue.volume}%**`)
+    }
+    if ([`volume`, `Volume`, `VOLUME`, `v`, `V`].includes(command)) {
+        if (!message.member.voice.channelID) {
+            message.react("❌")
+            const embed = new Discord.MessageEmbed()
+                .setColor("#F93A2F")
+                .setDescription(`Precisas de estar num voice chat para veres o volume da música!`)
+                .setTimestamp()
+            return message.channel.send(embed)
         }
-        if (["shuffle", "Shuffle", "SHUFFLE"].includes(command)) {
-            if (!message.member.voice.channelID) {
-                message.react("❌")
-                const embed = new Discord.MessageEmbed()
-                    .setColor("#F93A2F")
-                    .setDescription(`Precisas de estar num voice chat para misturares o queue!`)
-                    .setTimestamp()
-                return message.channel.send(embed)
-            }
-            let queue = distube.getQueue(message);
-            distube.shuffle(message)
-            message.channel.send(`:twisted_rightwards_arrows: | Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+        let queue = distube.getQueue(message);
+        message.channel.send(`:loud_sound: | O volume da música está a: **${queue.volume}%**`)
+    }
+    if (["shuffle", "Shuffle", "SHUFFLE"].includes(command)) {
+        if (!message.member.voice.channelID) {
+            message.react("❌")
+            const embed = new Discord.MessageEmbed()
+                .setColor("#F93A2F")
+                .setDescription(`Precisas de estar num voice chat para misturares o queue!`)
+                .setTimestamp()
+            return message.channel.send(embed)
         }
-        if (["jump", "Jump", "JUMP"].includes(command)) {
-            if (!message.member.voice.channelID) {
-                message.react("❌")
-                const embed = new Discord.MessageEmbed()
-                    .setColor("#F93A2F")
-                    .setDescription(`Precisas de estar num voice chat para passares para outra música!`)
-                    .setTimestamp()
-                return message.channel.send(embed)
-            }
-            message.channel.send(`⬆️ | Saltei para o número ${parseInt(args[0])} no queue!`)
-            distube.jump(message, parseInt(args[0]))
-                .catch(_err => message.channel.send(":warning: | Número inválido para saltar."));
+        let queue = distube.getQueue(message);
+        distube.shuffle(message)
+        message.channel.send(`:twisted_rightwards_arrows: | Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+    }
+    if (["jump", "Jump", "JUMP"].includes(command)) {
+        if (!message.member.voice.channelID) {
+            message.react("❌")
+            const embed = new Discord.MessageEmbed()
+                .setColor("#F93A2F")
+                .setDescription(`Precisas de estar num voice chat para passares para outra música!`)
+                .setTimestamp()
+            return message.channel.send(embed)
         }
-        if (["autoplay", "Autoplay", "AUTOPLAY", "ap", "AP"].includes(command)) {
-            if (!message.member.voice.channelID) {
-                message.react("❌")
-                const embed = new Discord.MessageEmbed()
-                    .setColor("#F93A2F")
-                    .setDescription(`Precisas de estar num voice chat para usares autoplay!`)
-                    .setTimestamp()
-                return message.channel.send(embed)
-            }
-            let mode = distube.toggleAutoplay(message);
-            message.channel.send("Autoplay está agora: `" + (mode ? "On" : "Off") + "`");
+        message.channel.send(`⬆️ | Saltei para o número ${parseInt(args[0])} no queue!`)
+        distube.jump(message, parseInt(args[0]))
+            .catch(_err => message.channel.send(":warning: | Número inválido para saltar."));
+    }
+    if (["autoplay", "Autoplay", "AUTOPLAY", "ap", "AP"].includes(command)) {
+        if (!message.member.voice.channelID) {
+            message.react("❌")
+            const embed = new Discord.MessageEmbed()
+                .setColor("#F93A2F")
+                .setDescription(`Precisas de estar num voice chat para usares autoplay!`)
+                .setTimestamp()
+            return message.channel.send(embed)
         }
-        if (["playSkip", "PlaySkip", "playskip", "PLAYSKIP"].includes(command)) {
-            if (!message.member.voice.channelID) {
-                message.react("❌")
-                const embed = new Discord.MessageEmbed()
-                    .setColor("#F93A2F")
-                    .setDescription(`Precisas de estar num voice chat para resumires música!`)
-                    .setTimestamp()
-                return message.channel.send(embed)
-            }
-            distube.playSkip(message, args.join(" "));
-            message.channel.send(":track_next: | Vou dar skip à música que está a tocar e começar a tocar a que escolheres!")
+        let mode = distube.toggleAutoplay(message);
+        message.channel.send("Autoplay está agora: `" + (mode ? "On" : "Off") + "`");
+    }
+    if (["playSkip", "PlaySkip", "playskip", "PLAYSKIP"].includes(command)) {
+        if (!message.member.voice.channelID) {
+            message.react("❌")
+            const embed = new Discord.MessageEmbed()
+                .setColor("#F93A2F")
+                .setDescription(`Precisas de estar num voice chat para resumires música!`)
+                .setTimestamp()
+            return message.channel.send(embed)
         }
-        if (command === "bitch") {
-            if (!message.member.voice.channelID) {
-                message.react("❌")
-                const embed = new Discord.MessageEmbed()
-                    .setColor("#F93A2F")
-                    .setDescription(`Precisas de estar num voice chat para resumires música!`)
-                    .setTimestamp()
-                return message.channel.send(embed)
-            }
-            message.channel.send('🎶 | A carregar a playlist...').then((resultMessage) => {
-                const ping = resultMessage.createdTimestamp - message.createdTimestamp
-                resultMessage.edit(`🎶 | Playlist carregada: **Bitch Lasagna Playlist**!`)
-            })
-            let songs = ["https://www.youtube.com/watch?v=6Dh-RL__uN4", "https://www.youtube.com/watch?v=YNNXTs6adIs", "https://www.youtube.com/watch?v=BuNmXYmTRQE", "https://www.youtube.com/watch?v=0oq7805Fxfw", "https://www.youtube.com/watch?v=Z9uLwuGTTFk", "https://www.youtube.com/watch?v=uoww4ou3Ark",
-                "https://www.youtube.com/watch?v=KprzFp9A0kc", "https://www.youtube.com/watch?v=eoK-Ew_0Nw8", "https://www.youtube.com/watch?v=i20TUj4d8sw", "https://www.youtube.com/watch?v=34WnaTTGIKw", "https://www.youtube.com/watch?v=5FusviCrZOk", "https://www.youtube.com/watch?v=52_hLibBRzY", "https://www.youtube.com/watch?v=0uCgyy1pjyo", "https://www.youtube.com/watch?v=qlZvOytosLc"];
-            distube.playCustomPlaylist(message, songs, { title: "Bitch Lasagna Playlist" });
+        distube.playSkip(message, args.join(" "));
+        message.channel.send(":track_next: | Vou dar skip à música que está a tocar e começar a tocar a que escolheres!")
+    }
+    if (command === "bitch") {
+        if (!message.member.voice.channelID) {
+             message.react("❌")
+            const embed = new Discord.MessageEmbed()
+                .setColor("#F93A2F")
+                .setDescription(`Precisas de estar num voice chat para resumires música!`)
+                .setTimestamp()
+            return message.channel.send(embed)
         }
+        message.channel.send('🎶 | A carregar a playlist...').then((resultMessage) => {
+            const ping = resultMessage.createdTimestamp - message.createdTimestamp
+            resultMessage.edit(`🎶 | Playlist carregada: **Bitch Lasagna Playlist**!`)
+        })
+        let songs = ["https://www.youtube.com/watch?v=6Dh-RL__uN4", "https://www.youtube.com/watch?v=YNNXTs6adIs", "https://www.youtube.com/watch?v=BuNmXYmTRQE", "https://www.youtube.com/watch?v=0oq7805Fxfw", "https://www.youtube.com/watch?v=Z9uLwuGTTFk", "https://www.youtube.com/watch?v=uoww4ou3Ark",
+            "https://www.youtube.com/watch?v=KprzFp9A0kc", "https://www.youtube.com/watch?v=eoK-Ew_0Nw8", "https://www.youtube.com/watch?v=i20TUj4d8sw", "https://www.youtube.com/watch?v=34WnaTTGIKw", "https://www.youtube.com/watch?v=5FusviCrZOk", "https://www.youtube.com/watch?v=52_hLibBRzY", "https://www.youtube.com/watch?v=0uCgyy1pjyo", "https://www.youtube.com/watch?v=qlZvOytosLc"];
+        distube.playCustomPlaylist(message, songs, { title: "Bitch Lasagna Playlist" });
     }
     if (command === "playlist") {
         message.react("❌")
@@ -679,91 +727,99 @@ client.on("message", async (message) => {
             message.channel.send(embed);
         })
     }
-    if (message.content === `${config.prefix}categorias`) {
+    if (message.content === `${prefix}categorias`) {
+        message.react("✅")
         const help = new Discord.MessageEmbed()
             .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
             .setTitle("Comandos do Bot dos Bostas")
-            .setDescription("Bot feito por: TonaS#9344")
+            .setDescription("**Bot feito por: TonaS#9344**")
             .addFields(
-                { name: ":laughing: Fun:", value: `\`-help fun\``, inline: true },
-                { name: ":wrench: Info e Mod:", value: `\`-help info\``, inline: true },
-                { name: ":dog: Animais", value: `\`-help animais\``, inline: true },
-                { name: ":musical_note: Música", value: `\`-help música\``, inline: true },
-                { name: ":rofl: Meme", value: `\`-help meme\``, inline: true },
-                { name: ":camera: Imagens", value: `\`-help imagens\``, inline: true },
+                { name: ":laughing: Fun:", value: `\`${prefix}help fun\``, inline: true },
+                { name: ":wrench: Info e Mod:", value: `\`${prefix}help infomod\``, inline: true },
+                { name: ":dog: Animais", value: `\`${prefix}help animais\``, inline: true },
+                { name: ":musical_note: Música", value: `\`${prefix}help música\``, inline: true },
+                { name: ":rofl: Meme", value: `\`${prefix}help meme\``, inline: true },
+                { name: ":camera: Imagens", value: `\`${prefix}help imagens\``, inline: true },
             )
             .setColor("RANDOM")
             .setTimestamp()
             .setFooter(`Usa sempre - antes de todos os comandos`, client.user.displayAvatarURL())
         message.channel.send(help)
     }
-    if (message.content === `${config.prefix}help`) {
+    if (message.content === `${prefix}help`) {
         message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setAuthor("Lista de Comandos", client.user.displayAvatarURL())
             .setDescription(`❯ **Server de Suporte:** [Link](https://discord.gg/fnvdugV)\n❯ **Invite do Bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n❯ **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
             .addField(":information_source: Info", `\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\``)
-            .addField(":gear: Mod", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`help-eng\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`.`)
+            .addField(":gear: Mod", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`help-eng\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`, \`setprefix\`.`)
             .addField(":camera: Imagens", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
             .addField(":laughing: Fun", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
             .addField(":rofl: Meme", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
             .addField(":musical_note: Música", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`.`)
-            .addField(":dog: Animais", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`.`)
+            .addField(":dog: Animais", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`, \`snake\`, \`ferret\`, \`goose\`.`)
             .setFooter(`Pedido por(a): ${message.member.displayName}`, message.author.displayAvatarURL())
             .setTimestamp()
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help imagens`) {
+    if (message.content === `${prefix}help imagens`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
             .addField("Comandos:", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
-            .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
+            .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help animais`) {
+    if (message.content === `${prefix}help animais`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
-            .addField("Comandos:", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`.`)
-            .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
+            .addField("Comandos:", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`, \`snake\`, \`ferret\`, \`goose\`.`)
+            .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help infomod`) {
+    if (message.content === `${prefix}help infomod`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
             .addField("Comandos:", `\`userinfo\`, \`clear\`, \`poll\`, \`announce\`, \`ping\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`covid\`, \`uptime\`, \`steam\`, \`help-eng\`, \`invite\`, \`weather\`, \`instagram\`, \`lock\`, \`stats\`, \`yt\`, \`math\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`urban\`, \`fortnite\`, \`slowmode\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`.`)
-            .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
+            .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help meme`) {
+    if (message.content === `${prefix}help meme`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
             .addField("Comandos:", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
-            .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
+            .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help fun`) {
+    if (message.content === `${prefix}help fun`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
             .addField("Comandos:", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`, \`riccroll\`, \`bob\``)
-            .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
+            .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help música`) {
+    if (message.content === `${prefix}help música`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
             .addField("Comandos de música:", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`np ou nowplaying\`.`)
             .addField("Filtros de música:", `\`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`.`)
-            .setFooter(`Usa sempre ${config.prefix} para usares os comandos do bot.`)
+            .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
-    if (message.content === `${config.prefix}help-eng`) {
+    if (message.content === `${prefix}help-eng`) {
+        message.react("✅")
         const userEmbed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setAuthor("Command List", client.user.displayAvatarURL())
@@ -853,7 +909,7 @@ client.on("message", async (message) => {
         message.channel.send(
             `TEXTO SOBRE O SEZUL: 
 
-O Sezul // /̶S̶E̶Z̶U̶L̶\̶#4572 // Antonio  Miranda // Instagram: @1__seven__1 , 
+O Sezul // /̶S̶E̶Z̶U̶L̶\̶#4572 // Antonio Miranda // Instagram: @1__seven__1 , 
 @seven_garagept //
         
 Este rapaz com 16 anos tem uma vida numa aldeia em que vive em casa dos avós com 
@@ -887,7 +943,7 @@ pensava que sabia tudo ahaha.`
             let response = answers[Math.floor(Math.random() * answers.length)];
             let embed = new Discord.MessageEmbed()
                 .setTitle("8ball")
-                .setColor(0x3d32fc)
+                .setColor("RANDOM")
                 .setThumbnail("https://i.ytimg.com/vi/ADjTcV8JIss/maxresdefault.jpg")
                 .setImage(message.member.user.displayAvatarURL())
                 .addField('Pergunta: ', question)
@@ -900,6 +956,10 @@ pensava que sabia tudo ahaha.`
         , "https://media1.tenor.com/images/725a604e470a6c2768149c64fd166292/tenor.gif?itemid=16095505", "https://media1.tenor.com/images/31f29b3fcc20a486f44454209914266a/tenor.gif?itemid=17942299", "https://media1.tenor.com/images/4c87273e872b4a7fc23a37868b3f3577/tenor.gif?itemid=15003911", "https://thumbs.gfycat.com/ForkedFamousGalapagoshawk-size_restricted.gif"]
         let response = answers[Math.floor(Math.random() * answers.length)];
         const personTagged = message.mentions.members.first();
+        if(!personTagged) {
+            message.react("❌")
+            return message.reply('Precisas de especificar uma pessoa para dares uma chapada!');
+        }
         const userEmbed = new Discord.MessageEmbed()
             .setTitle(message.author.username + ' deu uma chapada a ' + personTagged.displayName)
             .setColor('RED')
@@ -1285,7 +1345,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const noArgs = new Discord.MessageEmbed()
             .setTitle('Faltam argumentos!')
             .setColor(0xFF0000)
-            .setDescription(`Faltam-te alguns argumentos no comando (ex: ${config.prefix}covid all || ${config.prefix}covid Canada)`)
+            .setDescription(`Faltam-te alguns argumentos no comando (ex: ${prefix}covid all || ${prefix}covid Canada)`)
             .setTimestamp()
         if (!args[0]) return message.channel.send(noArgs);
         if (args[0] === "all") {
@@ -1343,7 +1403,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         message.delete();
     }
     if (command === "steam") {
-        const token = "";
+        const token = "F8BEC15D1BCE2CBB0F182E8F47B6D683";
         if (!args[0]) return message.channel.send("Por favor especifica um nome de conta!");
         const url = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${token}&vanityurl=${args.join(" ")}`;
         fetch(url).then(res => res.json()).then(body => {
@@ -1384,7 +1444,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const embed = new Discord.MessageEmbed()
             .setColor("#F93A2F")
             .setAuthor(`${message.member.user.username}, aqui está tudo sobre o ${client.user.username}!`, message.member.user.displayAvatarURL())
-            .setDescription(`Olá, eu sou o **${client.user.username}**! Sou um Bot Multiusos feito pelo TonaS#9344! Sou feito com a library [Discord.js](https://discord.js.org/#/) e com o Module de música [Distube](https://distube.js.org/)! Escreve \`${config.prefix}help\` para veres os meus comandos.\n[Convida-me](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot) para o teu server!\n O Bot foi criado a - ${moment.utc(client.user.createdAt).format("dddd, MMMM Do YYYY")}.`)
+            .setDescription(`Olá, eu sou o **${client.user.username}**! Sou um Bot Multiusos feito pelo TonaS#9344! Sou feito com a library [Discord.js](https://discord.js.org/#/) e com o Module de música [Distube](https://distube.js.org/)! Escreve \`${prefix}help\` para veres os meus comandos.\n[Convida-me](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot) para o teu server!\n O Bot foi criado a - ${moment.utc(client.user.createdAt).format("dddd, MMMM Do YYYY")}.`)
             .setThumbnail(client.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
             .addField("Tenho comandos de diversos tópicos, como:", "```\n🎶 de Música\n🤣 de Memes\n🐶 de Animais\n📷 de Imagens\n😆 de Entretenimento\n🔧 de Informação!```")
             .addFields(
@@ -1530,7 +1590,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const choice = args[0];
         if (!choice) {
             message.react("❌")
-            return message.channel.send(`Como jogar: \`${config.prefix}rps <pedra|papel|tesoura>\``);
+            return message.channel.send(`Como jogar: \`${prefix}rps <pedra|papel|tesoura>\``);
         }
         if (!acceptedReplies.includes(choice)) {
             message.react("❌")
@@ -1601,68 +1661,68 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .setTimestamp()
         return message.channel.send(embed);
     }
-    if (message.content.startsWith(`${config.prefix}delete`)) {
+    if (command === "delete") {
         let user = message.mentions.users.first() || client.users.cache.get(args[0]) || message.author;
         let image = await canva.delete(user.displayAvatarURL({ dynamic: false, format: 'png' }));
         let attachment = new Discord.MessageAttachment(image, "deleted.png");
         return message.channel.send(attachment);
     }
-    if (message.content.startsWith(`${config.prefix}shit`)) {
+    if (command === "shit") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.shit(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
-    if (message.content.startsWith(`${config.prefix}wanted`)) {
+    if (command === "wanted") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.wanted(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
-    if (message.content.startsWith(`${config.prefix}invert`)) {
+    if (command === "invert") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.invert(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
-    if (message.content.startsWith(`${config.prefix}trash`)) {
+    if (command === "trash") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.trash(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
-    if (message.content.startsWith(`${config.prefix}hitler`)) {
+    if (command === "hitler") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.hitler(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
-    if (message.content.startsWith(`${config.prefix}deepfry`)) {
+    if (command === "deepfry") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.deepfry(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
-    if (message.content.startsWith(`${config.prefix}beautiful`)) {
+    if (command === "beautiful") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.beautiful(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
     }
-    if (message.content.startsWith(`${config.prefix}affect`)) {
+    if (command === "affect") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.affect(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
-    if (message.content.startsWith(`${config.prefix}math`)) {
+    if (command === "math") {
         if (!args[0]) {
             message.react("❌")
             return message.channel.send("Não especificaste o primeiro número!")
@@ -1733,7 +1793,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     }
     if (command === "fortnite") {
         if (!args[0]) return message.channel.send("Por favor especifica um nome.");
-        if (args[1] && !["lifetime", "solo", "duo", "squad"].includes(args[1])) return message.channel.send(`Como usar: ${config.prefix}fortnite <username> <gametype>``\nModos de Jogo: Lifetime, Solo, Duo, Squad`);
+        if (args[1] && !["lifetime", "solo", "duo", "squad"].includes(args[1])) return message.channel.send(`Como usar: ${prefix}fortnite <username> <gametype>``\nModos de Jogo: Lifetime, Solo, Duo, Squad`);
         let gametype = args[1] ? args[1].toLowerCase() : "lifetime";
         let data = await Client.find(args[0])
         if (data && data.code === 404) return message.channel.send("Não consegui encontrar ninguém com esse nome.")
@@ -2276,240 +2336,255 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "die") {
         if (message.author.id !== "343491235975135243") {
             message.react("❌") //mudas aqui o teu id, acho que podes pôr mais pessoas
-            return message.channel.send("Não és o owner do Bot! Achavas que ias conseguir desligar o bot hehehhee.") // para ninguém a não seres tu dar restart ao bot
+            return message.channel.send("Não és o owner do Bot! Achavas que ias conseguir desligar o bot hehehehe.") // para ninguém a não seres tu dar restart ao bot
         }
         await message.channel.send("A dar restart ao bot!")
         process.exit();
     }
-});
-client.on('message', async message => {
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-    switch (args[0]) {
-        case 'cats':
-            cat(message);
-            break;
-    }
-});
-function cat(message) {
-    var options = {
-        url: "http://results.dogpile.com/serp?qc=images&q=" + "cute cats",
-        method: "GET",
-        headers: {
-            "Accept": "text/html",
-            "User-Agent": "Chrome"
-        }
-    }
-    request(options, function (error, _reponse, responseBody) {
-        if (error) {
-            return;
-        }
-        $ = cheerio.load(responseBody);
-        var links = $(".image a.link");
-        var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
-        if (!urls.length) {
-            return;
-        }
-        const embed = new Discord.MessageEmbed()
-            .setAuthor("CATS!", client.user.displayAvatarURL())
-            .setImage(urls[Math.floor(Math.random() * urls.length)])
-            .setTimestamp()
-            .setColor("RANDOM")
-        message.channel.send(embed)
-    });
-}
-client.on('message', async message => {
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-    switch (args[0]) {
-        case 'mrlizard':
-            lizzy(message);
-            break;
-    }
-});
-function lizzy(message) {
-    var options = {
-        url: "http://results.dogpile.com/serp?qc=images&q=" + "lizard",
-        method: "GET",
-        headers: {
-            "Accept": "text/html",
-            "User-Agent": "Chrome"
-        }
-    }
-    request(options, function (error, _reponse, responseBody) {
-        if (error) {
-            return;
-        }
-        $ = cheerio.load(responseBody);
-        var links = $(".image a.link");
-        var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
-        if (!urls.length) {
-            return;
-        }
-        const embed = new Discord.MessageEmbed()
-            .setAuthor("Mr_lizard na área!", client.user.displayAvatarURL())
-            .setImage(urls[Math.floor(Math.random() * urls.length)])
-            .setTimestamp()
-            .setColor("RANDOM")
-        message.channel.send(embed)
-    });
-}
-client.on('message', async message => {
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-    switch (args[0]) {
-        case 'quacc':
-            quack(message);
-            break;
-    }
-});
-function quack(message) {
-    var options = {
-        url: "http://results.dogpile.com/serp?qc=images&q=" + "duck",
-        method: "GET",
-        headers: {
-            "Accept": "text/html",
-            "User-Agent": "Chrome"
-        }
-    }
-    request(options, function (error, _reponse, responseBody) {
-        if (error) {
-            return;
-        }
-        $ = cheerio.load(responseBody);
-        var links = $(".image a.link");
-        var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
-        if (!urls.length) {
-            return;
-        }
-        const embed = new Discord.MessageEmbed()
-            .setAuthor("QUAAAAAACC!", client.user.displayAvatarURL())
-            .setImage(urls[Math.floor(Math.random() * urls.length)])
-            .setTimestamp()
-            .setColor("RANDOM")
-        message.channel.send(embed)
-    });
-}
-client.on('message', async message => {
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-    switch (args[0]) {
-        case 'minecraft':
-            minecraft(message);
-            break;
-    }
-});
-function minecraft(message) {
-    var options = {
-        url: "http://results.dogpile.com/serp?qc=images&q=" + "cursed minecraft",
-        method: "GET",
-        headers: {
-            "Accept": "text/html",
-            "User-Agent": "Chrome"
-        }
-    }
-    request(options, function (error, _reponse, responseBody) {
-        if (error) {
-            return;
-        }
-        $ = cheerio.load(responseBody);
-        var links = $(".image a.link");
-        var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
-        if (!urls.length) {
-            return;
-        }
-        const embed = new Discord.MessageEmbed()
-            .setAuthor("MINECRAFT! THE BEST GAME IN THE WORLD!", client.user.displayAvatarURL())
-            .setImage(urls[Math.floor(Math.random() * urls.length)])
-            .setTimestamp()
-            .setColor("RANDOM")
-        message.channel.send(embed)
-    });
-}
-client.on('message', async message => {
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-    switch (args[0]) {
-        case 'foxsays':
-            fox(message);
-            break;
-    }
-});
-function fox(message) {
-    var options = {
-        url: "http://results.dogpile.com/serp?qc=images&q=" + "fox",
-        method: "GET",
-        headers: {
-            "Accept": "text/html",
-            "User-Agent": "Chrome"
-        }
-    }
-    request(options, function (error, _reponse, responseBody) {
-        if (error) {
-            return;
-        }
-        $ = cheerio.load(responseBody);
-        var links = $(".image a.link");
-        var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
-        if (!urls.length) {
-            return;
-        }
-        const embed = new Discord.MessageEmbed()
-            .setAuthor("What The Fox Says?!", client.user.displayAvatarURL())
-            .setImage(urls[Math.floor(Math.random() * urls.length)])
-            .setTimestamp()
-            .setColor("RANDOM")
-        message.channel.send(embed)
-    });
-}
-client.on('message', async message => {
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-    switch (args[0]) {
-        case 'panda':
-            panda(message);
-            break;
-    }
-});
-function panda(message) {
-    var options = {
-        url: "http://results.dogpile.com/serp?qc=images&q=" + "cute panda",
-        method: "GET",
-        headers: {
-            "Accept": "text/html",
-            "User-Agent": "Chrome"
-        }
-    }
-    request(options, function (error, _reponse, responseBody) {
-        if (error) {
-            return;
-        }
-        $ = cheerio.load(responseBody);
-        var links = $(".image a.link");
-        var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
-        if (!urls.length) {
-            return;
-        }
-        const embed = new Discord.MessageEmbed()
-            .setAuthor("PANDAS!", client.user.displayAvatarURL())
-            .setImage(urls[Math.floor(Math.random() * urls.length)])
-            .setTimestamp()
-            .setColor("RANDOM")
-        message.channel.send(embed)
-    });
-}
-client.on('message', async message => {
-    if (message.author.bot) return;
-    if (message.channel.id === '737771606075768855') // podes mudar
-        await message.delete();
-    if (message.content.toLowerCase() === '' && message.channel.id === '737771606075768855') { // Mudei o nome do comando porque já não o uso mas tu podes usar
-        await message.delete().catch(err => console.log(err));
-        const role = message.guild.roles.cache.get('717680771829071912'); // podes mudar
-        if (role) {
-            try {
-                await message.member.roles.add(role);
-                console.log("Role added!");
-            }
-            catch (err) {
-                console.log(err);
+    if(command === "kitty") {
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "cute cats",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
             }
         }
+            request(options, function (error, _reponse, responseBody) {
+                if (error) {
+                    return;
+                }
+                $ = cheerio.load(responseBody);
+                var links = $(".image a.link");
+                var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+                if (!urls.length) {
+                    return;
+                }
+                const embed = new Discord.MessageEmbed()
+                    .setAuthor("CATS!", client.user.displayAvatarURL())
+                    .setImage(urls[Math.floor(Math.random() * urls.length)])
+                    .setTimestamp()
+                    .setColor("RANDOM")
+                message.channel.send(embed)
+            });
     }
-})
+    if(command === "mrlizard"){
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "lizard",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("Mr_lizard na área!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+    if(command === "quacc"){
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "duck",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("QUAAAAAACC!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+    if(command === "minecraft"){
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "cursed minecraft",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("MINECRAFT! THE BEST GAME IN THE WORLD!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+    if(command === "foxsays") {
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "fox",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("What The Fox Says?!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+    if(command === "panda") {
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "cute panda",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("PANDAS!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+    if(command === "ferret") {
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "ferret",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("FERRETS!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+    if(command === "goose") {
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "goose",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("GOOSES!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+    if(command === "snake") {
+        var options = {
+            url: "http://results.dogpile.com/serp?qc=images&q=" + "snakes",
+            method: "GET",
+            headers: {
+                "Accept": "text/html",
+                "User-Agent": "Chrome"
+            }
+        }
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("SNAKES!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
+    }
+});
 const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
 distube
     .on("playSong", (message, queue, song) => {
@@ -2868,3 +2943,4 @@ distube
         message.channel.send(embed)
     })
 client.login(config.token);
+
