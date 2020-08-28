@@ -4,17 +4,17 @@ Com cerca de 120 comandos para usares, desde música até memes.
 
 Baseado em Discord.js, com o module DisTube.
 # Features
-❯ Música;
+**❯ Música;**
 
-❯ Memes;
+**❯ Memes;**
 
-❯ Diversão;
+**❯ Diversão;**
 
-❯ Moderação;
+**❯ Moderação;**
 
-❯ Informação;
+**❯ Informação;**
 
-❯ Animais.
+**❯ Animais.**
 # Para Instalar
 
 Só tens de fazer "npm i" no terminal para instalares todas as dependecies (todas as dependecies estão no package.json).
