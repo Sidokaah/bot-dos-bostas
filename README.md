@@ -1,9 +1,9 @@
 # Bot dos Bostas
-[![npm](https://img.shields.io/npm/v/@south-paw/discord-music-bot.svg)](https://www.npmjs.com/package/@south-paw/discord-music-bot)
-[![CI Status](https://img.shields.io/travis/South-Paw/discord-music-bot.svg)](https://travis-ci.org/South-Paw/discord-music-bot)
-[![Coveralls Status](https://img.shields.io/coveralls/github/South-Paw/discord-music-bot.svg)](https://coveralls.io/github/South-Paw/discord-music-bot)
-[![Dependencies](https://david-dm.org/South-Paw/discord-music-bot.svg)](https://david-dm.org/South-Paw/discord-music-bot)
-[![Dev Dependencies](https://david-dm.org/South-Paw/discord-music-bot/dev-status.svg)](https://david-dm.org/South-Paw/discord-music-bot?type=dev)
+[![CI Status](https://img.shields.io/travis/South-Paw/discord-music-bot.svg)](https://travis-ci.org/TonaS21/bot-dos-bostas)
+[![Coveralls Status](https://img.shields.io/coveralls/github/South-Paw/discord-music-bot.svg)](https://coveralls.io/github/TonaS21/bot-dos-bostas)
+[![Dependencies](https://david-dm.org/South-Paw/discord-music-bot.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
+[![Dev Dependencies](https://david-dm.org/South-Paw/discord-music-bot/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
+
 O meu grande bot do discord.
 Com cerca de 120 comandos para usares, desde música até memes.
 
