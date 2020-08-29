@@ -17,6 +17,7 @@
     "got": "^11.5.2",
     "imageapi.js": "^1.0.9",
     "moment": "^2.27.0",
+    "mongoose": "^5.10.0",
     "ms": "^2.1.2",
     "node-fetch": "^2.6.0",
     "node-superfetch": "^0.1.10",
