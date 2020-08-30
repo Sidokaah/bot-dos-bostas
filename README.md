@@ -1,6 +1,4 @@
 # Bot dos Bostas
-[![CI Status](https://img.shields.io/travis/TonaS21/bot-dos-bostas.svg)](https://travis-ci.org/TonaS21/bot-dos-bostas)
-[![Coveralls Status](https://img.shields.io/coveralls/github/TonaS21/bot-dos-bostas.svg)](https://coveralls.io/github/TonaS21/bot-dos-bostas)
 [![Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
 [![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
 
