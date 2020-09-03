@@ -6,7 +6,7 @@
 O meu grande Bot do discord.
 Com cerca de 120 comandos para usares, desde música até memes.
 
-O Bot tem diversas features como reaction controller na música, páginas no queue e, brevemente, comando help interativo.
+O Bot tem diversas features como reaction controller na música, páginas no queue e, brevemente, comando help interativo 👀 (provavelmente na 2.4.0).
 
 Baseado em Discord.js, com o module DisTube.
 
