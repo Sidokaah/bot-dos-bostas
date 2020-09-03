@@ -1,4 +1,4 @@
-# Bot dos Bostas
+# 🤖 Bot dos Bostas 🤖
 [![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com)
 [![Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
 [![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
