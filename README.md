@@ -1,4 +1,5 @@
 # Bot dos Bostas
+[![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com)
 [![Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
 [![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
 
@@ -6,7 +7,7 @@ O meu grande bot do discord.
 Com cerca de 120 comandos para usares, desde música até memes.
 
 Baseado em Discord.js, com o module DisTube.
-# Features
+### Features
 **❯ Música;**
 
 **❯ Memes;**
@@ -21,7 +22,7 @@ Baseado em Discord.js, com o module DisTube.
 # Para Instalar
 
 Só tens de fazer "npm i" no terminal para instalares todas as dependecies (todas as dependecies estão no package.json).
-# Links Importantes:
+### Links Importantes:
 
 [Discord.js](https://discord.js.org/#/) - Library em que o bot foi baseado. Caso não saibas o significado de alguma coisa no código do Bot, podes procurar aqui nos Docs deles ---> [Link](https://discord.js.org/#/docs/main/stable/general/welcome).
 
