@@ -19,7 +19,7 @@ Baseado em Discord.js, com o module DisTube.
 **❯ Informação;**
 
 **❯ Animais.**
-# Para Instalar
+### Para Instalar
 
 Só tens de fazer "npm i" no terminal para instalares todas as dependecies (todas as dependecies estão no package.json).
 ### Links Importantes:
