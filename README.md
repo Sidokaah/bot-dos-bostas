@@ -60,7 +60,7 @@ Baseado em Discord.js, com o module DisTube.
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `randomfacts` | Factos random que eu fix                                                                                                  | -randomfacts           |
+| `randomfacts` | Factos random que eu fiz                                                                                                  | -randomfacts           |
 | `8ball`       | Perguntas alguma coisa ao bot que ele te responde                                                                         | -8ball O neves é gay?  |
 | `slap`        | Dás um chapada a alguém                                                                                                   | -slap @someone         |
 | `roast`       | Dás roast a alguém                                                                                                        | -roast @someone        |
@@ -127,7 +127,7 @@ Baseado em Discord.js, com o module DisTube.
 | `sobre`       | Informações sobre o Bot                                                                                                   | -sobre                 |
 | `categorias`  | Mostra as categorias de comandos do bot                                                                                   | -categorias            |
 
-- **Imagens**
+- **Imagens** (ainda não acabei de pôr os comandos...)
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
