@@ -9,53 +9,42 @@ const fecth = require('node-superfetch');
 const cheerio = require("cheerio");
 const request = require("request");
 const moment = require("moment");
-var version = "v.2.3.5" //também podes mudar para a que quiseres
-//const mongo = require("./mongo")
+const version = "v.2.4.0" //também podes mudar para a que quiseres
 const superagent = require("superagent");
 const ms = require("ms");
 const querystring = require("querystring");
 const { search } = require('superagent');
-var dateFormat = require('dateformat');
+const dateFormat = require('dateformat');
 const api = require("imageapi.js");
+const canvacord = require("canvacord");
+const canva = new canvacord()
 const weather = require("weather-js")
 const { Random } = require("something-random-on-discord")
 const random = new Random();
-const Canvacord = require("canvacord");
-const canva = new Canvacord();
 const fs = require("fs")
-const { calculator, formatDate } = require("../Bot dos Bostas/functions");
+const { calculator, formatDate } = require("./functions");
 const fortnite = require("simple-fortnite-api")
-const Client = new fortnite("7f72eb91-2fb4-4143-b75d-a0d0fa6d1306");//token da api do fortnite-tracker
+const Client = new fortnite("");//token da api do fortnite-tracker
 const got = require("got");
+const utils = require("./utils/util.js");
+const util = new utils.Utils(client, process.cwd());
 client.once("ready", async () => {
     console.log(`${client.user.tag} está pronto para ser usado! ${version}`);
     setInterval(() => { //podes mudar os estados
         const statuses = [
-            `Counter Strike: Global Offensive | ${config.prefix}help`,
-            `Team Fortress 2 | ${config.prefix}help`,
-            `Super Smash Bros. Ultimate | ${config.prefix}help`,
-            `Minecraft | ${config.prefix}help`,
-            `Grand Theft Auto V | ${config.prefix}help`,
-            `Rocket League | ${config.prefix}help`
+            `nothing`, // `Counter Strike: Global Offensive | ${config.prefix}help`,`Team Fortress 2 | ${config.prefix}help`,`Super Smash Bros. Ultimate | ${config.prefix}help`,`Minecraft | ${config.prefix}help`,`Grand Theft Auto V | ${config.prefix}help`,`Rocket League | ${config.prefix}help`
         ]
         const status = statuses[Math.floor(Math.random() * statuses.length)]
-        client.user.setActivity(status, { type: "PLAYING" })
+        client.user.setActivity(status, { type: "LISTENING" })
     }, 5000)
-    //await mongo().then((mongoose) => {
-    //    try {
-    //      console.log('Conectado ao mongodb!')
-    //    } finally {
-    //      mongoose.connection.close()
-    //    }
-    //})
 });
 client.on('guildCreate', guild => {
     const channel = guild.channels.cache.find(channel => channel.type === 'text') //não te aconselho a mudares isto
     const embed = new Discord.MessageEmbed()
-        .setAuthor("Bot dos Bostas:")
-        .setColor("#F93A2F")
+        .setAuthor(`${client.user.username}:`, client.user.displayAvatarURL())
+        .setColor("RANDOM")
         .setDescription(`Sup everyone, eu sou o **Bot dos Bostas**. Obrigado por me adicionarem ao vosso server. Para verem os comandos em português, faz ${config.prefix}help. Para os veres em inglês, faz ${config.prefix}help-eng.`)
-        .addField("Coisas importantes:", "❯ [Server de Suporte](https://discord.gg/DRnnZPS) - Caso tenhas alguma dúvida ou esteja a haver algum erro ou bug, estás à vontade para entrar no server!")
+        .addField("❯ Coisas importantes:", "[Server de Suporte](https://discord.gg/DRnnZPS) - Caso tenhas alguma dúvida ou esteja a haver algum erro ou bug, estás à vontade para entrar no server!")
         .addField("❯ Discord.js:", `[Site](https://discord.js.org/#/) - Library em que o bot foi baseado.!`)
         .addField("❯ Criador: TonaS#9344", "Disfruta dos mais de 120 comandos!")
         .setTimestamp()
@@ -78,7 +67,7 @@ client.on("guildMemberAdd", async (member) => {
             .setTitle(`${emoji} Bem-vindo! ${emoji}`)
             .setDescription(`${member.user}, Bem-vindo(a) ao servidor **${guild.name}**! Atualmente estamos com **${member.guild.memberCount} membros**, espero que te divirtas connosco! ${emoji1}`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setFooter(client.user.username, client.user.displayAvatarURL())
             .setTimestamp();
         channel.send(embed);
         const embed1 = new Discord.MessageEmbed()
@@ -106,7 +95,7 @@ client.on("guildMemberRemove", async (member) => {
             .setTitle(`Adeus!`)
             .setDescription(`Adeus ${member.user}, espero que voltes ${emoji}.`)
             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setFooter(client.user.username, client.user.displayAvatarURL())
             .setTimestamp();
         channel.send(embed);
         const embed1 = new Discord.MessageEmbed()
@@ -120,6 +109,7 @@ client.on("guildMemberRemove", async (member) => {
     }
 });
 client.on("message", async (message) => {
+    const key = `${message.guild.id-message.author.id}`;
     let prefixes = JSON.parse(fs.readFileSync("./prefixes.json", "utf8"));
     if(!prefixes[message.guild.id]){
         prefixes[message.guild.id] = {
@@ -132,9 +122,29 @@ client.on("message", async (message) => {
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift();
     const query = querystring.stringify({ term: args.join(' ') });
+    if(command === "invites"){
+        var user = message.author;
+        message.guild.fetchInvites().then(invites => {
+            const userInvites = invites.array().filter(o => o.inviter.id === user.id);
+            var userInviteCount = 0;
+            for(var i=0; i < userInvites.length; i++){
+                var invite = userInvites[i];
+                userInviteCount += invite['uses'];
+            }
+                message.reply(`You have ${userInviteCount} invites.`);
+            }
+        )
+    }
     if(command === "setprefix") {
         if(!message.member.hasPermission("MANAGE_GUILD")) return message.reply("não podes usar isso")
-        if(!args[0] || args[0 == "help"]) return message.channel.send("Como usar: -setprefix (prefix)")
+        if(!args[0] || args[0] === "help") {
+            const helpembed = new Discord.MessageEmbed() 
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setDescription(`Como usar: \`${prefix}setprefix <prefix que queres>\``)
+                .setTimestamp()
+                .setColor("RANDOM")
+            return message.channel.send(helpembed)
+        }
         let prefixes = JSON.parse(fs.readFileSync("./prefixes.json", "utf8"))
         prefixes[message.guild.id] = {
             prefixes: args[0]
@@ -145,95 +155,275 @@ client.on("message", async (message) => {
         const embed = new Discord.MessageEmbed()
             .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
             .setTitle("Successo!")
-            .setDescription(`Mudaste o prefix do server para: ${args[0]}`)
+            .setDescription(`<:tick:748569437589995731> Mudaste o prefix do server para ➜ ${args[0]}`)
             .setTimestamp()
             .setFooter(client.user.username, client.user.displayAvatarURL())
             .setColor("RANDOM")
         message.channel.send(embed)
     }
+    if(["loopnow", "Loopnow", "LoopNow", "LOOPNOW"].includes(command)) {
+        let queue = distube.getQueue(message);
+        const embed = new Discord.MessageEmbed()
+            .setDescription(`Repeat mode está: **${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado"}**`)
+            .setColor("RANDOM")
+        message.channel.send(embed)
+    }
+    if(["autoplaynow", "Autoplaynow", "AutoPlay", "AUTOPLAY"].includes(command)) {
+        let queue = distube.getQueue(message);
+        const embed = new Discord.MessageEmbed()
+            .setDescription(`O AutoPlay está: **${queue.autoplay ? "Ligado" : "Desligado"}**`)
+            .setColor("RANDOM")
+        message.channel.send(embed)
+    }
+    if(["join", "Join", "JOIN"].includes(command)){
+        const { voice } = message.member
+        if(!voice.channelID){
+            message.react(":X:748632517476745226")
+            const embed = new Discord.MessageEmbed()
+                .setColor("RANDOM")
+                .setDescription(`Precisas de estar num voice chat para eu me juntar!`)
+                .setTimestamp()
+            return message.channel.send(embed)
+        }
+        voice.channel.join()
+        message.channel.send("<:tick:748569437589995731> | Entrei no voice channel!")
+    }
+    if(command === "lyrics") {
+        let queue = distube.getQueue(message.guild.id);
+		var message = await message.channel.send(`Searching. . .`)
+		if (args[0]) {
+			var res = await fetch(`https://some-random-api.ml/lyrics?title=${encodeURIComponent(args[0])}`)
+			var lyrics = await res.json()
+			if (lyrics.error) return message.edit(':frowning: Sorry I could not find that song')
+			if (lyrics.lyrics.length >= 2048) {
+				var cut = lyrics.lyrics.length - 2000
+				lyrics.lyrics = lyrics.lyrics.slice(0,0 - cut) + "..."
+				}
+			var lyricembed = new Discord.MessageEmbed()
+			    .setTitle(lyrics.title + " lyrics")
+                .setDescription(lyrics.lyrics)
+                .setColor("RANDOM")
+			message.edit(lyricembed) 
+	    } else {
+		    if (!queue) return message.edit(`:x: No Music is being played.`)
+		    var res = await fetch(`https://some-random-api.ml/lyrics?title=${encodeURIComponent(queue.songs[0].name)}`)
+		    var lyrics = await res.json()
+		    if (lyrics.error) return message.edit(':frowning: Sorry I could not find that song')
+		    if (lyrics.lyrics.length >= 2048) {
+			    var cut = lyrics.lyrics.length - 2000
+			    lyrics.lyrics = lyrics.lyrics.slice(0,-cut) + "..."
+			}
+		    var lyricembed = new Discord.MessageEmbed()
+		        .setTitle(lyrics.title + " lyrics")
+                .setDescription(lyrics.lyrics)
+                .setColor("RANDOM")
+		    message.edit(lyricembed)
+	    }
+    }
+    if(["remove", "Remove", "REMOVE"].includes(command)) {
+        let queue = distube.getQueue(message.guild.id); // Get the queue for the guild the cmd was executed in
+        if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!");  // Tell the user no song is being played
+        if (args[0] < 1 && args[0] >= queue.songs.length) {
+            return message.reply('por favor especifica um número válido.');
+        }
+        var voiceChannel = message.member.voice.channel;
+        if (!voiceChannel) return message.reply('Entra num voice channel e tenta outra vez.');
+        if (
+        typeof queue.dispatcher == 'undefined' || queue.dispatcher == null
+        ) {
+            return message.reply('<:X:748632517476745226> There is no song playing right now!');
+        } else if (voiceChannel.id !== message.guild.me.voice.channel.id) {
+            message.reply(`Precisas de estar no mesmo voice channel do Bot para usares o comando!`);
+            return;
+        }
+        queue.songs.splice(args[0] - 1, 1);
+        const removeembed = new Discord.MessageEmbed()
+            .setDescription(`Música número **${args[0]}** removida do queue.`)
+            .setColor("RANDOM")
+        return message.channel.send(removeembed);
+    }
     if (["play", "Play", "PLAY", "p", "P"].includes(command)) {
         distube.options.searchSongs = false
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react("X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
         if (!args.join(" ")) {
-            message.react("❌")
-            message.channel.send("❌ | Diz-me alguma coisa para eu procurar!")
+            message.react(":X:748632517476745226")
+            message.channel.send("<:X:748632517476745226> | Diz-me alguma coisa para eu procurar!")
         }
         try {
             distube.play(message, args.join(" "))
         } catch (e) {
             const embed = new Discord.MessageEmbed()
                 .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
-                .setTitle(`❌ Ocorreu um erro ❌`)
+                .setTitle(`:X:748632517476745226 Ocorreu um erro`)
                 .setDescription("```\n" + "Ocorreu um erro: " + err + "```")
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
                 .setTimestamp()
             message.channel.send(embed)
         }
-        message.channel.send(`🎶 A procurar no Youtube: **${args.join(" ")}.** 🎶`)
+        const playembed = new Discord.MessageEmbed()
+            .setDescription(`<:youtube1:748576732642148472> A procurar no Youtube: **${args.join(" ")}.**`)
+            .setColor("RANDOM")
+        message.channel.send(playembed).then(msg1 => {
+            distube.on("playSong", (message, queue, song) => {
+                playembed.setDescription(`<:youtube1:748576732642148472> Encontrado no Youtube: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+                msg1.edit(playembed)
+            })
+            distube.on("addSong", (message, queue, song) => {
+                playembed.setDescription(`<:youtube1:748576732642148472> Adicionado ao queue: **[${song.name}](${song.url})**`)
+                msg1.edit(playembed)
+            })
+        })
     }
     if (["search", "Search", "SEARCH"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+            .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
         if (!args.join(" ")) {
-            message.react("❌")
-            message.channel.send("❌ | Diz-me alguma coisa para eu procurar!")
+            message.react(":X:748632517476745226")
+            message.channel.send("<:X:748632517476745226> | Diz-me alguma coisa para eu procurar!")
         }
         try {
             distube.play(message, args.join(" "))
         } catch (e) {
             const embed = new Discord.MessageEmbed()
                 .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
-                .setTitle(`❌ Ocorreu um erro ❌`)
+                .setTitle(`:X:748632517476745226 Ocorreu um erro`)
                 .setDescription("```\n" + "Ocorreu um erro: " + err + "```")
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
                 .setTimestamp()
             message.channel.send(embed)
         }
-        message.channel.send(`🎶 A procurar no Youtube: **${args.join(" ")}.** 🎶`)
+        const playembed = new Discord.MessageEmbed({
+            description: `<:youtube1:748576732642148472> A procurar no Youtube: **${args.join(" ")}.**`,
+            color: "RANDOM"
+        })
+        message.channel.send(playembed).then(msg1 => {
+            distube.on("playSong", (message, queue, song) => {
+                playembed.setDescription(`<:youtube1:748576732642148472> Agora a tocar: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+                msg1.edit(playembed)
+            })
+            distube.on("searchResult", (message, result) => {
+                playembed.setDescription(`<:youtube1:748576732642148472> Encontrados **${result.length} resultados** no Youtube.`)
+                msg1.edit(playembed)
+            })
+            distube.on("addSong", (message, queue, song) => {
+                playembed.setDescription(`<:youtube1:748576732642148472> Adicionado ao queue: **[${song.name}](${song.url})**`)
+                msg1.edit(playembed)
+            })
+        })
     }
-    if (["np", "NP", "Np", "nowplaying", "Nowplaying", "NowPlaying", "NOWPLAYING", "current", "Current", "CURRENT"].includes(command)) {
-        if (!message.member.voice.channelID) {
-            message.react("❌")
-            const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
-                .setDescription(`Precisas de estar num voice chat para veres o que está a tocar!`)
-                .setTimestamp()
-            return message.channel.send(embed)
+    if(command === "clearqueue") {
+        let queue = distube.getQueue(message.guild.id); // Get the queue for the guild the cmd was executed in
+        if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!");  // Tell the user no song is being played
+        if (!message.member.voice.channelID) return message.reply("<:X:748632517476745226> Precisas de estar num voice channelpara usares o comando!")
+        if (args[0]) {
+            if (isNaN(args[0])) return message.channel.send(`<:X:748632517476745226> Isso não é número, ${message.author}.`)
+            const index = Math.floor(parseInt(args[0])) - 1;
+            if (index == 0) {
+                distube.skip(message);
+                let queue = distube.getQueue(message)
+                const embed1 = new Discord.MessageEmbed()
+                    .setDescription(`Dei skip a: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+                    .setColor("RANDOM")
+                return message.channel.send(embed1)
+            }
+            const video = queue.songs[index];
+            queue.songs.splice(parseInt(args[0])-1, 1);
+            const clearembed1 = new Discord.MessageEmbed()
+                .setDescription(`🗑️ **${video.name}** foi removido do queue!`)
+                .setColor("RANDOM")
+            message.channel.send(clearembed1);
+            return;
         }
-        let queue = distube.getQueue(message);
-        if (!distube.guildQueues) return message.channel.send(`❌ | Não está nada a tocar!`)
-        const npembed = new Discord.MessageEmbed()
-            .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
-            .setTitle(queue.songs[0].name)
-            .setDescription(queue.songs.map((song) => `▶️ ▬▬▬🔘▬▬▬▬▬▬▬▬ \`[0:00/${song.formattedDuration}]\` :loud_sound:`))
-            .addFields(
-                { name: "Pedido por(a):", value: `${message.member.user}`, inline: true },
-                { name: 'Duração:', value: queue.songs.map((song) => `\`${song.formattedDuration}\``), inline: true },
-                { name: 'Queue:', value: `${queue.songs.length} música(s) - \`${queue.formattedDuration}\``, inline: true }
-            )
+        queue.songs = [queue.songs[0]];
+        const clearembed = new Discord.MessageEmbed()
+            .setDescription(`🗑️ O queue foi removido! Adiciona mais músicas ou o playback vai acabar quando acabar esta música.`)
             .setColor("RANDOM")
-        message.channel.send(npembed)
+        message.channel.send(clearembed);
+    }
+    if(["np", "NP", "Np", "nowplaying", "Nowplaying", "NowPlaying", "NOWPLAYING", "current", "Current", "CURRENT"].includes(command)){
+        let queue = distube.getQueue(message.guild.id);
+        if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!"); 
+        if (!queue.connection) return message.reply("<:X:748632517476745226> O vídeo ainda não começou a tocar!");
+        if (!message.member.voice.channelID) return message.reply("<:X:748632517476745226> Precisas de estar num voice channelpara usares o comando!")
+        const currentVideo = queue.songs[0];
+        const vidLength = currentVideo.duration;
+        const vidTitle = `**${currentVideo.name}**`;
+        const vidUrl = `${currentVideo.url}`;
+        const vidLoop = queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado";
+        const vidRequester = currentVideo.user;
+        const vidDurationCount = 27;
+        const lengthBar = "━".repeat(vidDurationCount);
+        const timeIndicator = "⚪";
+        let timePosition = Math.floor(((queue.connection.dispatcher.streamTime / 1000) / vidLength) * vidDurationCount);
+        let timeString = `[${util.formatSeconds(queue.connection.dispatcher.streamTime / 1000)}/${util.formatSeconds(vidLength)}]`
+        let timeRemaining = util.formatSeconds(vidLength - (queue.connection.dispatcher.streamTime / 1000));
+        let vidNext = queue.songs.length > 1 ? `[${queue.songs[1].name}](${queue.songs[1].url})` : "Nenhuma música";
+        let description = `[${vidTitle}](${vidUrl})\n`;
+        description += `\`\`\`${util.replaceStrChar(lengthBar, timePosition, timeIndicator)} ${timeString}\`\`\``;
+        const embed = new Discord.MessageEmbed()
+            .setColor("RANDOM")
+            .setTitle("Agora a tocar:")
+            .setThumbnail(currentVideo.thumbnail)
+            .setDescription(`${description}`)
+            .addFields(
+                { name: "Depois:", value: `**${vidNext}**`, inline: false },
+                { name: "Duração:", value: `**${util.formatSeconds(vidLength)}**`, inline:true },
+                { name: "Tempo Restante:", value: `**${timeRemaining}**`, inline: true },
+                { name: "Loop:", value: `**${vidLoop}**`, inline: true},
+                { name: "Pedido por:", value: vidRequester, inline: true },
+            )
+            .setFooter(`Pedido por: ${message.author.username}`, message.author.displayAvatarURL())
+            .setTimestamp();
+        const msg = await message.channel.send(embed);
+        const interval = setInterval(() => {
+        try {
+            let vidLoop = queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado";
+            queue = distube.getQueue(message.guild.id)
+            timeString = `[${util.formatSeconds(queue.connection.dispatcher.streamTime / 1000)}/${util.formatSeconds(vidLength)}]`
+            timePosition = Math.floor(((queue.connection.dispatcher.streamTime / 1000) / vidLength) * vidDurationCount);
+            timeRemaining = util.formatSeconds(vidLength - (queue.connection.dispatcher.streamTime / 1000));
+            vidNext = queue.songs.length > 1 ? `[${queue.songs[1].name}](${queue.songs[1].url})` : "None";
+            description = `[${vidTitle}](${vidUrl})\n`;
+            description += `\`\`\`${util.replaceStrChar(lengthBar, timePosition, timeIndicator)} ${timeString}\`\`\``;
+            embed.setDescription(description);
+            embed.spliceFields(2, 1, { name: "Tempo Restante:", value: `**${timeRemaining}**`, inline: true });
+            embed.spliceFields(3, 1, { name: "Loop:", value: `**${vidLoop}**`, inline: true });
+            msg.edit(embed);
+            } catch {
+                msg.delete();
+                return clearInterval(interval);
+            }
+        }, 5000);
+        queue.connection.dispatcher.on("finish", () => {
+            description = `[${vidTitle}](${vidUrl})\n`;
+            description += `\`\`\`${util.replaceStrChar(lengthBar, vidDurationCount-1, timeIndicator)} Ended\`\`\``;
+            embed.setTitle("Antes a tocar:");
+            embed.setDescription(description);
+            embed.spliceFields(2, 1, { name: "Tempo Restante:", value: "**Acabou**", inline: true });
+            msg.edit(embed);
+            return clearInterval(interval);
+        });
     }
     if (["repeat", "loop", "Repeat", "Loop", "REPEAT", "LOOP"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para repetires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
@@ -245,9 +435,9 @@ client.on("message", async (message) => {
     }
     if (["stop", "leave", "Stop", "Leave", "STOP", "LEAVE", "disconnect", "Disconnect", "DISCONNECT"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para parares música!`)
                 .setTimestamp()
             return message.channel.send(embed)
@@ -255,64 +445,74 @@ client.on("message", async (message) => {
         distube.stop(message);
         const embed = new Discord.MessageEmbed()
             .setTitle("Stop!")
-            .setColor("#F93A2F")
-            .setDescription(`Parei a música e saí do voice channel!\nPedido por(a): ${message.member.user}\nObrigado por usares o **Bot dos Bostas!**`)
+            .setColor("RANDOM")
+            .setDescription(`Parei a música e saí do voice channel!\nPedido por(a): ${message.member.user}\nObrigado por usares o **${client.user.username}!**`)
             .addFields(
-                { name: "Links Importantes:", value: "[Github Repository](https://github.com/TonaS21/bot-dos-bostas)\n[Convida o bot](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n[Server de Suporte](https://discord.gg/DRnnZPS)", inline: false }
+                { name: "Links Importantes:", value: "[Github Repository](https://github.com/TonaS21/bot-dos-bostas)\n[Convida o Bot](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n[Server de Suporte](https://discord.gg/DRnnZPS)", inline: false }
             )
             .setTimestamp()
             .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
         message.channel.send(embed)
-            .catch(_err => {
-                const embed1 = new Discord.MessageEmbed()
-                    .setColor("#F93A2F")
-                    .setDescription("Precisas de estar num voice chat para parares música ou nada está a tocar!")
-                    .setTimestamp()
-                message.channel.send(embed1)
-            })
     }
     if (["skip", "Skip", "SKIP"].includes(command)) {
         distube.skip(message);
-        message.channel.send(":track_next: | Dei skip à música!")
+        let queue = distube.getQueue(message)
+        const vidNext = queue.songs.length > 1 ? `**Agora a tocar: [${queue.songs[1].name}](${queue.songs[1].url})**` : "**Queue vazio ➜ A sair do voice channel!**";
+        const embed1 = new Discord.MessageEmbed()
+            .setTitle("Skip!")
+            .setThumbnail(queue.songs[0].thumbnail)
+            .setDescription(`**Dei skip a: [${queue.songs[0].name}](${queue.songs[0].url})**\n${vidNext}\n**Pedido por:** ${message.author}`)
+            .setFooter(client.user.username, client.user.displayAvatarURL())
+            .setTimestamp()
+            .setColor("RANDOM")
+        message.channel.send(embed1)
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para dares skip à música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
-        if (!distube.isPlaying(message)) return message.channel.send("❌ | Não está nada a tocar!")
+        if (!distube.isPlaying(message)) return message.channel.send("<:X:748632517476745226> | Não está nada a tocar!")
     }
     if (["pause", "Pause", "PAUSE"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para pausares música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
         distube.pause(message);
-        message.channel.send("⏸ | Pausei a música!")
+        let queue = distube.getQueue(message)
+        const embed1 = new Discord.MessageEmbed()
+            .setDescription(`Pausei: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+            .setColor("RANDOM")
+        message.channel.send(embed1)
     }
     if (["resume", "Resume", "RESUME"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
         distube.resume(message);
-        message.channel.send(":play_pause: | Voltei a tocar a música!")
+        let queue = distube.getQueue(message)
+        const embed1 = new Discord.MessageEmbed()
+            .setDescription(`Voltei a tocar: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+            .setColor("RANDOM")
+        message.channel.send(embed1)
     }
     if ([`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`, `haas`, `flanger`, `gate`, `reverse`].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para mudares filters!`)
                 .setTimestamp()
             return message.channel.send(embed)
@@ -321,36 +521,102 @@ client.on("message", async (message) => {
         message.channel.send("Filtro do queue atual: " + (filter || "Off"));
     }
     if(["queue", "Queue", "QUEUE", "q", "Q"].includes(command)) {
-        let queue = distube.getQueue(message);
-        if (message.member.voice.channel) {
-            message.channel.send(`🎶 Queue Atual | ${queue.songs.length} música(s) | \`${queue.formattedDuration}\` | 🎶`)
-            const embed = new Discord.MessageEmbed()
-                .setTitle("📄 Queue 📄")
-                .setDescription('\n' + queue.songs.map((song, id) => `**${id + 1}** - [${song.name}](${song.url}) - \`${song.formattedDuration}\``).join("\n"))
-                .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
-                .setTimestamp()
-                .setColor("#F93A2F")
-            message.channel.send(embed)
-        } 
+        let queue = distube.getQueue(message.guild.id);
+	    if (!queue) return message.reply("⚠️ Não está nada a tocar!"); // Tell the user no song is being played
+	    const pageBack = "⏪";
+        const pageForward = "⏩";
+        const trash = "🗑️";
+	    const num_per_page = 10; // Number of songs to show in a page
+	    let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
+	    let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
+	    while (queuedVideos.length > 0) {
+		    pageContents.push(queuedVideos.splice(0, num_per_page))
+	    }
+	    let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
+	    let currentPage = 0; // Page starts at 0 because array index starts at 0
+	    let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
+	    let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
+	    let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) => 
+		    `**${currentListNum+(index+1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
+	    description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+	    const embed = new Discord.MessageEmbed()
+		    .setTitle(title)
+		    .setColor('RANDOM')
+		    .setThumbnail(queue.songs[0].thumbnail)
+		    .setDescription(description)
+		    .setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+		    .setTimestamp();
+	    const msg = await message.channel.send(embed);
+	    if (num_pages <= 1) return; 
+	    msg.react(pageBack);
+	    msg.react(pageForward);
+	    const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward;
+	    const collector = msg.createReactionCollector(filter, { time: 150000 });
+	    collector.on("collect", (reaction, user) => {
+		    if (user.bot) return;
+		    queuedVideos = queue.songs.slice();
+		    pageContents = [];
+		    title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
+		    while (queuedVideos.length > 0) {
+			    pageContents.push(queuedVideos.splice(0, num_per_page))
+		    }
+		    num_pages = pageContents.length;
+		    switch (reaction.emoji.name) {
+			    case pageBack: {
+				    currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
+				    break;
+			    }
+			    case pageForward: {
+				    currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
+				    break;
+                }
+                case trash: {
+				    msg.reactions.removeAll()
+				    break;
+			    }
+		    }
+		    reaction.users.remove(user);
+		    currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
+		    let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) => 
+                `**${currentListNum+(index+1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
+            description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+		    embed.setTitle(title);
+		    embed.setDescription(description);
+		    embed.setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+		    msg.edit(embed);
+	    });
     }
     if ([`changevolume`, `ChangeVolume`, `CHANGEVOLUME`, `cv`, `CV`].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para mudares o volume música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
-        if (!distube.isPlaying(message)) return message.channel.send("❌ | Não está nada a tocar!")
+        if (!distube.isPlaying(message)) return message.channel.send("<:X:748632517476745226> | Não está nada a tocar!")
         if (isNaN(args[0])) {
-            message.react("❌")
-            return message.channel.send("❌ | Por favor espeficifica um número")
+            message.react(":X:748632517476745226")
+            const errooembed = new Discord.MessageEmbed()
+                .setDescription("<:X:748632517476745226> Isso não é um número")
+                .setColor("RANDOM")
+            message.channel.send(errooembed)
+        }
+        if(!args[0]) {
+            message.react(":X:748632517476745226")
+            const erroembed = new Discord.MessageEmbed()
+                .setDescription("<:X:748632517476745226> Especifica um número para mudar o volume.")
+                .setColor("RANDOM")
+            message.channel.send(erroembed)
         }
         distube.setVolume(message, args[0]);
         if (args[0] > 200) {
             distube.setVolume(message, 200);
-            message.channel.send(`❌ | O máximo de volume é **200%**, então pus o volume a **200%** e não **${args[0]}%**.`)
+            const errembed = new Discord.MessageEmbed()
+                .setDescription(`<:X:748632517476745226> O máximo de volume é **200%**, então pus o volume a **200%** e não **${args[0]}%**.`)
+                .setColor("RANDOM")
+            message.channel.send(errembed)
         } else {
             distube.setVolume(message, args[0]);
             message.channel.send(`:loud_sound: | Mudei o volume para: **${args[0]}%**`)
@@ -358,47 +624,61 @@ client.on("message", async (message) => {
     }
     if ([`volume`, `Volume`, `VOLUME`, `v`, `V`].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para veres o volume da música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
         let queue = distube.getQueue(message);
-        message.channel.send(`:loud_sound: | O volume da música está a: **${queue.volume}%**`)
+        const embed1 = new Discord.MessageEmbed()
+            .setDescription(`:loud_sound: O volume da música está a: **${queue.volume}%**`)
+            .setColor("RANDOM")
+        message.channel.send(embed1)
     }
     if (["shuffle", "Shuffle", "SHUFFLE"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para misturares o queue!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
         let queue = distube.getQueue(message);
         distube.shuffle(message)
-        message.channel.send(`:twisted_rightwards_arrows: | Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+        const embed1 = new Discord.MessageEmbed()
+            .setDescription(`:twisted_rightwards_arrows: Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+            .setColor("RANDOM")
+        message.channel.send(embed1)
     }
     if (["jump", "Jump", "JUMP"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para passares para outra música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
-        message.channel.send(`⬆️ | Saltei para o número ${parseInt(args[0])} no queue!`)
+        if(!parseInt(args[0])) {
+            const erroembed = new Discord.MessageEmbed()
+                .setDescription("Precisas de especificar um número para saltares.")
+                .setColor("RANDOm")
+            message.channel.send(erroembed)
+        }
+        const embed1 = new Discord.MessageEmbed()
+            .setDescription(`⬆️ | Saltei para o número ${parseInt(args[0])} no queue!`)
+            .setColor("RANDOM")
+        message.channel.send(embed1)
         distube.jump(message, parseInt(args[0]))
-            .catch(_err => message.channel.send(":warning: | Número inválido para saltar."));
     }
     if (["autoplay", "Autoplay", "AUTOPLAY", "ap", "AP"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para usares autoplay!`)
                 .setTimestamp()
             return message.channel.send(embed)
@@ -408,9 +688,9 @@ client.on("message", async (message) => {
     }
     if (["playSkip", "PlaySkip", "playskip", "PLAYSKIP"].includes(command)) {
         if (!message.member.voice.channelID) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
@@ -420,31 +700,52 @@ client.on("message", async (message) => {
     }
     if (command === "bitch") {
         if (!message.member.voice.channelID) {
-             message.react("❌")
+             message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
-        message.channel.send('🎶 | A carregar a playlist...').then((resultMessage) => {
-            const ping = resultMessage.createdTimestamp - message.createdTimestamp
-            resultMessage.edit(`🎶 | Playlist carregada: **Bitch Lasagna Playlist**!`)
+        const playlistembed = new Discord.MessageEmbed()
+            .setDescription(`<a:loading:751573466842529912> A carregar a playlist...`)
+            .setColor("RANDOM")
+        message.channel.send(playlistembed).then(msg1 => {
+            distube.on("playList", (message, queue, playlist, song) => {
+                playlistembed.setDescription(`🎶 Playlist **${playlist.title}** carregada, com **${playlist.total_items}** músicas`)
+                msg1.edit(playlistembed)
+            })
+            distube.on("addList", (message, queue, playlist, song) => {
+                playlistembed.setDescription(`🎶 Playlist **${playlist.title}** carregada, com **${playlist.total_items}** músicas`)
+                msg1.edit(playlistembed)
+            })
         })
         let songs = ["https://www.youtube.com/watch?v=6Dh-RL__uN4", "https://www.youtube.com/watch?v=YNNXTs6adIs", "https://www.youtube.com/watch?v=BuNmXYmTRQE", "https://www.youtube.com/watch?v=0oq7805Fxfw", "https://www.youtube.com/watch?v=Z9uLwuGTTFk", "https://www.youtube.com/watch?v=uoww4ou3Ark",
             "https://www.youtube.com/watch?v=KprzFp9A0kc", "https://www.youtube.com/watch?v=eoK-Ew_0Nw8", "https://www.youtube.com/watch?v=i20TUj4d8sw", "https://www.youtube.com/watch?v=34WnaTTGIKw", "https://www.youtube.com/watch?v=5FusviCrZOk", "https://www.youtube.com/watch?v=52_hLibBRzY", "https://www.youtube.com/watch?v=0uCgyy1pjyo", "https://www.youtube.com/watch?v=qlZvOytosLc"];
         distube.playCustomPlaylist(message, songs, { title: "Bitch Lasagna Playlist" });
     }
     if (command === "playlist") {
-        message.react("❌")
         if (!message.member.voice.channelID) {
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-                .setColor("#F93A2F")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
-        message.channel.send('🎶 | A carregar a playlist (demora em média 5 a 10s)...')
+        const playlistembed = new Discord.MessageEmbed()
+            .setDescription(`<a:loading:751573466842529912> A carregar a playlist (demora em média 5 a 10s)...`)
+            .setColor("RANDOM")
+        message.channel.send(playlistembed).then(msg1 => {
+            distube.on("playList", (message, queue, playlist, song) => {
+                playlistembed.setDescription(`🎶 Playlist **${playlist.title}** carregada, com **${playlist.total_items}** músicas`)
+                msg1.edit(playlistembed)
+            })
+            distube.on("addList", (message, queue, playlist, song) => {
+                playlistembed.setDescription(`🎶 Playlist **${playlist.title}** carregada, com **${playlist.total_items}** músicas`)
+                msg1.edit(playlistembed)
+            })
+        })
         let songs = ["https://www.youtube.com/watch?v=7h7qQf03kN0&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=2&t=11s", "https://www.youtube.com/watch?v=QiFBgtgUtfw&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=5&t=0s", "https://www.youtube.com/watch?v=6Dh-RL__uN4&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=7&t=0s", "https://www.youtube.com/watch?v=PHgc8Q6qTjc&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=8&t=0s",
             "https://www.youtube.com/watch?v=PX5QgITQAwk&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=9&t=0s", "https://www.youtube.com/watch?v=kPkT0jMjEu8&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=10&t=0s", "https://www.youtube.com/watch?v=KiaSHg6BsXg&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=11&t=0s", "https://www.youtube.com/watch?v=K6VCeG7-Vk4&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=12&t=0s",
             "https://www.youtube.com/watch?v=-XsYMHm64wM&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=12", "https://www.youtube.com/watch?v=ulbGlbqWykM&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=13", "https://www.youtube.com/watch?v=3qFvCPmee8U&list=PLoghuztPHEOmUOvxezqqgswuKteWkqMqI&index=14",
@@ -459,13 +760,45 @@ client.on("message", async (message) => {
             "https://www.youtube.com/watch?v=GnrwM7vFn_U&list=PLjltEa94wx5yDPUNAjgxu0-NfdDOgYaCf&index=20", "https://www.youtube.com/watch?v=dtER80sOjX4&list=PLjltEa94wx5yDPUNAjgxu0-NfdDOgYaCf&index=41", "https://www.youtube.com/watch?v=KDRAhiBtOrQ&list=PLjltEa94wx5yDPUNAjgxu0-NfdDOgYaCf&index=83", "https://www.youtube.com/watch?v=bdFk35yT0ac", "https://www.youtube.com/watch?v=Pg5rnIA0K1Y", "https://www.youtube.com/watch?v=equC7GEUt6k", "https://www.youtube.com/watch?v=j1nBHZGdGv4", "https://www.youtube.com/watch?v=cL3mYDMiUgM",
             "https://www.youtube.com/watch?v=mVg_l2Fbw6U", "https://www.youtube.com/watch?v=SjtyGDOPgRw", "https://www.youtube.com/watch?v=EhsctRzRx0s", "https://www.youtube.com/watch?v=rbcnKcyI7o4", "https://www.youtube.com/watch?v=Di0nAk2_Tpw", "https://www.youtube.com/watch?v=5EAlQKIfUKg", "https://www.youtube.com/watch?v=Y-PPpgwZq44", "https://www.youtube.com/watch?v=uT4rgTZ5GwA", "https://www.youtube.com/watch?v=KLGoiyTmko0", "https://www.youtube.com/watch?v=z_yWwBCSpSE",
             "https://www.youtube.com/watch?v=GjxTx-xPrds&list=PLjltEa94wx5yDPUNAjgxu0-NfdDOgYaCf&index=87", "https://www.youtube.com/watch?v=01Wpsc5-jxw", "https://www.youtube.com/watch?v=_aKuVAtYgv4&pbjreload=101", "https://www.youtube.com/watch?v=ndiNMhM9f7I", "https://www.youtube.com/watch?v=SaJz1cEiNVA", "https://www.youtube.com/watch?v=tqD9sMpbvYA", "https://www.youtube.com/watch?v=fHI8X4OXluQ", "https://www.youtube.com/watch?v=slGYJfPtW7c", "https://www.youtube.com/watch?v=8F47-nKaTGE", "https://www.youtube.com/watch?v=j-2DGYNXRx0",
-            "https://www.youtube.com/watch?v=IeiPIINxgUs", "https://www.youtube.com/watch?v=EDIxTIi9Uzw", "https://www.youtube.com/watch?v=XyecOcRu7iM"];
+            "https://www.youtube.com/watch?v=IeiPIINxgUs", "https://www.youtube.com/watch?v=EDIxTIi9Uzw", "https://www.youtube.com/watch?v=XyecOcRu7iM", "https://www.youtube.com/watch?v=8CdcCD5V-d8", "https://www.youtube.com/watch?v=T-PdoRXZ4Gs", "https://www.youtube.com/watch?v=MKxe1UEfRe8", "https://www.youtube.com/watch?v=AzaN7sFw9J0"];
         distube.playCustomPlaylist(message, songs, { title: "Nice :D", thumbnail: "https://wallpapercave.com/wp/wp1849755.jpg" });
+    }
+    if(command === "cool") {
+        if (!message.member.voice.channelID) {
+            message.react(":X:748632517476745226")
+            const embed = new Discord.MessageEmbed()
+                .setColor("RANDOM")
+                .setDescription(`Precisas de estar num voice chat para resumires música!`)
+                .setTimestamp()
+            return message.channel.send(embed)
+        }
+        const playlistembed = new Discord.MessageEmbed()
+            .setDescription(`<a:loading:751573466842529912> A carregar a playlist (demora em média 10s)...`)
+            .setColor("RANDOM")
+        message.channel.send(playlistembed).then(msg1 => {
+            distube.on("playList", (message, queue, playlist, song) => {
+                playlistembed.setDescription(`🎶 Playlist **${playlist.title}** carregada, com **${playlist.total_items}** músicas`)
+                msg1.edit(playlistembed)
+            })
+            distube.on("addList", (message, queue, playlist, song) => {
+                playlistembed.setDescription(`🎶 Playlist **${playlist.title}** carregada, com **${playlist.total_items}** músicas`)
+                msg1.edit(playlistembed)
+            })
+        })
+        let songs = ["https://www.youtube.com/watch?v=3n2Nc1T8ico&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=2&t=0s", "https://www.youtube.com/watch?v=7hT3imDoYfU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=3&t=0s", "https://www.youtube.com/watch?v=ZLohS_HScwc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=4&t=0s", "https://www.youtube.com/watch?v=9qTmFnUqoLs&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=5&t=0s", "https://www.youtube.com/watch?v=4G6w-XJxYOc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=6&t=0s", "https://www.youtube.com/watch?v=GYFJjwXtsU4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=7&t=0s", "https://www.youtube.com/watch?v=8Tu0lcl75yg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=8&t=0s", "https://www.youtube.com/watch?v=AbIqBZWWiQQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=9&t=0s", "https://www.youtube.com/watch?v=yJg-Y5byMMw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=10&t=0s", "https://www.youtube.com/watch?v=JSY6vBPunpY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=11&t=0s", "https://www.youtube.com/watch?v=pIzq5BmcKF4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=12&t=0s", "https://www.youtube.com/watch?v=DNwEk0gTPuc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=13&t=0s", "https://www.youtube.com/watch?v=XDNSPfIEX2o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=14&t=0s", "https://www.youtube.com/watch?v=e4Uk22G1ASg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=15&t=0s", "https://www.youtube.com/watch?v=gN6BQ311XV0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=16&t=0s",
+        "https://www.youtube.com/watch?v=LqD-uUZ8hFw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=17&t=0s", "https://www.youtube.com/watch?v=nLRo25fBxGc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=18&t=0s", "https://www.youtube.com/watch?v=PbX5zPTfPXU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=19&t=0s", "https://www.youtube.com/watch?v=rl9ES4jlUDc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=20&t=0s", "https://www.youtube.com/watch?v=wDgQdr8ZkTw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=21&t=0s", "https://www.youtube.com/watch?v=KiaSHg6BsXg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=22&t=0s", "https://www.youtube.com/watch?v=RKW6rjnYEkc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=23&t=0s", "https://www.youtube.com/watch?v=g-PtIjywmac&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=24&t=0s", "https://www.youtube.com/watch?v=UhVbNDEDc1k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=25&t=0s", "https://www.youtube.com/watch?v=yDTvvOTie0w&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=26&t=0s", "https://www.youtube.com/watch?v=w9WwDddpHrg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=27&t=0s", "https://www.youtube.com/watch?v=T4Gq9pkToS8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=28&t=0s", "https://www.youtube.com/watch?v=iqoNoU-rm14&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=29&t=0s", "https://www.youtube.com/watch?v=RrtAC7UZOh0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=30&t=0s", "https://www.youtube.com/watch?v=xzyRoshFFaA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=31&t=0s", "https://www.youtube.com/watch?v=CUxAx0EWQek&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=32&t=0s", "https://www.youtube.com/watch?v=K0tXhd7u56k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=33&t=0s",
+        "https://www.youtube.com/watch?v=JkFUfjknQ6Q&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=34&t=0s", "https://www.youtube.com/watch?v=OVMuwa-HRCQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=35&t=0s", "https://www.youtube.com/watch?v=OkwFmybdG0Q&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=36&t=0s", "https://www.youtube.com/watch?v=cDVR6OtP9WI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=37&t=0s", "https://www.youtube.com/watch?v=BJms0pQpW44&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=38&t=0s", "https://www.youtube.com/watch?v=qj5ZahqBfFE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=39&t=0s", "https://www.youtube.com/watch?v=GudhUvWwe3c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=40&t=0s", "https://www.youtube.com/watch?v=Uo6Nr1VEml8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=41&t=0s", "https://www.youtube.com/watch?v=6jARhgo0cCA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=42&t=0s", "https://www.youtube.com/watch?v=s20q_gJ3OXA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=43&t=0s", "https://www.youtube.com/watch?v=7tvEFOupqn0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=44&t=0s", "https://www.youtube.com/watch?v=X0jtXCuPw6Y&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=45&t=0s", "https://www.youtube.com/watch?v=lrpS69H1RRU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=46&t=0s", "https://www.youtube.com/watch?v=fjM7NdnM_vc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=47&t=0s", "https://www.youtube.com/watch?v=kL8CyVqzmkc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=48&t=0s", "https://www.youtube.com/watch?v=6aWc_ZPvs9g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=49&t=0s", "https://www.youtube.com/watch?v=4HX6nSlBGss&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=50&t=0s", "https://www.youtube.com/watch?v=88qd8FxS3AM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=51&t=0s", "https://www.youtube.com/watch?v=U-xHQa9pPdY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=52&t=0s",
+        "https://www.youtube.com/watch?v=1doM0Q3il3M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=53&t=0s", "https://www.youtube.com/watch?v=usXhiWE2Uc0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=54&t=0s", "https://www.youtube.com/watch?v=Ivi1e-yCPcI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=55&t=0s", "https://www.youtube.com/watch?v=djEBoSoiIPM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=56&t=0s", "https://www.youtube.com/watch?v=C6HEP_jb6jc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=57&t=0s", "https://www.youtube.com/watch?v=BEmqYiutcOw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=58&t=0s", "https://www.youtube.com/watch?v=iCHuWJpEUbM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=59&t=0s", "https://www.youtube.com/watch?v=o0p9do2JO9c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=60&t=0s", "https://www.youtube.com/watch?v=TGywzL-zCfQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=61&t=0s", "https://www.youtube.com/watch?v=OmWkLOku8pQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=62&t=0s", "https://www.youtube.com/watch?v=ElV5AKQpR1c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=63&t=0s", "https://www.youtube.com/watch?v=RhR_Z5wVvJM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=64&t=0s", "https://www.youtube.com/watch?v=8-gpAw17vhc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=65&t=0s", "https://www.youtube.com/watch?v=Xz0RUutaXN0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=66&t=0s", "https://www.youtube.com/watch?v=N17omU8oykU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=67&t=0s", "https://www.youtube.com/watch?v=CwOoheKKWV4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=68&t=0s", "https://www.youtube.com/watch?v=pJSmc19NSgI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=69&t=0s", "https://www.youtube.com/watch?v=3Q5tSQlJGBE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=70&t=0s", "https://www.youtube.com/watch?v=8xnNsWl5QrA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=71&t=0s", "https://www.youtube.com/watch?v=IatXU05oUE0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=72&t=0s", "https://www.youtube.com/watch?v=_BWPNPtsZm8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=73&t=0s", "https://www.youtube.com/watch?v=8jJJM_WYEx0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=74&t=0s", "https://www.youtube.com/watch?v=srRGb5YbyNE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=75&t=0s", "https://www.youtube.com/watch?v=UG3k1ZlIpAc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=76&t=0s",
+        "https://www.youtube.com/watch?v=ZviwUUJA8wo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=77&t=0s", "https://www.youtube.com/watch?v=BS3_WQERfww&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=78&t=0s", "https://www.youtube.com/watch?v=IFtC_Yf8smQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=79&t=0s", "https://www.youtube.com/watch?v=TZnHlEm_oG0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=80&t=0s", "https://www.youtube.com/watch?v=9s5FhDPLOWM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=81&t=0s", "https://www.youtube.com/watch?v=LfgzPpmjM0M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=82&t=0s", "https://www.youtube.com/watch?v=TC_MtNC-SuM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=83&t=0s", "https://www.youtube.com/watch?v=v4Za061pQac&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=84&t=0s", "https://www.youtube.com/watch?v=Rs96wQyBkxA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=85&t=0s", "https://www.youtube.com/watch?v=BSW-Uiicg4c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=86&t=0s", "https://www.youtube.com/watch?v=AiFhpjNqGNg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=87&t=0s", "https://www.youtube.com/watch?v=jkE4JVoDK-0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=88&t=0s", "https://www.youtube.com/watch?v=Y-dL1q_OHds&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=89&t=0s", "https://www.youtube.com/watch?v=Dlb9od9KksY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=90&t=0s", "https://www.youtube.com/watch?v=UvOmSa6kvCc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=91&t=0s", "https://www.youtube.com/watch?v=MLB8tSA2GFA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=92&t=0s", "https://www.youtube.com/watch?v=G7LZTnUhXPU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=93&t=0s", "https://www.youtube.com/watch?v=ugqJaGTa_0o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=94&t=0s", "https://www.youtube.com/watch?v=Y15C6oh16tM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=95&t=0s", "https://www.youtube.com/watch?v=vr-JMCFHT-s&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=96&t=0s", "https://www.youtube.com/watch?v=Js1tkO4Pa4U&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=97&t=0s", "https://www.youtube.com/watch?v=EsoxfvwcLCE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=98&t=0s", "https://www.youtube.com/watch?v=8UG1A2B8lZY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=100&t=0s", "https://www.youtube.com/watch?v=M5SQFLnf77k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=101&t=0s", "https://www.youtube.com/watch?v=GAYgd9BysxI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=102&t=0s", "https://www.youtube.com/watch?v=qmGauoXbREY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=103&t=0s", "https://www.youtube.com/watch?v=0DsgvTnGzFg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=104&t=0s", "https://www.youtube.com/watch?v=34ECZ1CIexQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=105&t=0s", "https://www.youtube.com/watch?v=aWubvX-OreM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=106&t=0s", "https://www.youtube.com/watch?v=kqWOyfNt5l8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=107&t=0s", "https://www.youtube.com/watch?v=0ihtdOeTRqc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=108&t=0s", "https://www.youtube.com/watch?v=ZX3RSrOjMZg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=109&t=0s", "https://www.youtube.com/watch?v=bwyylmUwKvA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=110&t=0s", "https://www.youtube.com/watch?v=eakT0od-gY0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=111&t=0s", "https://www.youtube.com/watch?v=yERNy9Dj8Pc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=112&t=0s", "https://www.youtube.com/watch?v=O_NP8RF2Owc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=113&t=0s", "https://www.youtube.com/watch?v=nsR3WDvCUdU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=114&t=0s", "https://www.youtube.com/watch?v=KrKRr2esnyc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=115&t=0s", "https://www.youtube.com/watch?v=_PoVcAWtIeE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=116&t=0s",
+        "https://www.youtube.com/watch?v=bgEvPLDKrw8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=117&t=0s", "https://www.youtube.com/watch?v=jgoSfG8HvaI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=118&t=0s", "https://www.youtube.com/watch?v=atzxTaozLI0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=119&t=0s", "https://www.youtube.com/watch?v=yxx3fXv1uY0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=120&t=0s", "https://www.youtube.com/watch?v=nMbx8EurE0g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=121&t=0s", "https://www.youtube.com/watch?v=fc1tg9qkGyI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=122&t=0s", "https://www.youtube.com/watch?v=pWCXHQ6CCPU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=123&t=0s", "https://www.youtube.com/watch?v=dFhDRo3247o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=124&t=0s", "https://www.youtube.com/watch?v=02nX4Lh48us&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=125&t=0s", "https://www.youtube.com/watch?v=mPrxJMMrFFI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=126&t=0s", "https://www.youtube.com/watch?v=OflRilRLAUs&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=127&t=0s", "https://www.youtube.com/watch?v=nesjYuYUhh4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=128&t=0s", "https://www.youtube.com/watch?v=ZGr7hE4Ooqc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=129&t=0s", "https://www.youtube.com/watch?v=73YrXbuHzx8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=130&t=0s", "https://www.youtube.com/watch?v=79AABrgMqMQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=131&t=0s", "https://www.youtube.com/watch?v=bCtCPUzPvgI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=132&t=0s", "https://www.youtube.com/watch?v=BXgLQRSnMwc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=133&t=0s", "https://www.youtube.com/watch?v=hW5QIZvZE3g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=134&t=0s", "https://www.youtube.com/watch?v=txXoCP8xngQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=135&t=0s", "https://www.youtube.com/watch?v=poWpo76mH_0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=136&t=0s", "https://www.youtube.com/watch?v=v_qQxQJ8rUE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=137&t=0s", "https://www.youtube.com/watch?v=UwjWu3fNkQo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=138&t=0s", "https://www.youtube.com/watch?v=O6q1TpmnbWc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=139&t=0s", "https://www.youtube.com/watch?v=zqF0t0dRrOg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=140&t=0s", "https://www.youtube.com/watch?v=UKjkI_bWJq0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=141&t=0s", "https://www.youtube.com/watch?v=2zyH1A5fgyw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=142&t=0s", "https://www.youtube.com/watch?v=q9LqCb8WnSw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=143&t=0s", "https://www.youtube.com/watch?v=9HeWAuf8ucM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=144&t=0s", "https://www.youtube.com/watch?v=ntyKeEjd46U&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=145&t=0s", "https://www.youtube.com/watch?v=3aeSiPZ9i9I&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=146&t=0s", "https://www.youtube.com/watch?v=dDJDwxsda3E&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=147&t=0s", "https://www.youtube.com/watch?v=nitJh_mDT_8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=148&t=0s", "https://www.youtube.com/watch?v=4_QVIebdlGo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=149&t=0s", "https://www.youtube.com/watch?v=0FWigSmSXHw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=150&t=0s", "https://www.youtube.com/watch?v=2-uZplR-Mbk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=151&t=0s", "https://www.youtube.com/watch?v=yInXkDjmE6o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=152&t=0s", "https://www.youtube.com/watch?v=UzLcptic_r8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=153&t=0s", "https://www.youtube.com/watch?v=85mPOfUvV00&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=154&t=0s", "https://www.youtube.com/watch?v=UyyA_DcqCfk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=155&t=0s", "https://www.youtube.com/watch?v=69PRNh1WIBw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=156&t=0s", "https://www.youtube.com/watch?v=5x2OoliPhOI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=157&t=0s", "https://www.youtube.com/watch?v=KOJaHC3eEbc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=158&t=0s", "https://www.youtube.com/watch?v=3XrbWS5-5cU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=159&t=0s", "https://www.youtube.com/watch?v=77eqdmxSKyI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=160&t=0s", "https://www.youtube.com/watch?v=BZ8y0qx7fWE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=161&t=0s",
+        "https://www.youtube.com/watch?v=sTt026NTQfE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=162&t=0s", "https://www.youtube.com/watch?v=5iuKGMTHqyE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=163&t=0s", "https://www.youtube.com/watch?v=nWzj2YxsRSo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=164&t=0s", "https://www.youtube.com/watch?v=aDJ-bqOkzqY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=165&t=0s", "https://www.youtube.com/watch?v=4ZROUm581ys&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=166&t=0s", "https://www.youtube.com/watch?v=IZlsHSGKP6g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=167&t=0s", "https://www.youtube.com/watch?v=ZPLKJOBD04M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=168&t=0s", "https://www.youtube.com/watch?v=0X1Gnum_cEM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=169&t=0s", "https://www.youtube.com/watch?v=8aehhy8Ei48&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=170&t=0s", "https://www.youtube.com/watch?v=UivNH-S7hkM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=171&t=0s", "https://www.youtube.com/watch?v=qql97uZI0-M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=172&t=0s", "https://www.youtube.com/watch?v=1-Hethihxh4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=173&t=0s", "https://www.youtube.com/watch?v=983ocD7xwBg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=174&t=0s", "https://www.youtube.com/watch?v=iya93XLERm0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=175&t=0s", "https://www.youtube.com/watch?v=tOZNh8veU_Y&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=176&t=0s", "https://www.youtube.com/watch?v=SzKZl7SkNN0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=177&t=0s", "https://www.youtube.com/watch?v=-Bb8YXoq91M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=179&t=0s", "https://www.youtube.com/watch?v=hVwW3HHPSvE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=180&t=0s", "https://www.youtube.com/watch?v=ZKwQOAH8-Ao&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=181&t=0s", "https://www.youtube.com/watch?v=dpxKDBk69sg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=182&t=0s", "https://www.youtube.com/watch?v=nllEGaoGBIM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=183&t=0s", "https://www.youtube.com/watch?v=sDXhJMHnrrg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=184&t=38s", "https://www.youtube.com/watch?v=G6BaWPC4MQc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=186&t=0s", "https://www.youtube.com/watch?v=SDiJiGuUeBo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=187&t=0s", "https://www.youtube.com/watch?v=6y_NJg-xoeE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=188&t=0s", "https://www.youtube.com/watch?v=bu9NYAEXnHQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=189&t=0s", "https://www.youtube.com/watch?v=wb7xqXciOnE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=190&t=0s", "https://www.youtube.com/watch?v=9eZ_EEQxNNI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=191&t=0s", "https://www.youtube.com/watch?v=lRNzBJ8sHak&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=192&t=0s", "https://www.youtube.com/watch?v=LdF0IYHFDZk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=193&t=0s", "https://www.youtube.com/watch?v=F3B6qKchtzo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=194&t=0s", "https://www.youtube.com/watch?v=OUkkaqSNduU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=195&t=0s", "https://www.youtube.com/watch?v=4qqfoMKAmiA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=196&t=0s"]
+        distube.playCustomPlaylist(message, songs, { title: "COOL!!!" });
+
     }
     if (command === "reddit") {
         let Subreddit = message.content.slice(8);
         if (!Subreddit) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`**Não especificaste um Subreddit!**`);
         }
         let img = await api(Subreddit, true);
@@ -647,9 +980,6 @@ client.on("message", async (message) => {
             embed.setTimestamp()
             message.channel.send(embed);
         })
-        if (data.isNullOrUndefined) {
-            message.channel.send("Ocorreu um erro")
-        }
     }
     if (command === "food") {
         const embed = new Discord.MessageEmbed()
@@ -727,53 +1057,107 @@ client.on("message", async (message) => {
             message.channel.send(embed);
         })
     }
+    if (command === "starwars") {
+        const embed = new Discord.MessageEmbed()
+        got('https://www.reddit.com/r/StarWarsMemes/random/.json').then(response => {
+            let content = JSON.parse(response.body);
+            let permalink = content[0].data.children[0].data.permalink;
+            let memeUrl = `https://reddit.com${permalink}`;
+            let memeImage = content[0].data.children[0].data.url;
+            let memeTitle = content[0].data.children[0].data.title;
+            let memeUpvotes = content[0].data.children[0].data.ups;
+            let memeNumComments = content[0].data.children[0].data.num_comments;
+            embed.setTitle(`${memeTitle}`)
+            embed.setURL(`${memeUrl}`)
+            embed.setImage(memeImage)
+            embed.setColor('RANDOM')
+            embed.setFooter(`👍 ${memeUpvotes} | 💬 ${memeNumComments}`)
+            embed.setTimestamp()
+            message.channel.send(embed);
+        })
+    }
     if (message.content === `${prefix}categorias`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const help = new Discord.MessageEmbed()
             .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
             .setTitle("Comandos do Bot dos Bostas")
             .setDescription("**Bot feito por: TonaS#9344**")
             .addFields(
-                { name: ":laughing: Fun:", value: `\`${prefix}help fun\``, inline: true },
+                { name: "<:super_mega_laugh:738387807260770347> Fun:", value: `\`${prefix}help fun\``, inline: true },
                 { name: ":wrench: Info e Mod:", value: `\`${prefix}help infomod\``, inline: true },
                 { name: ":dog: Animais", value: `\`${prefix}help animais\``, inline: true },
-                { name: ":musical_note: Música", value: `\`${prefix}help música\``, inline: true },
-                { name: ":rofl: Meme", value: `\`${prefix}help meme\``, inline: true },
+                { name: "<:youtube:748576732642148472> Música", value: `\`${prefix}help música\``, inline: true },
+                { name: "<:pepesad:749210746499498015> Meme", value: `\`${prefix}help meme\``, inline: true },
                 { name: ":camera: Imagens", value: `\`${prefix}help imagens\``, inline: true },
             )
             .setColor("RANDOM")
             .setTimestamp()
-            .setFooter(`Usa sempre - antes de todos os comandos`, client.user.displayAvatarURL())
+            .setFooter(`Usa sempre ${prefix} antes de todos os comandos`, client.user.displayAvatarURL())
         message.channel.send(help)
     }
+    if (message.content === `${prefix}helpinha`) {
+        message.react(":tick:748569437589995731")
+        const infomod = "⚙️"
+        const imagens = "📷"
+        const fun = ":super_mega_laugh:738387807260770347"
+        const meme = ":pepesad:749210746499498015"
+        const musica = ":youtube:748576732642148472"
+        const animais = "🐶"
+        const primeira = new Discord.MessageEmbed()
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setTitle("Lista de Comandos")
+            .setColor("RANDOM")
+            .setDescription("**Todas as categorias de comandos:**\n\n⚙️ Info e Moderação;\n📷 Imagens;\n<:super_mega_laugh:738387807260770347> Fun;\n<:pepesad:749210746499498015> Memes;\n<:youtube:748576732642148472> Música;\n🐶 Animais\n")
+            .setFooter(`Pedido por: ${message.author.username}`, message.author.displayAvatarURL())
+            .setTimestamp()
+        const msg = await message.channel.send(primeira);
+        msg.react(infomod)
+        msg.react(imagens)
+        msg.react(fun)
+        msg.react(meme)
+        msg.react(musica)
+        msg.react(animais)
+        const filter = (reaction) => reaction.emoji.name === infomod || reaction.emoji.name === imagens || reaction.emoji.name === fun || reaction.emoji.name === meme || reaction.emoji.name === musica || reaction.emoji.name === animais;
+	    const collector = msg.createReactionCollector(filter);
+	    collector.on("collect", (reaction, user) => {
+            switch (reaction.emoji.name) {
+                case fun: { 
+                    primeira.title = "Fun",
+                    primeira.description = `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`
+                    msg.edit(primeira)
+                    break;
+                }
+            }
+        })
+    }
     if (message.content === `${prefix}help`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731") //131 comandos fds
         const userEmbed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setAuthor("Lista de Comandos", client.user.displayAvatarURL())
-            .setDescription(`❯ **Server de Suporte:** [Link](https://discord.gg/fnvdugV)\n❯ **Invite do Bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n❯ **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
-            .addField(":information_source: Info", `\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\``)
-            .addField(":gear: Mod", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`help-eng\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`, \`setprefix\`.`)
-            .addField(":camera: Imagens", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
-            .addField(":laughing: Fun", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
-            .addField(":rofl: Meme", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
-            .addField(":musical_note: Música", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`.`)
-            .addField(":dog: Animais", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`, \`snake\`, \`ferret\`, \`goose\`.`)
+            .setDescription(`<:discord1:748909489293492376> **Server de Suporte:** [Link](https://discord.gg/fnvdugV)\n<:botdosbostas:748908984181850172> **Invite do Bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n<:github:748909140084129872> **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
+            .addField(":information_source: • Info [21]", `\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\`.`)
+            .addField(":gear: • Mod [15]", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`, \`setprefix\`.`)
+            .addField(":camera: • Imagens [18]", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
+            .addField("<:super_mega_laugh:738387807260770347> • Fun [26]", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
+            .addField("<:pepesad:749210746499498015> • Meme [12]", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
+            .addField("<:youtube:748576732642148472> • Música [30]", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`, \`changevolume ou cv\`, \`loopnow\`, \`autoplaynow\`, \`clearqueue\`, \`remove\`.`)
+            .addField(":dog: • Animais [10]", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`, \`snake\`, \`ferret\`, \`goose\`.`)
             .setFooter(`Pedido por(a): ${message.member.displayName}`, message.author.displayAvatarURL())
             .setTimestamp()
         message.channel.send(userEmbed);
     }
     if (message.content === `${prefix}help imagens`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
-            .addField("Comandos:", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
+            .addField("Comandos:", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`, \`blur\`.`)
             .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
     if (message.content === `${prefix}help animais`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
@@ -782,16 +1166,16 @@ client.on("message", async (message) => {
         message.channel.send(userEmbed);
     }
     if (message.content === `${prefix}help infomod`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
-            .addField("Comandos:", `\`userinfo\`, \`clear\`, \`poll\`, \`announce\`, \`ping\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`covid\`, \`uptime\`, \`steam\`, \`help-eng\`, \`invite\`, \`weather\`, \`instagram\`, \`lock\`, \`stats\`, \`yt\`, \`math\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`urban\`, \`fortnite\`, \`slowmode\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`.`)
+            .addField("Comandos:", `\`userinfo\`, \`clear\`, \`poll\`, \`announce\`, \`ping\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`covid\`, \`uptime\`, \`steam\`, \`help-eng\`, \`invite\`, \`weather\`, \`instagram\`, \`lock\`, \`stats\`, \`yt\`, \`math\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`urban\`, \`fortnite\`, \`slowmode\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\`.`)
             .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
     if (message.content === `${prefix}help meme`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
@@ -800,7 +1184,7 @@ client.on("message", async (message) => {
         message.channel.send(userEmbed);
     }
     if (message.content === `${prefix}help fun`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
@@ -809,27 +1193,27 @@ client.on("message", async (message) => {
         message.channel.send(userEmbed);
     }
     if (message.content === `${prefix}help música`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const userEmbed = new Discord.MessageEmbed()
             .setTimestamp()
             .setColor('RANDOM')
-            .addField("Comandos de música:", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`np ou nowplaying\`.`)
+            .addField("Comandos de música:", `\`play ou p\`, \`join\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`np ou nowplaying\`, \`changevolume ou cv\`, \`loopnow\`, \`autoplaynow\`, \`clearqueue\`.`)
             .addField("Filtros de música:", `\`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`.`)
             .setFooter(`Usa sempre ${prefix} para usares os comandos do bot.`)
         message.channel.send(userEmbed);
     }
     if (message.content === `${prefix}help-eng`) {
-        message.react("✅")
+        message.react(":tick:748569437589995731")
         const userEmbed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setAuthor("Command List", client.user.displayAvatarURL())
-            .setDescription(`❯ **Support Server:** [Link](https://discord.gg/fnvdugV)\n❯ **Invite the bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n❯ **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
+            .setDescription(`<:discord1:748909489293492376> **Support Server:** [Link](https://discord.gg/fnvdugV)\n<:botdosbostas:748908984181850172> **Invite the bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n<:github:748909140084129872> **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
             .addField(":information_source: Info", `\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\``)
-            .addField(":gear: Mod", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`help-eng\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`.`)
+            .addField(":gear: Mod", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`.`)
             .addField(":camera: Images", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
-            .addField(":laughing: Fun", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
-            .addField(":rofl: Meme", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
-            .addField(":musical_note: Music", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`.`)
+            .addField("<:super_mega_laugh:738387807260770347> Fun", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
+            .addField("<:pepesad:749210746499498015> Meme", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
+            .addField("<:youtube:748576732642148472> Music", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`, \`clearqueue\`.`)
             .addField(":dog: Animals", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`.`)
             .setFooter(`Requested by: ${message.member.displayName}`, message.author.displayAvatarURL())
             .setTimestamp()
@@ -896,21 +1280,19 @@ client.on("message", async (message) => {
             "A Arábia Saudita importa camelos da Austrália.",
             "Vacas matam mais Americanos do que tubarões.",
             "No total, existem 208 armas no TF2 (sem contar com skins e itens de outras qualidades).",
-            "Neste momento (19:00, 24/7/2020), o Pewdiepie tem 26.198.340.914 visualizações em total no seu canal. Mas na altura que estás a ver isto já deve ter muito mais.",
-            ""
-        ]
+            "Neste momento (19:00, 24/7/2020), o Pewdiepie tem 26.198.340.914 visualizações em total no seu canal. Mas na altura que estás a ver isto já deve ter muito mais.",]
         const randomMessage = messages[Math.floor(Math.random() * messages.length)];
         message.channel.send(randomMessage)
     }
     if (command == "neves") {
-        message.channel.send("O Neves é paneleiro, O Neves é gabiru, O Neves baixa as calças para apanhar no cu!")
+        message.channel.send("<:Neves2:707889036341280809> O Neves é paneleiro, O Neves é gabiru, O Neves baixa as calças para apanhar no cu! <:Neves2:707889036341280809>")
     }
     if (command == "exposesezul") {
         message.channel.send(
             `TEXTO SOBRE O SEZUL: 
 
-O Sezul // /̶S̶E̶Z̶U̶L̶\̶#4572 // Antonio Miranda // Instagram: @1__seven__1 , 
-@seven_garagept //
+<:Neves2:707889036341280809> O Sezul // /̶S̶E̶Z̶U̶L̶\̶#4572 // Antonio Miranda // Instagram: @1__seven__1 , 
+@seven_garagept // <:Neves1:707888837153652827>
         
 Este rapaz com 16 anos tem uma vida numa aldeia em que vive em casa dos avós com 
 2 cães e uns terrenos e 5 carros velhos podres que não andam ele diz que os conduz sem 
@@ -936,7 +1318,7 @@ pensava que sabia tudo ahaha.`
         let args = message.content.split(" ").slice(0);
         let question = args.slice(1).join(" ");
         if (!question) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.reply('Precisas de especificar uma pergunta!');
         } else {
             let answers = ["Sim.", "Não.", "Talvez.", "Claro!", "Não sei.", "Provavelmente.", "Provavelmente não.", "Claro que não!", "Não me digas :/.", "Fode-te.", "Snão.", "És gay."]
@@ -952,12 +1334,11 @@ pensava que sabia tudo ahaha.`
         }
     }
     if (command === "slap") {
-        let answers = ["https://media1.tenor.com/images/3c161bd7d6c6fba17bb3e5c5ecc8493e/tenor.gif?itemid=5196956", "https://media1.tenor.com/images/49de17c6f21172b3abfaf5972fddf6d6/tenor.gif?itemid=10206784", "https://tenor.com/view/slap-slow-motion-slap-gif-10048943", "https://media1.tenor.com/images/bc858e69d5022807b84554b2d4583c10/tenor.gif?itemid=5122019"
-        , "https://media1.tenor.com/images/725a604e470a6c2768149c64fd166292/tenor.gif?itemid=16095505", "https://media1.tenor.com/images/31f29b3fcc20a486f44454209914266a/tenor.gif?itemid=17942299", "https://media1.tenor.com/images/4c87273e872b4a7fc23a37868b3f3577/tenor.gif?itemid=15003911", "https://thumbs.gfycat.com/ForkedFamousGalapagoshawk-size_restricted.gif"]
+        let answers = ["https://media1.tenor.com/images/3c161bd7d6c6fba17bb3e5c5ecc8493e/tenor.gif?itemid=5196956", "https://media1.tenor.com/images/49de17c6f21172b3abfaf5972fddf6d6/tenor.gif?itemid=10206784", "https://tenor.com/view/slap-slow-motion-slap-gif-10048943", "https://media1.tenor.com/images/bc858e69d5022807b84554b2d4583c10/tenor.gif?itemid=5122019", "https://media1.tenor.com/images/725a604e470a6c2768149c64fd166292/tenor.gif?itemid=16095505", "https://media1.tenor.com/images/31f29b3fcc20a486f44454209914266a/tenor.gif?itemid=17942299", "https://media1.tenor.com/images/4c87273e872b4a7fc23a37868b3f3577/tenor.gif?itemid=15003911", "https://thumbs.gfycat.com/ForkedFamousGalapagoshawk-size_restricted.gif"]
         let response = answers[Math.floor(Math.random() * answers.length)];
         const personTagged = message.mentions.members.first();
         if(!personTagged) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.reply('Precisas de especificar uma pessoa para dares uma chapada!');
         }
         const userEmbed = new Discord.MessageEmbed()
@@ -978,44 +1359,47 @@ pensava que sabia tudo ahaha.`
         message.channel.send("ping!")
     }
     if (command == "roast") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const messages = [
-            `You all know ${message.member.user}\’s is my first and most longtime friend I have. What you may not know is that he’s also the first and most longtime customer of ProActive Acne Systems. `,
-            `Good lord this is an ugly group of people. Holy shit, you know the crowd is ugly when we invited ${message.member.user}\’s as eye candy. `,
-            `And ${message.member.user}\’s you’re looking pretty rough this evening. ${message.member.user} looks like if sweatpants were a person. `,
+            `You all know ${member.user}\’s is my first and most longtime friend I have. What you may not know is that he’s also the first and most longtime customer of ProActive Acne Systems. `,
+            `Good lord this is an ugly group of people. Holy shit, you know the crowd is ugly when we invited ${member.user}\’s as eye candy. `,
+            `And ${member.user}\’s you’re looking pretty rough this evening. ${member.user} looks like if sweatpants were a person. `,
             `Getting married to you must’ve been rough. What was your wedding song? “How Much Is That Doggy In The Window?” `,
-            `${message.member.user}\’s is so ugly he’s been the only one ever rejected from Queer Eye for the Straight guy. `,
-            `${message.member.user}\’s is so ugly in October when he went to the haunted house they handed his an application. `,
-            `${message.member.user}\’s psychiatrist said he was crazy and he said he wanted a second opinion. The psychiatrist said “Okay, you’re ugly too.” `,
-            `${message.member.user}\’s nose is so big he Apple had to make a custom iPhone that unlocks using Nose ID. `,
-            `${message.member.user} when are you gonna buy a new outfit?? `,
+            `${member.user}\’s is so ugly he’s been the only one ever rejected from Queer Eye for the Straight guy. `,
+            `${member.user}\’s is so ugly in October when he went to the haunted house they handed his an application. `,
+            `${member.user}\’s psychiatrist said he was crazy and he said he wanted a second opinion. The psychiatrist said “Okay, you’re ugly too.” `,
+            `${member.user}\’s nose is so big he Apple had to make a custom iPhone that unlocks using Nose ID. `,
+            `${member.user} when are you gonna buy a new outfit?? `,
             `Everyday you wear the same jeans and same flannel patterned shirt.
 You’re like if Al Borland from Home Improvement learned to program a computer.`,
-            `The way ${message.member.user} dresses looks like the first half of a commercial for antidepressants. `,
-            `${message.member.user} is actually pretty good looking, but has a boring personality. Good looks but boring personality, you’re like real life clickbait. `,
-            `${message.member.user} has worn the same outfit for like 10 years. Holy shit….the only person who’s worn the same clothes longer than you is Bart Simpson. `,
-            `${message.member.user} I’m glad you and your dull personality could be here. I’m excited to hear your speech at the wedding. With your personality, I’m sure your speech will combine the thrill of talking, with the excitement of standing there. `,
-            `${message.member.user}\'s outfit was recently featured on the cover of Yawn Magazine. `,
-            `We are doing this roast tonight to help ${message.member.user} live out one of his sexual fantasies, to have a room full of his friends shit all over him. `,
-            `A little known fact is that a long time ago ${message.member.user} used to work at McDonald’s. It was the last time anyone said about your work, “I’m lovin’ it.” `,
-            `This is exciting ${message.member.user} right?? Well tell your face. `,
-            `${message.member.user} if laughter is the best medicine, your face must be curing the world. `,
-            `It’s nice to see such a diverse crowd here today. We’ve got Indians, Jews, Whites, and whatever the fuck ${message.member.user} is.`,
-            `But ${message.member.user} you’re really looking good nowadays. What he has lost in weight, he has also GAINED in weight.`,
-            `${message.member.user} I checked your Facebook, and it turns out you used to be a bit chubby. I’m impressed that you’ve managed to lose so much weight. That’s right, he lost 30 pounds on Nutrisystem, and another 10 when he shaved his back.`,
-            `${message.member.user} you're so fat and lazy the only exercise he gets is when his Restless Leg Syndrome starts flaring up.`,
-            `${message.member.user} you look like if the fat kid from Stranger Things wished he was big.`,
-            `The church didn’t accept ${message.member.user}\'s gay lifestyle. So he started his own religion: The Church of Latter Day Taints. It’s like a normal church, except you’re happy when the priest fucks you.`,
-            `Me and ${message.member.user} are really good friends but we’ve had our ups and downs, one time he actually tried to sue me for $10,000. I got really defensive and was like “You’re suing me for $10,000?? Fuck you…you can suck my dick.” and he was like, “well OK if you want to settle out of court.”`,
-            `When I heard that ${message.member.user} finally came out of the closet I wasn’t really surprised….dude you’re so gay MY ass hurts.`,
-            `I once asked ${message.member.user} why he dresses so flamboyantly and he got upset and hit me with his purse.`,
-            `Backstage before this speech I rolled a gigantic fatty. Because that was the only way we could get ${message.member.user} on to the stage.`,]
+            `The way ${member.user} dresses looks like the first half of a commercial for antidepressants. `,
+            `${member.user} is actually pretty good looking, but has a boring personality. Good looks but boring personality, you’re like real life clickbait. `,
+            `${member.user} has worn the same outfit for like 10 years. Holy shit….the only person who’s worn the same clothes longer than you is Bart Simpson. `,
+            `${member.user} I’m glad you and your dull personality could be here. I’m excited to hear your speech at the wedding. With your personality, I’m sure your speech will combine the thrill of talking, with the excitement of standing there. `,
+            `${member.user}\'s outfit was recently featured on the cover of Yawn Magazine. `,
+            `We are doing this roast tonight to help ${member.user} live out one of his sexual fantasies, to have a room full of his friends shit all over him. `,
+            `A little known fact is that a long time ago ${member.user} used to work at McDonald’s. It was the last time anyone said about your work, “I’m lovin’ it.” `,
+            `This is exciting ${member.user} right?? Well tell your face. `,
+            `${member.user} if laughter is the best medicine, your face must be curing the world. `,
+            `It’s nice to see such a diverse crowd here today. We’ve got Indians, Jews, Whites, and whatever the fuck ${member.user} is.`,
+            `But ${member.user} you’re really looking good nowadays. What he has lost in weight, he has also GAINED in weight.`,
+            `${member.user} I checked your Facebook, and it turns out you used to be a bit chubby. I’m impressed that you’ve managed to lose so much weight. That’s right, he lost 30 pounds on Nutrisystem, and another 10 when he shaved his back.`,
+            `${member.user} you're so fat and lazy the only exercise he gets is when his Restless Leg Syndrome starts flaring up.`,
+            `${member.user} you look like if the fat kid from Stranger Things wished he was big.`,
+            `The church didn’t accept ${member.user}\'s gay lifestyle. So he started his own religion: The Church of Latter Day Taints. It’s like a normal church, except you’re happy when the priest fucks you.`,
+            `Me and ${member.user} are really good friends but we’ve had our ups and downs, one time he actually tried to sue me for $10,000. I got really defensive and was like “You’re suing me for $10,000?? Fuck you…you can suck my dick.” and he was like, “well OK if you want to settle out of court.”`,
+            `When I heard that ${member.user} finally came out of the closet I wasn’t really surprised….dude you’re so gay MY ass hurts.`,
+            `I once asked ${member.user} why he dresses so flamboyantly and he got upset and hit me with his purse.`,
+            `Backstage before this speech I rolled a gigantic fatty. Because that was the only way we could get ${member.user} on to the stage.`]
         const randomMessage = messages[Math.floor(Math.random() * messages.length)];
         message.channel.send(randomMessage)
     }
     if (command === 'urban') {
         let image = "https://is4-ssl.mzstatic.com/image/thumb/Purple111/v4/7e/49/85/7e498571-a905-d7dc-26c5-33dcc0dc04a8/source/512x512bb.jpg"
         if (!args.length) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send('Precisas de especificar um termo!')
         }
         const { list } = await fetch(`https://api.urbandictionary.com/v0/define?${query}`).then(response => response.json());
@@ -1110,9 +1494,13 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         }
     }
     if (command === "ping") {
-        message.reply('A calcular o ping...').then((resultMessage) => {
+        message.reply('A calcular o ping<a:loading2:751573442037284924>...').then((resultMessage) => {
             const ping = resultMessage.createdTimestamp - message.createdTimestamp
-            resultMessage.edit(`**Bot ping: ${ping}, API ping: ${client.ws.ping}**`)
+            resultMessage.edit(`:ping_pong: Pong! :ping_pong:`)
+            const pingembed = new Discord.MessageEmbed()
+                .setDescription(`:signal_strength: | **Bot ping ➜ ${ping}ms**\n:incoming_envelope: | **API ping ➜ ${client.ws.ping}ms**`)
+                .setColor("RANDOM")
+            message.channel.send(pingembed)
         })
     }
     if (command === "announce") {
@@ -1130,7 +1518,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         message.delete();
     };
     if (command === "dogs") {
-        let msg = await message.channel.send("A procurar...")
+        let msg = await message.channel.send("A procurar<a:loading2:751573442037284924>")
         let { body } = await superagent.get("https://dog.ceo/api/breeds/image/random")
         if (!{ body }) return message.channel.send("Tu estragaste-me! Tenta de novo.")
         let embed = new Discord.MessageEmbed()
@@ -1138,7 +1526,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .setAuthor("DOGS!", message.guild.iconURL)
             .setImage(body.message)
             .setTimestamp()
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setFooter(client.user.username, client.user.displayAvatarURL())
         message.channel.send(embed)
         msg.delete();
     }
@@ -1344,7 +1732,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         let countries = args.join(" ");
         const noArgs = new Discord.MessageEmbed()
             .setTitle('Faltam argumentos!')
-            .setColor(0xFF0000)
+            .setColor("RANDOM")
             .setDescription(`Faltam-te alguns argumentos no comando (ex: ${prefix}covid all || ${prefix}covid Canada)`)
             .setTimestamp()
         if (!args[0]) return message.channel.send(noArgs);
@@ -1398,12 +1786,12 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .setFooter("Reage com um dos emojis abaixo para votar!")
             .setTimestamp();
         let messageEmbed = await pollChannel.send(embedPoll);
-        await messageEmbed.react('✅')
-        await messageEmbed.react('❎')
+        await messageEmbed.react(':tick:748569437589995731')
+        await messageEmbed.react(':X:748632517476745226')
         message.delete();
     }
     if (command === "steam") {
-        const token = "F8BEC15D1BCE2CBB0F182E8F47B6D683";
+        const token = ""; //põe o teu token
         if (!args[0]) return message.channel.send("Por favor especifica um nome de conta!");
         const url = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${token}&vanityurl=${args.join(" ")}`;
         fetch(url).then(res => res.json()).then(body => {
@@ -1442,7 +1830,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     }
     if (command === "sobre") {
         const embed = new Discord.MessageEmbed()
-            .setColor("#F93A2F")
+            .setColor("RANDOM")
             .setAuthor(`${message.member.user.username}, aqui está tudo sobre o ${client.user.username}!`, message.member.user.displayAvatarURL())
             .setDescription(`Olá, eu sou o **${client.user.username}**! Sou um Bot Multiusos feito pelo TonaS#9344! Sou feito com a library [Discord.js](https://discord.js.org/#/) e com o Module de música [Distube](https://distube.js.org/)! Escreve \`${prefix}help\` para veres os meus comandos.\n[Convida-me](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot) para o teu server!\n O Bot foi criado a - ${moment.utc(client.user.createdAt).format("dddd, MMMM Do YYYY")}.`)
             .setThumbnail(client.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
@@ -1452,13 +1840,13 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
                 { name: "Em:", value: `${client.guilds.cache.size} servers`, inline: true },
                 { name: "Com:", value: `${client.options.shards.length} shard(s)`, inline: true }
             )
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setFooter(client.user.username, client.user.displayAvatarURL())
             .setTimestamp()
         message.channel.send(embed);
     }
     if (command === "invite") {
         const embed = new Discord.MessageEmbed()
-            .setColor("#F93A2F")
+            .setColor("RANDOM")
             .setTitle("Convida o Bot!")
             .setDescription("Convida o bot para o teu server para o utilizares como quiseres!")
             .setThumbnail(client.user.displayAvatarURL({ dynamic: true, format: "png", size: 1024 }))
@@ -1469,7 +1857,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "instagram") {
         const name = args.join(" ");
         if (!name) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.reply("Se calhar dava jeito procurares algum nome...!")
                 .then(m => m.delete(5000));
         }
@@ -1563,7 +1951,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         weather.find({ search: args.join(" "), degreeType: 'C' }, function (error, result) {
             if (error) return message.channel.send(error);
             if (!args[0]) {
-                message.react("❌")
+                message.react(":X:748632517476745226")
                 return message.channel.send('Por favor especifica um sítio!')
             }
             if (result === undefined || result.length === 0) return message.channel.send('**Cidade** Inválida!');
@@ -1589,11 +1977,11 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const result = acceptedReplies[random];
         const choice = args[0];
         if (!choice) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`Como jogar: \`${prefix}rps <pedra|papel|tesoura>\``);
         }
         if (!acceptedReplies.includes(choice)) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`Só estas respostas são permitidas: \`${acceptedReplies.join(', ')}\``);
         }
         if (result === choice) return message.reply("**É um empate!** Tivemos a mesma opção.");
@@ -1638,7 +2026,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "yt") {
         let name = args.join(" ");
         if (!name) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send("Nome de Canal Desconhecido.");
         }
         const channel = await fecth.get(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${name}&key=${config.google}&maxResults=1&type=channel`)
@@ -1702,6 +2090,13 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         let attachment = new Discord.MessageAttachment(image, "shit.png");
         return message.channel.send(attachment)
     }
+    if (command === "blur") {
+        const user = message.mentions.users.first() || message.author
+        let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
+        let image = await canva.blur(avatar);
+        let attachment = new Discord.MessageAttachment(image, "shit.png");
+        return message.channel.send(attachment)
+    }
     if (command === "deepfry") {
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
@@ -1714,6 +2109,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.beautiful(avatar);
         let attachment = new Discord.MessageAttachment(image, "shit.png");
+        return message.channel.send(attachment)
     }
     if (command === "affect") {
         const user = message.mentions.users.first() || message.author
@@ -1724,15 +2120,15 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     }
     if (command === "math") {
         if (!args[0]) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send("Não especificaste o primeiro número!")
         }
         if (!args[1]) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send("Não especificaste o tipo de operação!")
         }
         if (!args[2]) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send("Não especificaste o segundo número!")
         }
         const embed = new Discord.MessageEmbed()
@@ -1740,30 +2136,30 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .setTitle("A Resposta é:")
             .setDescription(calculator(args[0], args[1], args[2]))
             .setTimestamp()
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setFooter(client.user.username, client.user.displayAvatarURL())
         message.channel.send(embed)
     }
     if (command === "giveaway") {
         if (!args[0]) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`Não especificaste o tempo do giveaway!`);
         }
         if (!args[0].endsWith("d") && !args[0].endsWith("h") && !args[0].endsWith("m")) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`Não usaste o formato correto do tempo!`);
         }
         if (isNaN(args[0][0])) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`Isso não é um número!`);
         }
         let channel = message.mentions.channels.first();
         if (!channel) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`Não consegui encontrar esse channel neste server!`);
         }
         let prize = args.slice(2).join(" ");
         if (!prize) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(`Nenhum prémio especificado!`);
         }
         message.channel.send(`*Giveaway criado em ${channel}*`);
@@ -1778,17 +2174,18 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         setTimeout(() => {
             if (m.reactions.cache.get("🎉").count <= 1) {
                 message.channel.send(`Reações: ${m.reactions.cache.get("🎉").count}`);
-                return message.channel.send(
-                    `Poucas pessoas ou nenhumas reagiram à mensagem, então não há prémio!`
-                );
+                return message.channel.send(`Poucas pessoas ou nenhumas reagiram à mensagem, então não há prémio!`);
             }
             let winner = m.reactions.cache
                 .get("🎉")
                 .users.cache.filter((u) => !u.bot)
                 .random();
-            channel.send(
-                `O vencedor do giveaway para **${prize}** é... ${winner}! 🎉Congratulations!`
-            );
+                const prizeembed = new Discord.MessageEmbed()
+                    .setAuthor("Fim do giveaway!")
+                    .setDescription(`O vencedor do giveaway para **${prize}** é... ${winner}! 🎉 Parabéns!`)
+                    .setTimestamp()
+                    .setColor("RANDOM")
+                channel.send(prizeembed)
         }, ms(args[0]));
     }
     if (command === "fortnite") {
@@ -1818,7 +2215,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "giverole") {
         const targetUser = message.mentions.users.first()
         if (!targetUser) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply('Por favor especifica alguém para dar o role.')
             return
         }
@@ -1829,8 +2226,8 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             return role.name === roleName
         })
         if (!role) {
-            message.react("❌")
-            message.reply(`Não há nenhum role chamado: "${roleName}"`)
+            message.react(":X:748632517476745226")
+            message.reply(`Não há nenhum role chamado: **${roleName}**`)
             return
         }
         const member = guild.members.cache.get(targetUser.id)
@@ -1851,7 +2248,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         if (!message.member.hasPermission('ADMINISTRATOR')) return message.reply("Não podes usar isso!");
         const targetUser = message.mentions.users.first()
         if (!targetUser) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply('Por favor especifica uma pessoa para tirar um role.')
             return
         }
@@ -1862,8 +2259,8 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             return role.name === roleName
         })
         if (!role) {
-            message.react("❌")
-            message.reply(`Não há nenhum role com o nome: **"${roleName}"**`)
+            message.react(":X:748632517476745226")
+            message.reply(`Não há nenhum role com o nome: **${roleName}**`)
             return
         }
         const member = guild.members.cache.get(targetUser.id)
@@ -1888,7 +2285,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         if (!message.member.hasPermission('ADMINISTRATOR')) return message.reply("Não podes usar isso!");
         const targetUser = message.mentions.users.first()
         if (!targetUser) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply('Por favor especifica alguém para ver se tem um role.')
             return
         }
@@ -1899,7 +2296,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             return role.name === roleName
         })
         if (!role) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply(`Não há nenhum role com o nome: **"${roleName}"**.`)
             return
         }
@@ -1911,75 +2308,99 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         }
     }
     if (command === "issimp") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const simp = Math.random() * 100;
         const simpIndex = Math.floor(simp / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Simp Machine 2020`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(simp)}% simp.`)
+            .setDescription(`${member.user.username} é ${Math.floor(simp)}% simp.`)
         message.channel.send(embed);
     }
     if (command === "isgay") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const gay = Math.random() * 100;
         const gayIndex = Math.floor(gay / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`🏳️‍🌈 Gay Machine 2020 🏳️‍🌈`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(gay)}% gay.`)
+            .setDescription(`${member.user.username} é ${Math.floor(gay)}% gay.`)
         message.channel.send(embed);
     }
     if (command === "isgamer") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const gamer = Math.random() * 100;
         const gamerIndex = Math.floor(gamer / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`⌨️ Gamer Machine 2020 🖱️`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(gamer)}% gamer. **Épico**!`)
+            .setDescription(`${member.user.username} é ${Math.floor(gamer)}% gamer. **Épico**!`)
         message.channel.send(embed);
     }
     if (command === "isretarded") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const retard = Math.random() * 100;
         const retardIndex = Math.floor(retard / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Retards Machine 2020`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(retard)}% retardado lmao.`)
+            .setDescription(`${member.user.username} é ${Math.floor(retard)}% retardado lmao.`)
         message.channel.send(embed);
     }
     if (command === "isloli") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const loli = Math.random() * 100;
         const loliIndex = Math.floor(loli / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Loli Machine 2020`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(loli)}% uma loli. 🤣`)
+            .setDescription(`${member.user.username} é ${Math.floor(loli)}% uma loli. 🤣`)
         message.channel.send(embed);
     }
     if (command === "isanimegirl") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const animegirl = Math.random() * 100;
         const animegirlIndex = Math.floor(animegirl / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Loli Machine 2020`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(animegirl)}% uma anime girl. 💁`)
+            .setDescription(`${member.user.username} é ${Math.floor(animegirl)}% uma anime girl. 💁`)
         message.channel.send(embed);
     }
     if (command === "iswaifu") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const waifu = Math.random() * 100;
         const waifugirlIndex = Math.floor(waifu / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Loli Machine 2020`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(waifu)}% uma waifu. 😥`)
+            .setDescription(`${member.user.username} é ${Math.floor(waifu)}% uma waifu. 😥`)
         message.channel.send(embed);
     }
     if (command === "isdank") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
         const dank = Math.random() * 100;
         const dankIndex = Math.floor(dank / 0);
         const embed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setTitle(`Dank Memer Machine 2020`)
-            .setDescription(`${message.member.user.username} é ${Math.floor(dank)}% um dank memer xD.`)
+            .setDescription(`${member.user.username} é ${Math.floor(dank)}% um dank memer xD.`)
         message.channel.send(embed);
     }
     if (command == "lenny") {
@@ -1990,7 +2411,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (message.content.startsWith(`${config.prefix}slowmode`)) {
         var time = message.content.split(" ").slice(1).join(" ")
         if (!time) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.reply("precisas de especificar o tempo para o slowmode!")
         }
         const embed = new Discord.MessageEmbed()
@@ -2002,7 +2423,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "acrónimo") {
         var text = args;
         if (args.length < 1) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply("Por favor adiciona um termo para eu procurar. ^^\nEg: -acronym rofl");
         }
         else {
@@ -2055,7 +2476,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "gif") {
         var text = args;
         if (args.length < 1) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply("Especifica algum termo para eu procurar um gif. :grin:");
         }
         else {
@@ -2084,7 +2505,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "sticker") {
         var text = args;
         if (args.length < 1) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply("Adiciona o termo para eu procurar depois do comando. ^^")
         }
         else {
@@ -2143,7 +2564,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "define") {
         var text = args;
         if (args.length < 1) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply("Adiciona uma palavra depois do comando par eu saber o que queres que eu defina. \nEg: `-define technology`")
         }
         else {
@@ -2176,7 +2597,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "name") {
         var text = args;
         if (args.length < 1) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply("Adiciona um nome depois do comando para eu saber o que procurar. :eyes:\nEg: -name silvia")
         }
         else {
@@ -2234,7 +2655,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     }
     if (command === "captcha") {
         if (args.length < 1) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply(`Precisas de pôr algum texto depois do comando para eu procurar. :eyes:\nEg: \`${config.prefix}captcha hi there\``);
         }
         else {
@@ -2263,7 +2684,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "rhymer") {
         var text = args;
         if (args.length < 1) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             message.reply(`Tenta incluir um palavra depois do comando, sendo a palavra inglesa.\`Eg: ${config.prefix}rhyme code\``);
         }
         else {
@@ -2310,15 +2731,15 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         const columns = parseInt(args[1]);
         const mines = parseInt(args[2]);
         if (!rows) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(':warning: Por favor especifica o número de filas.');
         }
         if (!columns) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(':warning: Por favor especifica o número de colunas.');
         }
         if (!mines) {
-            message.react("❌")
+            message.react(":X:748632517476745226")
             return message.channel.send(':warning: Por favor especifica um número de minas.');
         }
         const minesweeper = new Minesweeper({ rows, columns, mines });
@@ -2327,7 +2748,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .setColor("RANDOM")
             .setTitle(`Minesweeper`)
             .setDescription(matrix)
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setFooter(client.user.username, client.user.displayAvatarURL())
             .setTimestamp()
         return matrix
             ? message.channel.send(embed)
@@ -2335,8 +2756,8 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     }
     if (command === "die") {
         if (message.author.id !== "343491235975135243") {
-            message.react("❌") //mudas aqui o teu id, acho que podes pôr mais pessoas
-            return message.channel.send("Não és o owner do Bot! Achavas que ias conseguir desligar o bot hehehehe.") // para ninguém a não seres tu dar restart ao bot
+            message.react(":X:748632517476745226") //mudas aqui o teu id, acho que podes pôr mais pessoas
+            return message.channel.send("a:finger_wave:751573591929126967> Não és o owner do Bot! Achavas que ias conseguir desligar o bot hehehehe.") // para ninguém a não seres tu dar restart ao bot
         }
         await message.channel.send("A dar restart ao bot!")
         process.exit();
@@ -2587,33 +3008,24 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
 });
 const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
 distube
-    .on("playSong", (message, queue, song) => {
+    .on("playSong",  async (message, queue, song) => {
         const userEmbed = new Discord.MessageEmbed()
-            .setTitle(`🎶 Agora a tocar 🎶`)
-            .setDescription(`[${song.name}](${song.url})`)
+            .setAuthor(`Agora a tocar em: ${queue.connection.channel.name}`, "https://i.pinimg.com/originals/de/1c/91/de1c91788be0d791135736995109272a.png")
+            .setDescription(`<:play:748576561837637703> **[${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Filtro: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
             .setThumbnail(song.thumbnail)
-            .addFields(
-                { name: 'Pedido por(a):', value: `${message.member.user}`, inline: true },
-                { name: 'Duração da Música:', value: `\`${song.formattedDuration}\``, inline: true },
-                { name: 'Queue:', value: `${queue.songs.length} música(s) - \`${queue.formattedDuration}\``, inline: true },
-                { name: 'Volume:', value: `\`${queue.volume}%\``, inline: true },
-                { name: 'Filtros:', value: `\`${queue.filter || "Off"}\``, inline: true },
-                { name: 'Loop:', value: `\`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\``, inline: true },
-                { name: 'Autoplay:', value: `\`${queue.autoplay ? "On" : "Off"}\``, inline: true },
-                { name: 'Bitrate:', value: `\`256kbps\``, inline: true },
-                { name: 'Convida o Bot:', value: `[Link](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)`, inline: true },
-            )
-            .setColor("#F93A2F")
+            .setColor("RANDOM")
             .setTimestamp()
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
         message.channel.send(userEmbed).then(msg => {
             msg.react('⏸').then(r => {
                 msg.react('⏹️').then(r => {
                     msg.react('⏭️').then(r => {
                         msg.react("⏯️").then(r => {
-                            msg.react("🔁").then(r => {
-                                msg.react("🔀").then(r => {
-                                    msg.react("📄").then(r => {
+                            msg.react("🔀").then(r => {
+                                msg.react("📄").then(r => {
+                                    msg.react("🔉").then(r => {
+                                        msg.react("🔊").then(r => {
+                                        })
                                     })
                                 })
                             })
@@ -2621,153 +3033,250 @@ distube
                     })
                 })
             })
-            const infosFilter = (reaction, user) => reaction.emoji.name === '⏸' && user.id === message.author.id;
+            const infosFilter = (reaction, user) => reaction.emoji.name === '⏸' && user.id === message.author.id
             const imagensFilter = (reaction, user) => reaction.emoji.name === '⏹️' && user.id === message.author.id;
             const funFilter = (reaction, user) => reaction.emoji.name === '⏭️' && user.id === message.author.id;
             const resumeFilter = (reaction, user) => reaction.emoji.name === '⏯️' && user.id === message.author.id;
-            const repeatFilter = (reaction, user) => reaction.emoji.name === '🔁' && user.id === message.author.id;
             const musicaFilter = (reaction, user) => reaction.emoji.name === '🔀' && user.id === message.author.id;
             const animaisFilter = (reaction, user) => reaction.emoji.name === '📄' && user.id === message.author.id;
+            const volumeFilter = (reaction, user) => reaction.emoji.name === '🔉' && user.id === message.author.id;
+            const volumemaisFilter = (reaction, user) => reaction.emoji.name === '🔊' && user.id === message.author.id;
             const infos = msg.createReactionCollector(infosFilter);
             const imagens = msg.createReactionCollector(imagensFilter);
             const resume = msg.createReactionCollector(resumeFilter);
             const fun = msg.createReactionCollector(funFilter);
             const musica = msg.createReactionCollector(musicaFilter);
             const animais = msg.createReactionCollector(animaisFilter);
-            const repeat = msg.createReactionCollector(repeatFilter);
-            infos.on('collect', r2 => {
+            const volume = msg.createReactionCollector(volumeFilter);
+            const volumemais = msg.createReactionCollector(volumemaisFilter);
+            infos.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 if (!message.member.voice.channel) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
                 if (message.member.voice.channel) {
                     distube.pause(message)
-                    message.channel.send("⏸ | Pausei a música!")
+                    let queue = distube.getQueue(message)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`Pausei: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1)
                 }
             })
-            repeat.on('collect', r2 => {
+            resume.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 if (!message.member.voice.channel) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
-                }
-                if (message.member.voice.channel) {
-                    let mode = distube.setRepeatMode(message);
-                    mode = mode ? mode == 2 ? "Repeat queue" : "Repeat song" : "Off";
-                    mode = distube.setRepeatMode(message, mode);
-                    message.channel.send("Repeat mode está agora no modo: **" + mode + "**");
-                }
-            })
-            resume.on('collect', r2 => {
-                if (!message.member.voice.channel) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
                 if (message.member.voice.channel) {
                     distube.resume(message)
-                    message.channel.send(":play_pause: | Voltei a tocar a música!")
+                    let queue = distube.getQueue(message)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`Voltei a tocar: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1)
                 }
             })
-            animais.on('collect', r2 => {
-                let queue = distube.getQueue(message);
-                if (!queue) return message.channel.send(`❌ | Não está nada a tocar!`)
-                if (message.member.voice.channel) {
-                    message.channel.send(`🎶 Queue Atual | ${queue.songs.length} música(s) | \`${queue.formattedDuration}\` | 🎶`)
-                    const embed = new Discord.MessageEmbed()
-                        .setTitle("📄 Queue 📄")
-                        .setDescription('\n' + queue.songs.map((song, id) => `**${id + 1}** - [${song.name}](${song.url}) - \`${song.formattedDuration}\``).join("\n"))
-                        .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
-                        .setTimestamp()
-                        .setColor("#F93A2F")
-                    message.channel.send(embed)
-                }
+            animais.on('collect', async (r2, user) => {
+                r2.users.remove(user)
+                let queue = distube.getQueue(message.guild.id);
+	            if (!queue) return message.reply("⚠️ Não está nada a tocar!"); // Tell the user no song is being played
+	            const pageBack = "⏪";
+                const pageForward = "⏩";
+                const trash = "🗑️";
+	            const num_per_page = 10; // Number of songs to show in a page
+	            let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
+	            let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
+	            while (queuedVideos.length > 0) {
+		            pageContents.push(queuedVideos.splice(0, num_per_page))
+	            }
+	            let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
+	            let currentPage = 0; // Page starts at 0 because array index starts at 0
+	            let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
+	            let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
+	            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) => 
+		            `**${currentListNum+(index+1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
+	            description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+	            const embed = new Discord.MessageEmbed()
+		            .setTitle(title)
+		            .setColor('RANDOM')
+		            .setThumbnail(queue.songs[0].thumbnail)
+		            .setDescription(description)
+		            .setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+		            .setTimestamp();
+	            const msg = await message.channel.send(embed);
+	            if (num_pages <= 1) return; 
+	            msg.react(pageBack);
+	            msg.react(pageForward);
+	            const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward;
+	            const collector = msg.createReactionCollector(filter, { time: 150000 });
+	            collector.on("collect", (reaction, user) => {
+		            if (user.bot) return;
+		            queuedVideos = queue.songs.slice();
+		            pageContents = [];
+		            title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
+		            while (queuedVideos.length > 0) {
+			            pageContents.push(queuedVideos.splice(0, num_per_page))
+		            }
+		            num_pages = pageContents.length;
+		            switch (reaction.emoji.name) {
+			            case pageBack: {
+				            currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
+				            break;
+			            }
+			            case pageForward: {
+				            currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
+				            break;
+                        }
+                            case trash: {
+				                msg.reactions.removeAll()
+				            break;
+			            }
+		            }
+		            reaction.users.remove(user);
+		            currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
+		            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) => 
+                        `**${currentListNum+(index+1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
+                    description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+		            embed.setTitle(title);
+		            embed.setDescription(description);
+		            embed.setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+		            msg.edit(embed);
+	            });
                 if (!message.member.voice.channel && client.voice.connections) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
             })
-            musica.on('collect', r2 => {
-                let queue = distube.getQueue(message);
+            musica.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 if (message.member.voice.channel) {
+                    let queue = distube.getQueue(message);
                     distube.shuffle(message)
-                    message.channel.send(`:twisted_rightwards_arrows: | Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`:twisted_rightwards_arrows: Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1)
                 }
                 if (!message.member.voice.channel && client.voice.connections) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
             })
-            imagens.on('collect', r2 => {
-                if (message.member.voice.channel) {
+            imagens.on('collect', (r2, user) => {
+                r2.users.remove(user)
+                if (message.member.voice.channelID) {
                     distube.stop(message)
-                    msg.delete().then(msg1 => {
+                    msg.reactions.removeAll().then(msg1 => {
                         const embed = new Discord.MessageEmbed()
                             .setTitle("Stop!")
-                            .setColor("#F93A2F")
+                            .setColor("RANDOM")
                             .setDescription(`Parei a música e saí do voice channel!\nPedido por(a): ${message.member.user}\nObrigado por usares o **Bot dos Bostas!**`)
                             .addFields(
                                 { name: "Links Importantes:", value: "[Github Repository](https://github.com/TonaS21/bot-dos-bostas)\n[Convida o bot](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n[Server de Suporte](https://discord.gg/DRnnZPS)", inline: false }
                             )
                             .setTimestamp()
-                            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+                            .setFooter(client.user.username, client.user.displayAvatarURL())
                         msg1.channel.send(embed)
                     })
                 }
-                if (!message.member.voice.channel && client.voice.connections) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                if (!message.member.voice.channelID && client.voice.connections) {
+                    message.channel.send(":X:748632517476745226 | Precisas de estar no voice channel para usares isto.")
                 }
             })
-            fun.on('collect', r2 => {
-                if (message.member.voice.channel) {
-                    distube.skip(message)
-                    message.channel.send(":track_next: | Dei skip à música!")
+            fun.on('collect', (r2, user) => {
+                r2.users.remove(user)
+                if (message.member.voice.channelID) {
+                    distube.skip(message);
+                    let queue = distube.getQueue(message)
+                    const vidNext = queue.songs.length > 1 ? `**Agora a tocar: [${queue.songs[1].name}](${queue.songs[1].url})**` : "**Queue vazio ➜ A sair do voice channel!**";
+                    const embed1 = new Discord.MessageEmbed()
+                        .setTitle("Skip!")
+                        .setThumbnail(queue.songs[0].thumbnail)
+                        .setDescription(`**Dei skip a: [${queue.songs[0].name}](${queue.songs[0].url})**\n${vidNext}\n**Pedido por:** ${message.author}`)
+                        .setFooter(client.user.username, client.user.displayAvatarURL())
+                        .setTimestamp()
+                        .setColor("RANDOM")
+                    message.channel.send(embed1).then(msg2 => {
+                        msg2.delete({ timeout: 30000 })
+                    })
                     if (queue.dispatcher.destroy) {
-                        msg.delete()
+                        msg.reactions.removeAll()
                     }
                 }
-                if (!message.member.voice.channel && client.voice.connections) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                if (!message.member.voice.channelID) {
+                    message.react(":X:748632517476745226")
+                    const embed = new Discord.MessageEmbed()
+                        .setColor("RANDOM")
+                        .setDescription(`Precisas de estar num voice chat para dares skip à música!`)
+                        .setTimestamp()
+                    return message.channel.send(embed)
                 }
             })
+            volume.on('collect', (r2, user) => {
+                r2.users.remove(user)
+                if (message.member.voice.channel) {
+                    distube.setVolume(message, queue.volume - 10)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`:sound: O volume da música está agora a: **${queue.volume}%**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1).then(msg1 => {
+                        msg1.delete({ timeout: 15000 })
+                    })
+                }
+                if (!message.member.voice.channelID) {
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
+                }
+            })
+            volumemais.on('collect', (r2, user) => {
+                r2.users.remove(user)
+                if (message.member.voice.channel) {
+                    distube.setVolume(message, queue.volume + 10)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`:loud_sound: O volume da música está agora a: **${queue.volume}%**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1).then(msg1 => {
+                        msg1.delete({ timeout: 15000 })
+                    })
+                }
+                if (!message.member.voice.channelID) {
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
+                }
+            })
+            distube.on("empty", (song) => {
+                msg.reactions.removeAll()
+            })
+            queue.connection.dispatcher.on("finish", () => {
+                msg.reactions.removeAll()
+            });
         })
     })
     .on("addSong", (message, queue, song) => {
         const userEmbed = new Discord.MessageEmbed()
-            .setTitle(`🎶 Adicionado ao Queue 🎶`)
-            .setDescription(`[${song.name}](${song.url})`)
-            .addFields(
-                { name: 'Pedido por(a):', value: `${message.member.user}`, inline: true },
-                { name: 'Duração da Música:', value: `\`${song.formattedDuration}\``, inline: true },
-                { name: 'Queue:', value: `${queue.songs.length} música(s) - \`${queue.formattedDuration}\``, inline: true },
-            )
+            .setAuthor(`Adicionado ao Queue`, "https://emoji.gg/assets/emoji/9663_icons_eight_ok.png")
+            .setDescription(`<:play:748576561837637703> **[${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Filtro: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
             .setThumbnail(song.thumbnail)
-            .setColor("#F93A2F")
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setColor("RANDOM")
             .setTimestamp()
-        message.channel.send(userEmbed);
+            .setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
+        message.channel.send(userEmbed)
     })
-    .on("playList", (message, queue, playlist, song) => {
+    .on("playList", async (message, queue, playlist, song) => {
         const userEmbed = new Discord.MessageEmbed()
-            .setTitle(`${playlist.title} playlist - (${playlist.total_items} músicas)`)
-            .setDescription(`🎶 [Agora a tocar: ${song.name}](${song.url}) 🎶`)
+            .setAuthor(`Agora a tocar em: ${queue.connection.channel.name}`, "https://i.pinimg.com/originals/de/1c/91/de1c91788be0d791135736995109272a.png")
+            .setDescription(`**${playlist.title} playlist - (${playlist.total_items} músicas)\n<:play:748576561837637703> Agora a tocar ➜ [${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Filtros: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
             .setThumbnail(playlist.thumbnail)
-            .setColor("#F93A2F")
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setColor("RANDOM")
             .setTimestamp()
-            .addFields(
-                { name: 'Pedido por(a):', value: `${message.member.user}`, inline: true },
-                { name: 'Duração da Música:', value: `\`${song.formattedDuration}\``, inline: true },
-                { name: 'Duração da Playlist:', value: `\`${playlist.formattedDuration}\``, inline: true },
-                { name: 'Volume', value: `\`${queue.volume}%\``, inline: true },
-                { name: 'Queue:', value: `${queue.songs.length} música(s) - \`${queue.formattedDuration}\``, inline: true },
-                { name: 'Filtros:', value: `\`${queue.filter || "Off"}\``, inline: true },
-                { name: 'Loop:', value: `\`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\``, inline: true },
-                { name: 'Autoplay:', value: `\`${queue.autoplay ? "On" : "Off"}\``, inline: true },
-                { name: 'Bitrate:', value: `\`256kbps\``, inline: true },
-                { name: 'Convida o Bot:', value: `[Link](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)`, inline: true },
-            )
+            .setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
         message.channel.send(userEmbed).then(msg => {
             msg.react('⏸').then(r => {
                 msg.react('⏹️').then(r => {
                     msg.react('⏭️').then(r => {
                         msg.react("⏯️").then(r => {
-                            msg.react("🔁").then(r => {
-                                msg.react("🔀").then(r => {
-                                    msg.react("📄").then(r => {
+                            msg.react("🔀").then(r => {
+                                msg.react("📄").then(r => {
+                                    msg.react("🔉").then(r => {
+                                        msg.react("🔊").then(r => {
+                                        })
                                     })
                                 })
                             })
@@ -2779,143 +3288,259 @@ distube
             const imagensFilter = (reaction, user) => reaction.emoji.name === '⏹️' && user.id === message.author.id;
             const funFilter = (reaction, user) => reaction.emoji.name === '⏭️' && user.id === message.author.id;
             const resumeFilter = (reaction, user) => reaction.emoji.name === '⏯️' && user.id === message.author.id;
-            const repeatFilter = (reaction, user) => reaction.emoji.name === '🔁' && user.id === message.author.id;
             const musicaFilter = (reaction, user) => reaction.emoji.name === '🔀' && user.id === message.author.id;
             const animaisFilter = (reaction, user) => reaction.emoji.name === '📄' && user.id === message.author.id;
+            const volumeFilter = (reaction, user) => reaction.emoji.name === '🔉' && user.id === message.author.id;
+            const volumemaisFilter = (reaction, user) => reaction.emoji.name === '🔊' && user.id === message.author.id;
+            const volume = msg.createReactionCollector(volumeFilter);
+            const volumemais = msg.createReactionCollector(volumemaisFilter);
             const infos = msg.createReactionCollector(infosFilter);
             const imagens = msg.createReactionCollector(imagensFilter);
             const resume = msg.createReactionCollector(resumeFilter);
             const fun = msg.createReactionCollector(funFilter);
             const musica = msg.createReactionCollector(musicaFilter);
             const animais = msg.createReactionCollector(animaisFilter);
-            const repeat = msg.createReactionCollector(repeatFilter);
-            infos.on('collect', r2 => {
+            infos.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 if (!message.member.voice.channelID) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
                 if (message.member.voice.channelID) {
                     distube.pause(message)
-                    message.channel.send("⏸ | Pausei a música!")
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`Pausei: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1)
                 }
             })
-            repeat.on('collect', r2 => {
+            resume.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 if (!message.member.voice.channelID) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
-                }
-                if (message.member.voice.channel) {
-                    let mode = distube.setRepeatMode(message);
-                    mode = mode ? mode == 2 ? "Repeat queue" : "Repeat song" : "Off";
-                    mode = distube.setRepeatMode(message, mode);
-                    message.channel.send("Repeat mode está agora no modo: **" + mode + "**");
-                }
-            })
-            resume.on('collect', r2 => {
-                if (!message.member.voice.channelID) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
                 if (message.member.voice.channel) {
                     distube.resume(message)
-                    message.channel.send(":play_pause: | Voltei a tocar a música!")
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`Voltei a tocar: **[${queue.songs[0].name}](${queue.songs[0].url})**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1)
                 }
             })
-            animais.on('collect', r2 => {
-                let queue = distube.getQueue(message);
-                if (!queue) return message.channel.send(`❌ | Não está nada a tocar!`)
-                if (message.member.voice.channel) {
-                    message.channel.send(`🎶 Queue Atual | ${queue.songs.length} música(s) | \`${queue.formattedDuration}\` | 🎶`)
-                    const embed = new Discord.MessageEmbed()
-                        .setTitle("📄 Queue 📄")
-                        .setDescription('\n' + queue.songs.map((song, id) => `**${id + 1}** - [${song.name}](${song.url}) - \`${song.formattedDuration}\``).join("\n"))
-                        .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
-                        .setTimestamp()
-                        .setColor("#F93A2F")
-                    message.channel.send(embed)
-                }
+            animais.on('collect', async (r2, user) => {
+                r2.users.remove(user)
+                let queue = distube.getQueue(message.guild.id);
+	            if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!"); // Tell the user no song is being played
+	            const pageBack = "⏪";
+                const pageForward = "⏩";
+                const trash = "🗑️";
+	            const num_per_page = 10; // Number of songs to show in a page
+	            let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
+	            let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
+	            while (queuedVideos.length > 0) {
+		            pageContents.push(queuedVideos.splice(0, num_per_page))
+	            }
+	            let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
+	            let currentPage = 0; // Page starts at 0 because array index starts at 0
+	            let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
+	            let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
+	            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) => 
+		            `**${currentListNum+(index+1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
+	            description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+	            const embed = new Discord.MessageEmbed()
+		            .setTitle(title)
+		            .setColor('RANDOM')
+		            .setThumbnail(queue.songs[0].thumbnail)
+		            .setDescription(description)
+		            .setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+		            .setTimestamp();
+	            const msg = await message.channel.send(embed);
+	            if (num_pages <= 1) return; 
+	            msg.react(pageBack);
+                msg.react(pageForward);
+                msg.react(trash);
+	            const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward || reaction.emoji.name === trash;
+	            const collector = msg.createReactionCollector(filter, { time: 150000 });
+	            collector.on("collect", (reaction, user) => {
+		            if (user.bot) return;
+		            queuedVideos = queue.songs.slice();
+		            pageContents = [];
+		            title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
+		            while (queuedVideos.length > 0) {
+			            pageContents.push(queuedVideos.splice(0, num_per_page))
+		            }
+		            num_pages = pageContents.length;
+		            switch (reaction.emoji.name) {
+			            case pageBack: {
+				            currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
+				            break;
+			            }
+			            case pageForward: {
+				            currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
+				            break;
+                        }
+                            case trash: {
+				                msg.reactions.removeAll()
+				            break;
+			            }
+		            }
+		            reaction.users.remove(user);
+		            currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
+		            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) => 
+                        `**${currentListNum+(index+1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
+                    description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+		            embed.setTitle(title);
+		            embed.setDescription(description);
+		            embed.setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+		            msg.edit(embed);
+	            });
                 if (!message.member.voice.channel && client.voice.connections) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
             })
-            musica.on('collect', r2 => {
+            musica.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 let queue = distube.getQueue(message);
                 if (message.member.voice.channel) {
                     distube.shuffle(message)
-                    message.channel.send(`:twisted_rightwards_arrows: | Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`:twisted_rightwards_arrows: Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1)
                 }
                 if (!message.member.voice.channel && client.voice.connections) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
             })
-            imagens.on('collect', r2 => {
+            imagens.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 if (message.member.voice.channel) {
                     distube.stop(message)
-                    msg.delete().then(msg1 => {
+                    msg.reactions.removeAll().then(msg1 => {
                         const embed = new Discord.MessageEmbed()
                             .setTitle("Stop!")
-                            .setColor("#F93A2F")
+                            .setColor("RANDOM")
                             .setDescription(`Parei a música e saí do voice channel!\nPedido por(a): ${message.member.user}\nObrigado por usares o **Bot dos Bostas!**`)
                             .addFields(
                                 { name: "Links Importantes:", value: "[Github Repository](https://github.com/TonaS21/bot-dos-bostas)\n[Convida o bot](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n[Server de Suporte](https://discord.gg/DRnnZPS)", inline: false }
                             )
                             .setTimestamp()
-                            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+                            .setFooter(client.user.username, client.user.displayAvatarURL())
                         msg1.channel.send(embed)
                     })
                 }
                 if (!message.member.voice.channelID) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
             })
-            fun.on('collect', r2 => {
+            fun.on('collect', (r2, user) => {
+                r2.users.remove(user)
                 if (message.member.voice.channelID) {
-                    distube.skip(message)
-                    message.channel.send(":track_next: | Dei skip à música!")
+                    distube.skip(message);
+                    let queue = distube.getQueue(message)
+                    const vidNext = queue.songs.length > 1 ? `**Agora a tocar: [${queue.songs[1].name}](${queue.songs[1].url})**` : "**Queue vazio ➜ A sair do voice channel!**";
+                    const embed1 = new Discord.MessageEmbed()
+                        .setTitle("Skip!")
+                        .setThumbnail(queue.songs[0].thumbnail)
+                        .setDescription(`**Dei skip a: [${queue.songs[0].name}](${queue.songs[0].url})**\n${vidNext}\n**Pedido por:** ${message.author}`)
+                        .setFooter(client.user.username, client.user.displayAvatarURL())
+                        .setTimestamp()
+                        .setColor("RANDOM")
+                    message.channel.send(embed1).then(msg2 => {
+                        msg2.delete({ timeout: 30000 })
+                    })
                     if (queue.dispatcher.destroy) {
-                        msg.delete()
+                        msg.reactions.removeAll()
                     }
                 }
-                if (!message.member.voice.channel && client.voice.connections) {
-                    message.channel.send("❌ | Precisas de estar no voice channel para usares isto.")
+                if (!message.member.voice.channelID) {
+                    message.react(":X:748632517476745226")
+                    const embed = new Discord.MessageEmbed()
+                        .setColor("RANDOM")
+                        .setDescription(`Precisas de estar num voice chat para dares skip à música!`)
+                        .setTimestamp()
+                    return message.channel.send(embed)
                 }
+            })
+            volume.on('collect', (r2, user) => {
+                r2.users.remove(user)
+                if (message.member.voice.channel) {
+                    distube.setVolume(message, queue.volume - 10)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`:sound: O volume da música está agora a: **${queue.volume}%**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1).then(() => {
+                        message.delete({ timeout: 20000 })
+                    })
+                }
+                if (!message.member.voice.channelID) {
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
+                }
+            })
+            volumemais.on('collect', (r2, user) => {
+                r2.users.remove(user)
+                if (message.member.voice.channel) {
+                    distube.setVolume(message, queue.volume + 10)
+                    const embed1 = new Discord.MessageEmbed()
+                        .setDescription(`:loud_sound: O volume da música está agora a: **${queue.volume}%**`)
+                        .setColor("RANDOM")
+                    message.channel.send(embed1).then(() => {
+                        message.delete({ timeout: 20000 })
+                    })
+                }
+                if (!message.member.voice.channelID) {
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
+                }
+            })
+            distube.on("empty", (song) => {
+                msg.reactions.removeAll()
+            })
+            queue.connection.dispatcher.on("finish", () => {
+                msg.reactions.removeAll()
+            });
+            queue.connection.dispatcher.on("volumeChange", () => {
+                userEmbed.setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
             })
         })
     })
     .on("addList", (message, queue, playlist) => {
         const userEmbed = new Discord.MessageEmbed()
-            .setTitle(`🎶 Adicionado ao Queue 🎶`)
-            .setDescription(`${playlist.title} playlist - (${playlist.total_items} músicas)`)
-            .addFields(
-                { name: 'Pedido por(a):', value: `${message.member.user}`, inline: true },
-                { name: 'Duração da Playlist:', value: `\`${playlist.formattedDuration}\``, inline: true },
-                { name: 'Queue:', value: `${queue.songs.length} música(s) - \`${queue.formattedDuration}\``, inline: true },
-            )
+            .setAuthor(`Adicionado ao Queue`, "https://emoji.gg/assets/emoji/9663_icons_eight_ok.png")
+            .setDescription(`<:play:748576561837637703> **${playlist.title} playlist - (${playlist.total_items} músicas)**\n❯ **Duração da Playlist: ${playlist.formattedDuration}**\n❯ **Filtro: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
             .setThumbnail(playlist.thumbnail)
-            .setColor("#F93A2F")
-            .setFooter("Bot dos Bostas", client.user.displayAvatarURL())
+            .setColor("RANDOM")
             .setTimestamp()
-        message.channel.send(userEmbed);
+            .setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
+        message.channel.send(userEmbed)
     })
     .on("searchResult", (message, result) => {
         let i = 0;
         const embed = new Discord.MessageEmbed()
             .setAuthor(`${message.member.user.username}, Escolhe uma opção abaixo:`, message.member.user.displayAvatarURL())
             .setDescription(`\n${result.map(song => `**${++i}** - [${song.name}](${song.url}) - \`${song.formattedDuration}\``).join("\n")}\n`)
-            .setColor("#F93A2F")
+            .setColor("RANDOM")
             .setFooter(`Escreve uma coisa qualquer nada haver ou espera 60 segundos para cancelar.`)
-        message.channel.send(embed)
+        message.channel.send(embed).then(msg1 => {
+            distube.on("playSong", (message, queue, song) => {
+                msg1.delete()
+            })
+            distube.on("addSong", (message, queue, song) => {
+                msg1.delete()
+            })
+        })
     })
     .on("searchCancel", (message) => {
         const embed = new Discord.MessageEmbed()
             .setDescription("Procura cancelada. Não escreveste a tempo ou escreveste alguma coisa sem sentido.")
-            .setColor("#F93A2F")
+            .setColor("RANDOM")
         message.channel.send(embed)
     })
     .on("error", (message, err) => {
         console.log(err);
         const embed = new Discord.MessageEmbed()
             .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
-            .setTitle(`❌ Ocorreu um erro ❌`)
+            .setTitle(`<:X:748632517476745226> Ocorreu um erro <:X:748632517476745226>`)
             .setDescription("```\n" + "Ocorreu um erro: " + err + "```")
-            .setColor("#F93A2F")
+            .setColor("RANDOM")
             .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
             .setTimestamp()
         message.channel.send(embed)
@@ -2926,21 +3551,20 @@ distube
     })
     .on("finish", message => {
         const userEmbed = new Discord.MessageEmbed()
-            .setDescription("Mais nenhuma música no queue, A sair do voice channel.")
-            .setColor("#F93A2F")
+            .setAuthor("Mais nenhuma música no queue, A sair do voice channel.", client.user.displayAvatarURL())
+            .setColor("RANDOM")
         message.channel.send(userEmbed);
     })
     .on("empty", message => {
         const embed = new Discord.MessageEmbed()
-            .setDescription("Voice channel está vazio. A sair!")
-            .setColor("#F93A2F")
+            .setAuthor("Saí do voice channel porque ninguém estava nele!", client.user.displayAvatarURL())
+            .setColor("RANDOM")
         message.channel.send(embed)
     })
     .on("noRelated", message => {
         const embed = new Discord.MessageEmbed()
-            .setDescription("❌ Não consegui encontrar nenhuma música ❌. Parei de tocar música.")
-            .setColor("#F93A2F")
+            .setDescription("Não consegui encontrar nenhuma música. Parei de tocar música.")
+            .setColor("RANDOM")
         message.channel.send(embed)
     })
 client.login(config.token);
-
