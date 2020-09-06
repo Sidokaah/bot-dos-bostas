@@ -4,9 +4,9 @@
 [![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
 
 O meu grande Bot do discord.
-Com cerca de 120 comandos para usares, desde música até memes.
+Com cerca de 130 comandos para usares, desde música até memes.
 
-O Bot tem diversas features como reaction controller na música, páginas no queue e, brevemente, comando help interativo 👀 (provavelmente na 2.4.0).
+O Bot tem diversas features como reaction controller na música, páginas no queue e, brevemente, comando help interativo 👀.
 
 Baseado em Discord.js, com o module DisTube.
 
