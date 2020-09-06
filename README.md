@@ -12,7 +12,7 @@ Baseado em Discord.js, com o module DisTube.
 
 # Comandos
 
-- **Música**
+### • **Música**
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -41,7 +41,7 @@ Baseado em Discord.js, com o module DisTube.
 | `autoplaynow` | Vês o estado do autoplay no momento                                                                                       | -autoplaynow           |
 | `loopnow`     | Vês o estado do loop no momento                                                                                           | -loopnow               |
 
-- **Memes**
+### • **Memes**
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -56,7 +56,7 @@ Baseado em Discord.js, com o module DisTube.
 | `sports`      | Um meme aleatório sobre desporto                                                                                          | -sports                |
 | `facepalm`    | Um meme aleatório do subreddit `r/facepalm`                                                                               | -facepalm              |
 
-- **Diversão**
+### • **Diversão**
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -87,7 +87,7 @@ Baseado em Discord.js, com o module DisTube.
 | `isanimegirl` | Percentagem se tu ou alguém é uma anime girl                                                                              | -isanimegirl @someone  |
 | `isdank`      | Percentagem se tu ou alguém é um dank memer                                                                               | -isdank @someone       |
 
-- **Moderação e Informação**
+### • **Moderação e Informação**
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -127,38 +127,29 @@ Baseado em Discord.js, com o module DisTube.
 | `sobre`       | Informações sobre o Bot                                                                                                   | -sobre                 |
 | `categorias`  | Mostra as categorias de comandos do bot                                                                                   | -categorias            |
 
-- **Imagens** (ainda não acabei de pôr os comandos...)
+### • **Imagens**
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | `inverse`     | Factos random que eu fix                                                                                                  | -randomfacts           |
-| `minecraft`   |                                                                                                                           |                        |
-| `animepunch`              | Dás um chapada a alguém                                                                                                   | -slap @someone         |
-| `roast`       | Dás roast a alguém                                                                                                        | -roast @someone        |
-| `neves`       | O neves é paneleiro...                                                                                                    | -neves                 |
-| `exposesezul` | Expose que o mister Star a.k.a Tomás Estrela fez ao Sezul                                                                 | -exposesezul           |
-| `p!ng`        | Ping!                                                                                                                     | -p!ng                  |
-| `pong`        | Imagens aleatórias de panda                                                                                               | -pong                  |
-| `creeper`     | Imagens aleatórias de raposas                                                                                             | -creeper               |
-| `rps`         | Imagens aleatórias de animais em geral                                                                                    | -rps pedra             |
-| `flip`        | Cara ou coroa                                                                                                             | -flip                  |
-| `minesweeper` | Um jogo de minesweeper                                                                                                    | -minesweeper 5 10 5    |
-| `badjoke`     | Uma piada que não tem graça xD                                                                                            | -badjoke               |
-| `advice`      | Dá-te um conselho para a vida                                                                                             | -advice                |
-| `isretarded`  | Percentagem se tu ou alguém é retardado                                                                                   | -isretarded @someone   |
-| `say`         | O bot vai dizer o que quiseres                                                                                            | -say something         |
-| `isgamer`     | Percentagem se tu ou alguém é gamer                                                                                       | -isgamer @someone      |
-| `isgay`       | Percentagem se tu ou alguém é gay                                                                                         | -isgay @someone        |
-| `issimp`      | Percentagem se tu ou alguém é um simp                                                                                     | -issimp @someone       |
-| `lenny`       | Um meme aleatório do subreddit `r/facepalm`                                                                               | -lenny                 |
-| `captcha`     | Um meme aleatório do subreddit `r/facepalm`                                                                               | -captcha something     |
-| `pp`          | Tamanho do teu ou o pp de alguém                                                                                          | -pp @someone           |
-| `isloli`      | Percentagem se tu ou alguém é uma loli                                                                                    | -isloli @someone       |
-| `iswaifu`     | Percentagem se tu ou alguém é uma waifu                                                                                   | -iswaifu @someone      |
-| `isanimegirl` | Percentagem se tu ou alguém é uma anime girl                                                                              | -isnanimegirl @someone |
-| `isdank`      | Percentagem se tu ou alguém é um dank memer                                                                               | -isdank @someone       |
+| `minecraft`   | Imagens de minecraft                                                                                                      | -minecraft             |
+| `animepunch`  | Uma imagem aleatória de um murro em anime. Yep, só isso.                                                                  | -animepunch            |
+| `wanted`      | Uma imagem de wanted                                                                                                      | -wanted @someone       |
+| `cursedimg`   | Uma imagem ahhm... Assustadora!                                                                                           | -cursedimg             |
+| `food`        | Imagem aleatória de comida                                                                                                | -food                  |
+| `shit`        | Uma imagem a mostrar que mostra que tu ou alguém é uma merda                                                              | -shit @someone         |
+| `delete`      | Vais ser deletado do pc                                                                                                   | -delete @someone       |
+| `trash`       | Outra imagem a dizer que tu ou alguém é um monte de merda                                                                 | -trash @someone        |
+| `hitler`      | Uma imagem a dizer que tu ou alguém é pior que o hitler                                                                   | -hitler @someone       |
+| `deepfry`     | Muda a tua imagem de perfil para melhor lmao                                                                              | -deepfry @someone      |
+| `beautiful`   | Uma imagem a dizer o quanto tu ou alguém é lindo                                                                          | -beautiful @someone    |
+| `affect`      | Tabaco não afeta as grávidas pois não...                                                                                  | -affect @someone       |
+| `gif`         | Procura um gif no giphy sobre alguma coisa que quiseres                                                                   | -gif olá               |
+| `randomgif`   | Proucra um gif aleatório no giphy                                                                                         | -randomgif             |
+| `sticker`     | Procura um sticker no gipht sobre alguma coisa que quiseres                                                               | -sticker gay           |
+| `randomsticker`| Procura um sticker aleatório no giphy                                                                                    | -randomsticker         |
 
-- **Animais**
+### • **Animais**
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -206,4 +197,3 @@ Bot feito por TonaS#9344
 [Twitter](https://twitter.com/tonasfoot5)
 
 [Instagram](https://www.instagram.com/tonas_21/)
-
