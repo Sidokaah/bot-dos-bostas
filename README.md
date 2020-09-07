@@ -166,7 +166,7 @@ Baseado em Discord.js, com o module DisTube.
 
 # Como Instalar e usar o Bot
 
-Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas para o Bot funcionar bem. Entre elas estão `discord.js`, node-fetch, fs, distube, entre outros.
+Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas para o Bot funcionar bem. Entre elas estão `discord.js, node-fetch, fs, distube`, entre outros.
 
 **Nota**: Precisas de ter instalado:
 
