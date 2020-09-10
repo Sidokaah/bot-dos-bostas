@@ -9,46 +9,82 @@ const fecth = require('node-superfetch');
 const cheerio = require("cheerio");
 const request = require("request");
 const moment = require("moment");
-const version = "v.2.4.0" //também podes mudar para a que quiseres
+const version = "v2.4.0" //também podes mudar para a que quiseres
 const superagent = require("superagent");
 const ms = require("ms");
 const querystring = require("querystring");
 const { search } = require('superagent');
 const dateFormat = require('dateformat');
 const api = require("imageapi.js");
-const canvacord = require("canvacord");
-const canva = new canvacord()
+const canva = require("canvacord");
 const weather = require("weather-js")
 const { Random } = require("something-random-on-discord")
 const random = new Random();
 const fs = require("fs")
+//const mongo = require("./mongo")
 const { calculator, formatDate } = require("./functions");
 const fortnite = require("simple-fortnite-api")
 const Client = new fortnite("");//token da api do fortnite-tracker
 const got = require("got");
 const utils = require("./utils/util.js");
+const data = require('./tickets.json')
 const util = new utils.Utils(client, process.cwd());
 client.once("ready", async () => {
     console.log(`${client.user.tag} está pronto para ser usado! ${version}`);
-    setInterval(() => { //podes mudar os estados
-        const statuses = [
-            `nothing`, // `Counter Strike: Global Offensive | ${config.prefix}help`,`Team Fortress 2 | ${config.prefix}help`,`Super Smash Bros. Ultimate | ${config.prefix}help`,`Minecraft | ${config.prefix}help`,`Grand Theft Auto V | ${config.prefix}help`,`Rocket League | ${config.prefix}help`
-        ]
-        const status = statuses[Math.floor(Math.random() * statuses.length)]
-        client.user.setActivity(status, { type: "LISTENING" })
-    }, 5000)
+    const statuses = [
+        { text: (`nothing`), type: 'LISTENING' },
+		{ text: (`with your mom`), type: 'PLAYING' },
+		{ text: ("you"), type: 'WATCHING' }
+    ]
+	client.setInterval(() => {
+		const activity = statuses[Math.floor(Math.random() * statuses.length)];
+		const text = typeof activity.text === 'function' ? activity.text() : activity.text;
+		client.user.setActivity(text, { type: activity.type });
+    }, 30000);
+    //await mongo().then((mongoose) => {
+        //try {
+          //console.log('Conectado ao mongodb!')
+        //} finally {
+         // mongoose.connection.close()
+        //}
+    //})
+    
 });
-client.on('guildCreate', guild => {
+client.on('guildCreate', async (guild) => {
     const channel = guild.channels.cache.find(channel => channel.type === 'text') //não te aconselho a mudares isto
     const embed = new Discord.MessageEmbed()
         .setAuthor(`${client.user.username}:`, client.user.displayAvatarURL())
         .setColor("RANDOM")
-        .setDescription(`Sup everyone, eu sou o **Bot dos Bostas**. Obrigado por me adicionarem ao vosso server. Para verem os comandos em português, faz ${config.prefix}help. Para os veres em inglês, faz ${config.prefix}help-eng.`)
+        .setDescription(`Sup everyone, eu sou o **Bot dos Bostas**. Obrigado por me adicionarem ao vosso server. Para verem os comandos em português, faz \`${config.prefix}help\`. Para os veres em inglês, faz \`${config.prefix}help-eng\`.`)
         .addField("❯ Coisas importantes:", "[Server de Suporte](https://discord.gg/DRnnZPS) - Caso tenhas alguma dúvida ou esteja a haver algum erro ou bug, estás à vontade para entrar no server!")
         .addField("❯ Discord.js:", `[Site](https://discord.js.org/#/) - Library em que o bot foi baseado.!`)
-        .addField("❯ Criador: TonaS#9344", "Disfruta dos mais de 120 comandos!")
+        .addField("❯ Criador: TonaS#9344", "Disfruta dos mais de 130 comandos!")
         .setTimestamp()
     channel.send(embed)
+    let joinLeaveChannel = await client.channels.cache.get("746067012341596231");
+	if (joinLeaveChannel) {
+		const embed = new Discord.MessageEmbed()
+			.setColor("RANDOM")
+            .setThumbnail(client.user.displayAvatarURL({ format: 'png' }))
+			.setTitle(`Entrei em ${guild.name}!`)
+			.setFooter(`ID: ${guild.id}`)
+			.setTimestamp()
+			.setDescription(`**❯ Membros: ${guild.memberCount}\n❯ Estou agora em: ${client.guilds.cache.size} servers\n❯ Com: ${client.users.cache.size} pessoas**`);
+		await joinLeaveChannel.send(embed)
+	}
+});
+client.on("guildDelete", async (guild) => {
+    let joinLeaveChannel = await client.channels.cache.get("746067012341596231");
+	if (joinLeaveChannel) {
+		const embed = new Discord.MessageEmbed()
+			.setColor("RANDOM")
+            .setThumbnail(client.user.displayAvatarURL({ format: 'png' }))
+			.setTitle(`Saí de ${guild.name}!`)
+			.setFooter(`ID: ${guild.id}`)
+			.setTimestamp()
+			.setDescription(`**❯ Membros: ${guild.memberCount}\n❯ Estou agora em: ${client.guilds.cache.size} servers\n❯ Com: ${client.users.cache.size} pessoas**`);
+		await joinLeaveChannel.send(embed)
+	}
 });
 client.on("guildMemberAdd", async (member) => {
     let guild = await client.guilds.cache.get("577155568699965444"); //podes mudar
@@ -121,63 +157,24 @@ client.on("message", async (message) => {
     if (!message.content.startsWith(prefix)) return;
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift();
-    const query = querystring.stringify({ term: args.join(' ') });
-    if(command === "invites"){
-        var user = message.author;
-        message.guild.fetchInvites().then(invites => {
-            const userInvites = invites.array().filter(o => o.inviter.id === user.id);
-            var userInviteCount = 0;
-            for(var i=0; i < userInvites.length; i++){
-                var invite = userInvites[i];
-                userInviteCount += invite['uses'];
-            }
-                message.reply(`You have ${userInviteCount} invites.`);
-            }
-        )
-    }
-    if(command === "setprefix") {
-        if(!message.member.hasPermission("MANAGE_GUILD")) return message.reply("não podes usar isso")
-        if(!args[0] || args[0] === "help") {
-            const helpembed = new Discord.MessageEmbed() 
-                .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setDescription(`Como usar: \`${prefix}setprefix <prefix que queres>\``)
-                .setTimestamp()
-                .setColor("RANDOM")
-            return message.channel.send(helpembed)
-        }
-        let prefixes = JSON.parse(fs.readFileSync("./prefixes.json", "utf8"))
-        prefixes[message.guild.id] = {
-            prefixes: args[0]
-        };
-        fs.writeFile("./prefixes.json", JSON.stringify(prefixes), (err) => {
-            if(err) console.log(err)
-        });
-        const embed = new Discord.MessageEmbed()
-            .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
-            .setTitle("Successo!")
-            .setDescription(`<:tick:748569437589995731> Mudaste o prefix do server para ➜ ${args[0]}`)
-            .setTimestamp()
-            .setFooter(client.user.username, client.user.displayAvatarURL())
-            .setColor("RANDOM")
-        message.channel.send(embed)
-    }
-    if(["loopnow", "Loopnow", "LoopNow", "LOOPNOW"].includes(command)) {
+    const query = querystring.stringify({ term: args.join(' ') })
+    if (["loopnow", "Loopnow", "LoopNow", "LOOPNOW"].includes(command)) {
         let queue = distube.getQueue(message);
         const embed = new Discord.MessageEmbed()
             .setDescription(`Repeat mode está: **${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado"}**`)
             .setColor("RANDOM")
         message.channel.send(embed)
     }
-    if(["autoplaynow", "Autoplaynow", "AutoPlay", "AUTOPLAY"].includes(command)) {
+    if (["autoplaynow", "Autoplaynow", "AutoPlay", "AUTOPLAY"].includes(command)) {
         let queue = distube.getQueue(message);
         const embed = new Discord.MessageEmbed()
             .setDescription(`O AutoPlay está: **${queue.autoplay ? "Ligado" : "Desligado"}**`)
             .setColor("RANDOM")
         message.channel.send(embed)
     }
-    if(["join", "Join", "JOIN"].includes(command)){
+    if (["join", "Join", "JOIN"].includes(command)) {
         const { voice } = message.member
-        if(!voice.channelID){
+        if (!voice.channelID) {
             message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
                 .setColor("RANDOM")
@@ -188,39 +185,7 @@ client.on("message", async (message) => {
         voice.channel.join()
         message.channel.send("<:tick:748569437589995731> | Entrei no voice channel!")
     }
-    if(command === "lyrics") {
-        let queue = distube.getQueue(message.guild.id);
-		var message = await message.channel.send(`Searching. . .`)
-		if (args[0]) {
-			var res = await fetch(`https://some-random-api.ml/lyrics?title=${encodeURIComponent(args[0])}`)
-			var lyrics = await res.json()
-			if (lyrics.error) return message.edit(':frowning: Sorry I could not find that song')
-			if (lyrics.lyrics.length >= 2048) {
-				var cut = lyrics.lyrics.length - 2000
-				lyrics.lyrics = lyrics.lyrics.slice(0,0 - cut) + "..."
-				}
-			var lyricembed = new Discord.MessageEmbed()
-			    .setTitle(lyrics.title + " lyrics")
-                .setDescription(lyrics.lyrics)
-                .setColor("RANDOM")
-			message.edit(lyricembed) 
-	    } else {
-		    if (!queue) return message.edit(`:x: No Music is being played.`)
-		    var res = await fetch(`https://some-random-api.ml/lyrics?title=${encodeURIComponent(queue.songs[0].name)}`)
-		    var lyrics = await res.json()
-		    if (lyrics.error) return message.edit(':frowning: Sorry I could not find that song')
-		    if (lyrics.lyrics.length >= 2048) {
-			    var cut = lyrics.lyrics.length - 2000
-			    lyrics.lyrics = lyrics.lyrics.slice(0,-cut) + "..."
-			}
-		    var lyricembed = new Discord.MessageEmbed()
-		        .setTitle(lyrics.title + " lyrics")
-                .setDescription(lyrics.lyrics)
-                .setColor("RANDOM")
-		    message.edit(lyricembed)
-	    }
-    }
-    if(["remove", "Remove", "REMOVE"].includes(command)) {
+    if (["remove", "Remove", "REMOVE"].includes(command)) {
         let queue = distube.getQueue(message.guild.id); // Get the queue for the guild the cmd was executed in
         if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!");  // Tell the user no song is being played
         if (args[0] < 1 && args[0] >= queue.songs.length) {
@@ -229,7 +194,7 @@ client.on("message", async (message) => {
         var voiceChannel = message.member.voice.channel;
         if (!voiceChannel) return message.reply('Entra num voice channel e tenta outra vez.');
         if (
-        typeof queue.dispatcher == 'undefined' || queue.dispatcher == null
+            typeof queue.dispatcher == 'undefined' || queue.dispatcher == null
         ) {
             return message.reply('<:X:748632517476745226> There is no song playing right now!');
         } else if (voiceChannel.id !== message.guild.me.voice.channel.id) {
@@ -248,7 +213,7 @@ client.on("message", async (message) => {
             message.react("X:748632517476745226")
             const embed = new Discord.MessageEmbed()
                 .setColor("RANDOM")
-                .setDescription(`Precisas de estar num voice chat para resumires música!`)
+                .setDescription(`Precisas de estar num voice chat para tocares música!`)
                 .setTimestamp()
             return message.channel.send(embed)
         }
@@ -286,7 +251,7 @@ client.on("message", async (message) => {
         if (!message.member.voice.channelID) {
             message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
-            .setColor("RANDOM")
+                .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
                 .setTimestamp()
             return message.channel.send(embed)
@@ -326,7 +291,7 @@ client.on("message", async (message) => {
             })
         })
     }
-    if(command === "clearqueue") {
+    if (command === "clearqueue") {
         let queue = distube.getQueue(message.guild.id); // Get the queue for the guild the cmd was executed in
         if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!");  // Tell the user no song is being played
         if (!message.member.voice.channelID) return message.reply("<:X:748632517476745226> Precisas de estar num voice channelpara usares o comando!")
@@ -342,7 +307,7 @@ client.on("message", async (message) => {
                 return message.channel.send(embed1)
             }
             const video = queue.songs[index];
-            queue.songs.splice(parseInt(args[0])-1, 1);
+            queue.songs.splice(parseInt(args[0]) - 1, 1);
             const clearembed1 = new Discord.MessageEmbed()
                 .setDescription(`🗑️ **${video.name}** foi removido do queue!`)
                 .setColor("RANDOM")
@@ -355,9 +320,9 @@ client.on("message", async (message) => {
             .setColor("RANDOM")
         message.channel.send(clearembed);
     }
-    if(["np", "NP", "Np", "nowplaying", "Nowplaying", "NowPlaying", "NOWPLAYING", "current", "Current", "CURRENT"].includes(command)){
+    if (["np", "NP", "Np", "nowplaying", "Nowplaying", "NowPlaying", "NOWPLAYING", "current", "Current", "CURRENT"].includes(command)) {
         let queue = distube.getQueue(message.guild.id);
-        if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!"); 
+        if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!");
         if (!queue.connection) return message.reply("<:X:748632517476745226> O vídeo ainda não começou a tocar!");
         if (!message.member.voice.channelID) return message.reply("<:X:748632517476745226> Precisas de estar num voice channelpara usares o comando!")
         const currentVideo = queue.songs[0];
@@ -382,28 +347,28 @@ client.on("message", async (message) => {
             .setDescription(`${description}`)
             .addFields(
                 { name: "Depois:", value: `**${vidNext}**`, inline: false },
-                { name: "Duração:", value: `**${util.formatSeconds(vidLength)}**`, inline:true },
+                { name: "Duração:", value: `**${util.formatSeconds(vidLength)}**`, inline: true },
                 { name: "Tempo Restante:", value: `**${timeRemaining}**`, inline: true },
-                { name: "Loop:", value: `**${vidLoop}**`, inline: true},
+                { name: "Loop:", value: `**${vidLoop}**`, inline: true },
                 { name: "Pedido por:", value: vidRequester, inline: true },
             )
             .setFooter(`Pedido por: ${message.author.username}`, message.author.displayAvatarURL())
             .setTimestamp();
         const msg = await message.channel.send(embed);
         const interval = setInterval(() => {
-        try {
-            let vidLoop = queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado";
-            queue = distube.getQueue(message.guild.id)
-            timeString = `[${util.formatSeconds(queue.connection.dispatcher.streamTime / 1000)}/${util.formatSeconds(vidLength)}]`
-            timePosition = Math.floor(((queue.connection.dispatcher.streamTime / 1000) / vidLength) * vidDurationCount);
-            timeRemaining = util.formatSeconds(vidLength - (queue.connection.dispatcher.streamTime / 1000));
-            vidNext = queue.songs.length > 1 ? `[${queue.songs[1].name}](${queue.songs[1].url})` : "None";
-            description = `[${vidTitle}](${vidUrl})\n`;
-            description += `\`\`\`${util.replaceStrChar(lengthBar, timePosition, timeIndicator)} ${timeString}\`\`\``;
-            embed.setDescription(description);
-            embed.spliceFields(2, 1, { name: "Tempo Restante:", value: `**${timeRemaining}**`, inline: true });
-            embed.spliceFields(3, 1, { name: "Loop:", value: `**${vidLoop}**`, inline: true });
-            msg.edit(embed);
+            try {
+                let vidLoop = queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado";
+                queue = distube.getQueue(message.guild.id)
+                timeString = `[${util.formatSeconds(queue.connection.dispatcher.streamTime / 1000)}/${util.formatSeconds(vidLength)}]`
+                timePosition = Math.floor(((queue.connection.dispatcher.streamTime / 1000) / vidLength) * vidDurationCount);
+                timeRemaining = util.formatSeconds(vidLength - (queue.connection.dispatcher.streamTime / 1000));
+                vidNext = queue.songs.length > 1 ? `[${queue.songs[1].name}](${queue.songs[1].url})` : "None";
+                description = `[${vidTitle}](${vidUrl})\n`;
+                description += `\`\`\`${util.replaceStrChar(lengthBar, timePosition, timeIndicator)} ${timeString}\`\`\``;
+                embed.setDescription(description);
+                embed.spliceFields(2, 1, { name: "Tempo Restante:", value: `**${timeRemaining}**`, inline: true });
+                embed.spliceFields(3, 1, { name: "Loop:", value: `**${vidLoop}**`, inline: true });
+                msg.edit(embed);
             } catch {
                 msg.delete();
                 return clearInterval(interval);
@@ -411,7 +376,7 @@ client.on("message", async (message) => {
         }, 5000);
         queue.connection.dispatcher.on("finish", () => {
             description = `[${vidTitle}](${vidUrl})\n`;
-            description += `\`\`\`${util.replaceStrChar(lengthBar, vidDurationCount-1, timeIndicator)} Ended\`\`\``;
+            description += `\`\`\`${util.replaceStrChar(lengthBar, vidDurationCount - 1, timeIndicator)} Ended\`\`\``;
             embed.setTitle("Antes a tocar:");
             embed.setDescription(description);
             embed.spliceFields(2, 1, { name: "Tempo Restante:", value: "**Acabou**", inline: true });
@@ -429,9 +394,11 @@ client.on("message", async (message) => {
             return message.channel.send(embed)
         }
         let mode = distube.setRepeatMode(message, parseInt(args[0]));
-        mode = mode ? mode == 2 ? "Repeat queue" : "Repeat song" : "Off";
-        mode = distube.setRepeatMode(message, mode);
-        message.channel.send("Repeat mode está agora no modo: **" + mode + "**");
+        mode = mode ? mode == 2 ? "Repetir o queue" : "Repetir a música" : "Desligado";
+        const embed = new Discord.MessageEmbed()
+            .setDescription("O Loop agora está agora: `" + mode + "`")
+            .setColor("RANDOM")
+        message.channel.send(embed);
     }
     if (["stop", "leave", "Stop", "Leave", "STOP", "LEAVE", "disconnect", "Disconnect", "DISCONNECT"].includes(command)) {
         if (!message.member.voice.channelID) {
@@ -520,71 +487,71 @@ client.on("message", async (message) => {
         let filter = distube.setFilter(message, command);
         message.channel.send("Filtro do queue atual: " + (filter || "Off"));
     }
-    if(["queue", "Queue", "QUEUE", "q", "Q"].includes(command)) {
+    if (["queue", "Queue", "QUEUE", "q", "Q"].includes(command)) {
         let queue = distube.getQueue(message.guild.id);
-	    if (!queue) return message.reply("⚠️ Não está nada a tocar!"); // Tell the user no song is being played
-	    const pageBack = "⏪";
+        if (!queue) return message.reply("⚠️ Não está nada a tocar!"); // Tell the user no song is being played
+        const pageBack = "⏪";
         const pageForward = "⏩";
         const trash = "🗑️";
-	    const num_per_page = 10; // Number of songs to show in a page
-	    let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
-	    let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
-	    while (queuedVideos.length > 0) {
-		    pageContents.push(queuedVideos.splice(0, num_per_page))
-	    }
-	    let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
-	    let currentPage = 0; // Page starts at 0 because array index starts at 0
-	    let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
-	    let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
-	    let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) => 
-		    `**${currentListNum+(index+1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
-	    description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
-	    const embed = new Discord.MessageEmbed()
-		    .setTitle(title)
-		    .setColor('RANDOM')
-		    .setThumbnail(queue.songs[0].thumbnail)
-		    .setDescription(description)
-		    .setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`)
-		    .setTimestamp();
-	    const msg = await message.channel.send(embed);
-	    if (num_pages <= 1) return; 
-	    msg.react(pageBack);
-	    msg.react(pageForward);
-	    const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward;
-	    const collector = msg.createReactionCollector(filter, { time: 150000 });
-	    collector.on("collect", (reaction, user) => {
-		    if (user.bot) return;
-		    queuedVideos = queue.songs.slice();
-		    pageContents = [];
-		    title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
-		    while (queuedVideos.length > 0) {
-			    pageContents.push(queuedVideos.splice(0, num_per_page))
-		    }
-		    num_pages = pageContents.length;
-		    switch (reaction.emoji.name) {
-			    case pageBack: {
-				    currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
-				    break;
-			    }
-			    case pageForward: {
-				    currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
-				    break;
+        const num_per_page = 10; // Number of songs to show in a page
+        let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
+        let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
+        while (queuedVideos.length > 0) {
+            pageContents.push(queuedVideos.splice(0, num_per_page))
+        }
+        let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
+        let currentPage = 0; // Page starts at 0 because array index starts at 0
+        let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
+        let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
+        let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) =>
+            `**${currentListNum + (index + 1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
+        description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+        const embed = new Discord.MessageEmbed()
+            .setTitle(title)
+            .setColor('RANDOM')
+            .setThumbnail(queue.songs[0].thumbnail)
+            .setDescription(description)
+            .setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+            .setTimestamp();
+        const msg = await message.channel.send(embed);
+        if (num_pages <= 1) return;
+        msg.react(pageBack);
+        msg.react(pageForward);
+        const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward;
+        const collector = msg.createReactionCollector(filter, { time: 150000 });
+        collector.on("collect", (reaction, user) => {
+            if (user.bot) return;
+            queuedVideos = queue.songs.slice();
+            pageContents = [];
+            title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
+            while (queuedVideos.length > 0) {
+                pageContents.push(queuedVideos.splice(0, num_per_page))
+            }
+            num_pages = pageContents.length;
+            switch (reaction.emoji.name) {
+                case pageBack: {
+                    currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
+                    break;
+                }
+                case pageForward: {
+                    currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
+                    break;
                 }
                 case trash: {
-				    msg.reactions.removeAll()
-				    break;
-			    }
-		    }
-		    reaction.users.remove(user);
-		    currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
-		    let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) => 
-                `**${currentListNum+(index+1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
+                    msg.reactions.removeAll()
+                    break;
+                }
+            }
+            reaction.users.remove(user);
+            currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
+            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) =>
+                `**${currentListNum + (index + 1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
             description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
-		    embed.setTitle(title);
-		    embed.setDescription(description);
-		    embed.setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`);
-		    msg.edit(embed);
-	    });
+            embed.setTitle(title);
+            embed.setDescription(description);
+            embed.setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+            msg.edit(embed);
+        });
     }
     if ([`changevolume`, `ChangeVolume`, `CHANGEVOLUME`, `cv`, `CV`].includes(command)) {
         if (!message.member.voice.channelID) {
@@ -603,7 +570,7 @@ client.on("message", async (message) => {
                 .setColor("RANDOM")
             message.channel.send(errooembed)
         }
-        if(!args[0]) {
+        if (!args[0]) {
             message.react(":X:748632517476745226")
             const erroembed = new Discord.MessageEmbed()
                 .setDescription("<:X:748632517476745226> Especifica um número para mudar o volume.")
@@ -662,7 +629,7 @@ client.on("message", async (message) => {
                 .setTimestamp()
             return message.channel.send(embed)
         }
-        if(!parseInt(args[0])) {
+        if (!parseInt(args[0])) {
             const erroembed = new Discord.MessageEmbed()
                 .setDescription("Precisas de especificar um número para saltares.")
                 .setColor("RANDOm")
@@ -700,7 +667,7 @@ client.on("message", async (message) => {
     }
     if (command === "bitch") {
         if (!message.member.voice.channelID) {
-             message.react(":X:748632517476745226")
+            message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
                 .setColor("RANDOM")
                 .setDescription(`Precisas de estar num voice chat para resumires música!`)
@@ -763,7 +730,7 @@ client.on("message", async (message) => {
             "https://www.youtube.com/watch?v=IeiPIINxgUs", "https://www.youtube.com/watch?v=EDIxTIi9Uzw", "https://www.youtube.com/watch?v=XyecOcRu7iM", "https://www.youtube.com/watch?v=8CdcCD5V-d8", "https://www.youtube.com/watch?v=T-PdoRXZ4Gs", "https://www.youtube.com/watch?v=MKxe1UEfRe8", "https://www.youtube.com/watch?v=AzaN7sFw9J0"];
         distube.playCustomPlaylist(message, songs, { title: "Nice :D", thumbnail: "https://wallpapercave.com/wp/wp1849755.jpg" });
     }
-    if(command === "cool") {
+    if (command === "cool") {
         if (!message.member.voice.channelID) {
             message.react(":X:748632517476745226")
             const embed = new Discord.MessageEmbed()
@@ -786,12 +753,12 @@ client.on("message", async (message) => {
             })
         })
         let songs = ["https://www.youtube.com/watch?v=3n2Nc1T8ico&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=2&t=0s", "https://www.youtube.com/watch?v=7hT3imDoYfU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=3&t=0s", "https://www.youtube.com/watch?v=ZLohS_HScwc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=4&t=0s", "https://www.youtube.com/watch?v=9qTmFnUqoLs&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=5&t=0s", "https://www.youtube.com/watch?v=4G6w-XJxYOc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=6&t=0s", "https://www.youtube.com/watch?v=GYFJjwXtsU4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=7&t=0s", "https://www.youtube.com/watch?v=8Tu0lcl75yg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=8&t=0s", "https://www.youtube.com/watch?v=AbIqBZWWiQQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=9&t=0s", "https://www.youtube.com/watch?v=yJg-Y5byMMw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=10&t=0s", "https://www.youtube.com/watch?v=JSY6vBPunpY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=11&t=0s", "https://www.youtube.com/watch?v=pIzq5BmcKF4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=12&t=0s", "https://www.youtube.com/watch?v=DNwEk0gTPuc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=13&t=0s", "https://www.youtube.com/watch?v=XDNSPfIEX2o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=14&t=0s", "https://www.youtube.com/watch?v=e4Uk22G1ASg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=15&t=0s", "https://www.youtube.com/watch?v=gN6BQ311XV0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=16&t=0s",
-        "https://www.youtube.com/watch?v=LqD-uUZ8hFw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=17&t=0s", "https://www.youtube.com/watch?v=nLRo25fBxGc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=18&t=0s", "https://www.youtube.com/watch?v=PbX5zPTfPXU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=19&t=0s", "https://www.youtube.com/watch?v=rl9ES4jlUDc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=20&t=0s", "https://www.youtube.com/watch?v=wDgQdr8ZkTw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=21&t=0s", "https://www.youtube.com/watch?v=KiaSHg6BsXg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=22&t=0s", "https://www.youtube.com/watch?v=RKW6rjnYEkc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=23&t=0s", "https://www.youtube.com/watch?v=g-PtIjywmac&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=24&t=0s", "https://www.youtube.com/watch?v=UhVbNDEDc1k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=25&t=0s", "https://www.youtube.com/watch?v=yDTvvOTie0w&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=26&t=0s", "https://www.youtube.com/watch?v=w9WwDddpHrg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=27&t=0s", "https://www.youtube.com/watch?v=T4Gq9pkToS8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=28&t=0s", "https://www.youtube.com/watch?v=iqoNoU-rm14&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=29&t=0s", "https://www.youtube.com/watch?v=RrtAC7UZOh0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=30&t=0s", "https://www.youtube.com/watch?v=xzyRoshFFaA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=31&t=0s", "https://www.youtube.com/watch?v=CUxAx0EWQek&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=32&t=0s", "https://www.youtube.com/watch?v=K0tXhd7u56k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=33&t=0s",
-        "https://www.youtube.com/watch?v=JkFUfjknQ6Q&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=34&t=0s", "https://www.youtube.com/watch?v=OVMuwa-HRCQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=35&t=0s", "https://www.youtube.com/watch?v=OkwFmybdG0Q&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=36&t=0s", "https://www.youtube.com/watch?v=cDVR6OtP9WI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=37&t=0s", "https://www.youtube.com/watch?v=BJms0pQpW44&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=38&t=0s", "https://www.youtube.com/watch?v=qj5ZahqBfFE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=39&t=0s", "https://www.youtube.com/watch?v=GudhUvWwe3c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=40&t=0s", "https://www.youtube.com/watch?v=Uo6Nr1VEml8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=41&t=0s", "https://www.youtube.com/watch?v=6jARhgo0cCA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=42&t=0s", "https://www.youtube.com/watch?v=s20q_gJ3OXA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=43&t=0s", "https://www.youtube.com/watch?v=7tvEFOupqn0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=44&t=0s", "https://www.youtube.com/watch?v=X0jtXCuPw6Y&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=45&t=0s", "https://www.youtube.com/watch?v=lrpS69H1RRU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=46&t=0s", "https://www.youtube.com/watch?v=fjM7NdnM_vc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=47&t=0s", "https://www.youtube.com/watch?v=kL8CyVqzmkc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=48&t=0s", "https://www.youtube.com/watch?v=6aWc_ZPvs9g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=49&t=0s", "https://www.youtube.com/watch?v=4HX6nSlBGss&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=50&t=0s", "https://www.youtube.com/watch?v=88qd8FxS3AM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=51&t=0s", "https://www.youtube.com/watch?v=U-xHQa9pPdY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=52&t=0s",
-        "https://www.youtube.com/watch?v=1doM0Q3il3M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=53&t=0s", "https://www.youtube.com/watch?v=usXhiWE2Uc0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=54&t=0s", "https://www.youtube.com/watch?v=Ivi1e-yCPcI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=55&t=0s", "https://www.youtube.com/watch?v=djEBoSoiIPM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=56&t=0s", "https://www.youtube.com/watch?v=C6HEP_jb6jc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=57&t=0s", "https://www.youtube.com/watch?v=BEmqYiutcOw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=58&t=0s", "https://www.youtube.com/watch?v=iCHuWJpEUbM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=59&t=0s", "https://www.youtube.com/watch?v=o0p9do2JO9c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=60&t=0s", "https://www.youtube.com/watch?v=TGywzL-zCfQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=61&t=0s", "https://www.youtube.com/watch?v=OmWkLOku8pQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=62&t=0s", "https://www.youtube.com/watch?v=ElV5AKQpR1c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=63&t=0s", "https://www.youtube.com/watch?v=RhR_Z5wVvJM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=64&t=0s", "https://www.youtube.com/watch?v=8-gpAw17vhc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=65&t=0s", "https://www.youtube.com/watch?v=Xz0RUutaXN0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=66&t=0s", "https://www.youtube.com/watch?v=N17omU8oykU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=67&t=0s", "https://www.youtube.com/watch?v=CwOoheKKWV4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=68&t=0s", "https://www.youtube.com/watch?v=pJSmc19NSgI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=69&t=0s", "https://www.youtube.com/watch?v=3Q5tSQlJGBE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=70&t=0s", "https://www.youtube.com/watch?v=8xnNsWl5QrA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=71&t=0s", "https://www.youtube.com/watch?v=IatXU05oUE0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=72&t=0s", "https://www.youtube.com/watch?v=_BWPNPtsZm8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=73&t=0s", "https://www.youtube.com/watch?v=8jJJM_WYEx0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=74&t=0s", "https://www.youtube.com/watch?v=srRGb5YbyNE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=75&t=0s", "https://www.youtube.com/watch?v=UG3k1ZlIpAc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=76&t=0s",
-        "https://www.youtube.com/watch?v=ZviwUUJA8wo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=77&t=0s", "https://www.youtube.com/watch?v=BS3_WQERfww&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=78&t=0s", "https://www.youtube.com/watch?v=IFtC_Yf8smQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=79&t=0s", "https://www.youtube.com/watch?v=TZnHlEm_oG0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=80&t=0s", "https://www.youtube.com/watch?v=9s5FhDPLOWM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=81&t=0s", "https://www.youtube.com/watch?v=LfgzPpmjM0M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=82&t=0s", "https://www.youtube.com/watch?v=TC_MtNC-SuM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=83&t=0s", "https://www.youtube.com/watch?v=v4Za061pQac&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=84&t=0s", "https://www.youtube.com/watch?v=Rs96wQyBkxA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=85&t=0s", "https://www.youtube.com/watch?v=BSW-Uiicg4c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=86&t=0s", "https://www.youtube.com/watch?v=AiFhpjNqGNg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=87&t=0s", "https://www.youtube.com/watch?v=jkE4JVoDK-0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=88&t=0s", "https://www.youtube.com/watch?v=Y-dL1q_OHds&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=89&t=0s", "https://www.youtube.com/watch?v=Dlb9od9KksY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=90&t=0s", "https://www.youtube.com/watch?v=UvOmSa6kvCc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=91&t=0s", "https://www.youtube.com/watch?v=MLB8tSA2GFA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=92&t=0s", "https://www.youtube.com/watch?v=G7LZTnUhXPU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=93&t=0s", "https://www.youtube.com/watch?v=ugqJaGTa_0o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=94&t=0s", "https://www.youtube.com/watch?v=Y15C6oh16tM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=95&t=0s", "https://www.youtube.com/watch?v=vr-JMCFHT-s&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=96&t=0s", "https://www.youtube.com/watch?v=Js1tkO4Pa4U&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=97&t=0s", "https://www.youtube.com/watch?v=EsoxfvwcLCE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=98&t=0s", "https://www.youtube.com/watch?v=8UG1A2B8lZY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=100&t=0s", "https://www.youtube.com/watch?v=M5SQFLnf77k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=101&t=0s", "https://www.youtube.com/watch?v=GAYgd9BysxI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=102&t=0s", "https://www.youtube.com/watch?v=qmGauoXbREY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=103&t=0s", "https://www.youtube.com/watch?v=0DsgvTnGzFg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=104&t=0s", "https://www.youtube.com/watch?v=34ECZ1CIexQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=105&t=0s", "https://www.youtube.com/watch?v=aWubvX-OreM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=106&t=0s", "https://www.youtube.com/watch?v=kqWOyfNt5l8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=107&t=0s", "https://www.youtube.com/watch?v=0ihtdOeTRqc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=108&t=0s", "https://www.youtube.com/watch?v=ZX3RSrOjMZg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=109&t=0s", "https://www.youtube.com/watch?v=bwyylmUwKvA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=110&t=0s", "https://www.youtube.com/watch?v=eakT0od-gY0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=111&t=0s", "https://www.youtube.com/watch?v=yERNy9Dj8Pc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=112&t=0s", "https://www.youtube.com/watch?v=O_NP8RF2Owc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=113&t=0s", "https://www.youtube.com/watch?v=nsR3WDvCUdU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=114&t=0s", "https://www.youtube.com/watch?v=KrKRr2esnyc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=115&t=0s", "https://www.youtube.com/watch?v=_PoVcAWtIeE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=116&t=0s",
-        "https://www.youtube.com/watch?v=bgEvPLDKrw8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=117&t=0s", "https://www.youtube.com/watch?v=jgoSfG8HvaI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=118&t=0s", "https://www.youtube.com/watch?v=atzxTaozLI0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=119&t=0s", "https://www.youtube.com/watch?v=yxx3fXv1uY0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=120&t=0s", "https://www.youtube.com/watch?v=nMbx8EurE0g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=121&t=0s", "https://www.youtube.com/watch?v=fc1tg9qkGyI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=122&t=0s", "https://www.youtube.com/watch?v=pWCXHQ6CCPU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=123&t=0s", "https://www.youtube.com/watch?v=dFhDRo3247o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=124&t=0s", "https://www.youtube.com/watch?v=02nX4Lh48us&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=125&t=0s", "https://www.youtube.com/watch?v=mPrxJMMrFFI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=126&t=0s", "https://www.youtube.com/watch?v=OflRilRLAUs&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=127&t=0s", "https://www.youtube.com/watch?v=nesjYuYUhh4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=128&t=0s", "https://www.youtube.com/watch?v=ZGr7hE4Ooqc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=129&t=0s", "https://www.youtube.com/watch?v=73YrXbuHzx8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=130&t=0s", "https://www.youtube.com/watch?v=79AABrgMqMQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=131&t=0s", "https://www.youtube.com/watch?v=bCtCPUzPvgI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=132&t=0s", "https://www.youtube.com/watch?v=BXgLQRSnMwc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=133&t=0s", "https://www.youtube.com/watch?v=hW5QIZvZE3g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=134&t=0s", "https://www.youtube.com/watch?v=txXoCP8xngQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=135&t=0s", "https://www.youtube.com/watch?v=poWpo76mH_0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=136&t=0s", "https://www.youtube.com/watch?v=v_qQxQJ8rUE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=137&t=0s", "https://www.youtube.com/watch?v=UwjWu3fNkQo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=138&t=0s", "https://www.youtube.com/watch?v=O6q1TpmnbWc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=139&t=0s", "https://www.youtube.com/watch?v=zqF0t0dRrOg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=140&t=0s", "https://www.youtube.com/watch?v=UKjkI_bWJq0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=141&t=0s", "https://www.youtube.com/watch?v=2zyH1A5fgyw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=142&t=0s", "https://www.youtube.com/watch?v=q9LqCb8WnSw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=143&t=0s", "https://www.youtube.com/watch?v=9HeWAuf8ucM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=144&t=0s", "https://www.youtube.com/watch?v=ntyKeEjd46U&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=145&t=0s", "https://www.youtube.com/watch?v=3aeSiPZ9i9I&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=146&t=0s", "https://www.youtube.com/watch?v=dDJDwxsda3E&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=147&t=0s", "https://www.youtube.com/watch?v=nitJh_mDT_8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=148&t=0s", "https://www.youtube.com/watch?v=4_QVIebdlGo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=149&t=0s", "https://www.youtube.com/watch?v=0FWigSmSXHw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=150&t=0s", "https://www.youtube.com/watch?v=2-uZplR-Mbk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=151&t=0s", "https://www.youtube.com/watch?v=yInXkDjmE6o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=152&t=0s", "https://www.youtube.com/watch?v=UzLcptic_r8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=153&t=0s", "https://www.youtube.com/watch?v=85mPOfUvV00&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=154&t=0s", "https://www.youtube.com/watch?v=UyyA_DcqCfk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=155&t=0s", "https://www.youtube.com/watch?v=69PRNh1WIBw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=156&t=0s", "https://www.youtube.com/watch?v=5x2OoliPhOI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=157&t=0s", "https://www.youtube.com/watch?v=KOJaHC3eEbc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=158&t=0s", "https://www.youtube.com/watch?v=3XrbWS5-5cU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=159&t=0s", "https://www.youtube.com/watch?v=77eqdmxSKyI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=160&t=0s", "https://www.youtube.com/watch?v=BZ8y0qx7fWE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=161&t=0s",
-        "https://www.youtube.com/watch?v=sTt026NTQfE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=162&t=0s", "https://www.youtube.com/watch?v=5iuKGMTHqyE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=163&t=0s", "https://www.youtube.com/watch?v=nWzj2YxsRSo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=164&t=0s", "https://www.youtube.com/watch?v=aDJ-bqOkzqY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=165&t=0s", "https://www.youtube.com/watch?v=4ZROUm581ys&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=166&t=0s", "https://www.youtube.com/watch?v=IZlsHSGKP6g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=167&t=0s", "https://www.youtube.com/watch?v=ZPLKJOBD04M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=168&t=0s", "https://www.youtube.com/watch?v=0X1Gnum_cEM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=169&t=0s", "https://www.youtube.com/watch?v=8aehhy8Ei48&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=170&t=0s", "https://www.youtube.com/watch?v=UivNH-S7hkM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=171&t=0s", "https://www.youtube.com/watch?v=qql97uZI0-M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=172&t=0s", "https://www.youtube.com/watch?v=1-Hethihxh4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=173&t=0s", "https://www.youtube.com/watch?v=983ocD7xwBg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=174&t=0s", "https://www.youtube.com/watch?v=iya93XLERm0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=175&t=0s", "https://www.youtube.com/watch?v=tOZNh8veU_Y&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=176&t=0s", "https://www.youtube.com/watch?v=SzKZl7SkNN0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=177&t=0s", "https://www.youtube.com/watch?v=-Bb8YXoq91M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=179&t=0s", "https://www.youtube.com/watch?v=hVwW3HHPSvE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=180&t=0s", "https://www.youtube.com/watch?v=ZKwQOAH8-Ao&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=181&t=0s", "https://www.youtube.com/watch?v=dpxKDBk69sg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=182&t=0s", "https://www.youtube.com/watch?v=nllEGaoGBIM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=183&t=0s", "https://www.youtube.com/watch?v=sDXhJMHnrrg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=184&t=38s", "https://www.youtube.com/watch?v=G6BaWPC4MQc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=186&t=0s", "https://www.youtube.com/watch?v=SDiJiGuUeBo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=187&t=0s", "https://www.youtube.com/watch?v=6y_NJg-xoeE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=188&t=0s", "https://www.youtube.com/watch?v=bu9NYAEXnHQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=189&t=0s", "https://www.youtube.com/watch?v=wb7xqXciOnE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=190&t=0s", "https://www.youtube.com/watch?v=9eZ_EEQxNNI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=191&t=0s", "https://www.youtube.com/watch?v=lRNzBJ8sHak&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=192&t=0s", "https://www.youtube.com/watch?v=LdF0IYHFDZk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=193&t=0s", "https://www.youtube.com/watch?v=F3B6qKchtzo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=194&t=0s", "https://www.youtube.com/watch?v=OUkkaqSNduU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=195&t=0s", "https://www.youtube.com/watch?v=4qqfoMKAmiA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=196&t=0s"]
+            "https://www.youtube.com/watch?v=LqD-uUZ8hFw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=17&t=0s", "https://www.youtube.com/watch?v=nLRo25fBxGc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=18&t=0s", "https://www.youtube.com/watch?v=PbX5zPTfPXU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=19&t=0s", "https://www.youtube.com/watch?v=rl9ES4jlUDc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=20&t=0s", "https://www.youtube.com/watch?v=wDgQdr8ZkTw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=21&t=0s", "https://www.youtube.com/watch?v=KiaSHg6BsXg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=22&t=0s", "https://www.youtube.com/watch?v=RKW6rjnYEkc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=23&t=0s", "https://www.youtube.com/watch?v=g-PtIjywmac&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=24&t=0s", "https://www.youtube.com/watch?v=UhVbNDEDc1k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=25&t=0s", "https://www.youtube.com/watch?v=yDTvvOTie0w&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=26&t=0s", "https://www.youtube.com/watch?v=w9WwDddpHrg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=27&t=0s", "https://www.youtube.com/watch?v=T4Gq9pkToS8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=28&t=0s", "https://www.youtube.com/watch?v=iqoNoU-rm14&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=29&t=0s", "https://www.youtube.com/watch?v=RrtAC7UZOh0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=30&t=0s", "https://www.youtube.com/watch?v=xzyRoshFFaA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=31&t=0s", "https://www.youtube.com/watch?v=CUxAx0EWQek&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=32&t=0s", "https://www.youtube.com/watch?v=K0tXhd7u56k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=33&t=0s",
+            "https://www.youtube.com/watch?v=JkFUfjknQ6Q&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=34&t=0s", "https://www.youtube.com/watch?v=OVMuwa-HRCQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=35&t=0s", "https://www.youtube.com/watch?v=OkwFmybdG0Q&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=36&t=0s", "https://www.youtube.com/watch?v=cDVR6OtP9WI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=37&t=0s", "https://www.youtube.com/watch?v=BJms0pQpW44&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=38&t=0s", "https://www.youtube.com/watch?v=qj5ZahqBfFE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=39&t=0s", "https://www.youtube.com/watch?v=GudhUvWwe3c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=40&t=0s", "https://www.youtube.com/watch?v=Uo6Nr1VEml8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=41&t=0s", "https://www.youtube.com/watch?v=6jARhgo0cCA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=42&t=0s", "https://www.youtube.com/watch?v=s20q_gJ3OXA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=43&t=0s", "https://www.youtube.com/watch?v=7tvEFOupqn0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=44&t=0s", "https://www.youtube.com/watch?v=X0jtXCuPw6Y&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=45&t=0s", "https://www.youtube.com/watch?v=lrpS69H1RRU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=46&t=0s", "https://www.youtube.com/watch?v=fjM7NdnM_vc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=47&t=0s", "https://www.youtube.com/watch?v=kL8CyVqzmkc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=48&t=0s", "https://www.youtube.com/watch?v=6aWc_ZPvs9g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=49&t=0s", "https://www.youtube.com/watch?v=4HX6nSlBGss&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=50&t=0s", "https://www.youtube.com/watch?v=88qd8FxS3AM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=51&t=0s", "https://www.youtube.com/watch?v=U-xHQa9pPdY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=52&t=0s",
+            "https://www.youtube.com/watch?v=1doM0Q3il3M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=53&t=0s", "https://www.youtube.com/watch?v=usXhiWE2Uc0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=54&t=0s", "https://www.youtube.com/watch?v=Ivi1e-yCPcI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=55&t=0s", "https://www.youtube.com/watch?v=djEBoSoiIPM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=56&t=0s", "https://www.youtube.com/watch?v=C6HEP_jb6jc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=57&t=0s", "https://www.youtube.com/watch?v=BEmqYiutcOw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=58&t=0s", "https://www.youtube.com/watch?v=iCHuWJpEUbM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=59&t=0s", "https://www.youtube.com/watch?v=o0p9do2JO9c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=60&t=0s", "https://www.youtube.com/watch?v=TGywzL-zCfQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=61&t=0s", "https://www.youtube.com/watch?v=OmWkLOku8pQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=62&t=0s", "https://www.youtube.com/watch?v=ElV5AKQpR1c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=63&t=0s", "https://www.youtube.com/watch?v=RhR_Z5wVvJM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=64&t=0s", "https://www.youtube.com/watch?v=8-gpAw17vhc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=65&t=0s", "https://www.youtube.com/watch?v=Xz0RUutaXN0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=66&t=0s", "https://www.youtube.com/watch?v=N17omU8oykU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=67&t=0s", "https://www.youtube.com/watch?v=CwOoheKKWV4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=68&t=0s", "https://www.youtube.com/watch?v=pJSmc19NSgI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=69&t=0s", "https://www.youtube.com/watch?v=3Q5tSQlJGBE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=70&t=0s", "https://www.youtube.com/watch?v=8xnNsWl5QrA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=71&t=0s", "https://www.youtube.com/watch?v=IatXU05oUE0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=72&t=0s", "https://www.youtube.com/watch?v=_BWPNPtsZm8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=73&t=0s", "https://www.youtube.com/watch?v=8jJJM_WYEx0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=74&t=0s", "https://www.youtube.com/watch?v=srRGb5YbyNE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=75&t=0s", "https://www.youtube.com/watch?v=UG3k1ZlIpAc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=76&t=0s",
+            "https://www.youtube.com/watch?v=ZviwUUJA8wo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=77&t=0s", "https://www.youtube.com/watch?v=BS3_WQERfww&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=78&t=0s", "https://www.youtube.com/watch?v=IFtC_Yf8smQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=79&t=0s", "https://www.youtube.com/watch?v=TZnHlEm_oG0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=80&t=0s", "https://www.youtube.com/watch?v=9s5FhDPLOWM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=81&t=0s", "https://www.youtube.com/watch?v=LfgzPpmjM0M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=82&t=0s", "https://www.youtube.com/watch?v=TC_MtNC-SuM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=83&t=0s", "https://www.youtube.com/watch?v=v4Za061pQac&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=84&t=0s", "https://www.youtube.com/watch?v=Rs96wQyBkxA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=85&t=0s", "https://www.youtube.com/watch?v=BSW-Uiicg4c&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=86&t=0s", "https://www.youtube.com/watch?v=AiFhpjNqGNg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=87&t=0s", "https://www.youtube.com/watch?v=jkE4JVoDK-0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=88&t=0s", "https://www.youtube.com/watch?v=Y-dL1q_OHds&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=89&t=0s", "https://www.youtube.com/watch?v=Dlb9od9KksY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=90&t=0s", "https://www.youtube.com/watch?v=UvOmSa6kvCc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=91&t=0s", "https://www.youtube.com/watch?v=MLB8tSA2GFA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=92&t=0s", "https://www.youtube.com/watch?v=G7LZTnUhXPU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=93&t=0s", "https://www.youtube.com/watch?v=ugqJaGTa_0o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=94&t=0s", "https://www.youtube.com/watch?v=Y15C6oh16tM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=95&t=0s", "https://www.youtube.com/watch?v=vr-JMCFHT-s&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=96&t=0s", "https://www.youtube.com/watch?v=Js1tkO4Pa4U&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=97&t=0s", "https://www.youtube.com/watch?v=EsoxfvwcLCE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=98&t=0s", "https://www.youtube.com/watch?v=8UG1A2B8lZY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=100&t=0s", "https://www.youtube.com/watch?v=M5SQFLnf77k&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=101&t=0s", "https://www.youtube.com/watch?v=GAYgd9BysxI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=102&t=0s", "https://www.youtube.com/watch?v=qmGauoXbREY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=103&t=0s", "https://www.youtube.com/watch?v=0DsgvTnGzFg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=104&t=0s", "https://www.youtube.com/watch?v=34ECZ1CIexQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=105&t=0s", "https://www.youtube.com/watch?v=aWubvX-OreM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=106&t=0s", "https://www.youtube.com/watch?v=kqWOyfNt5l8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=107&t=0s", "https://www.youtube.com/watch?v=0ihtdOeTRqc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=108&t=0s", "https://www.youtube.com/watch?v=ZX3RSrOjMZg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=109&t=0s", "https://www.youtube.com/watch?v=bwyylmUwKvA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=110&t=0s", "https://www.youtube.com/watch?v=eakT0od-gY0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=111&t=0s", "https://www.youtube.com/watch?v=yERNy9Dj8Pc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=112&t=0s", "https://www.youtube.com/watch?v=O_NP8RF2Owc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=113&t=0s", "https://www.youtube.com/watch?v=nsR3WDvCUdU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=114&t=0s", "https://www.youtube.com/watch?v=KrKRr2esnyc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=115&t=0s", "https://www.youtube.com/watch?v=_PoVcAWtIeE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=116&t=0s",
+            "https://www.youtube.com/watch?v=bgEvPLDKrw8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=117&t=0s", "https://www.youtube.com/watch?v=jgoSfG8HvaI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=118&t=0s", "https://www.youtube.com/watch?v=atzxTaozLI0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=119&t=0s", "https://www.youtube.com/watch?v=yxx3fXv1uY0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=120&t=0s", "https://www.youtube.com/watch?v=nMbx8EurE0g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=121&t=0s", "https://www.youtube.com/watch?v=fc1tg9qkGyI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=122&t=0s", "https://www.youtube.com/watch?v=pWCXHQ6CCPU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=123&t=0s", "https://www.youtube.com/watch?v=dFhDRo3247o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=124&t=0s", "https://www.youtube.com/watch?v=02nX4Lh48us&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=125&t=0s", "https://www.youtube.com/watch?v=mPrxJMMrFFI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=126&t=0s", "https://www.youtube.com/watch?v=OflRilRLAUs&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=127&t=0s", "https://www.youtube.com/watch?v=nesjYuYUhh4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=128&t=0s", "https://www.youtube.com/watch?v=ZGr7hE4Ooqc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=129&t=0s", "https://www.youtube.com/watch?v=73YrXbuHzx8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=130&t=0s", "https://www.youtube.com/watch?v=79AABrgMqMQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=131&t=0s", "https://www.youtube.com/watch?v=bCtCPUzPvgI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=132&t=0s", "https://www.youtube.com/watch?v=BXgLQRSnMwc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=133&t=0s", "https://www.youtube.com/watch?v=hW5QIZvZE3g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=134&t=0s", "https://www.youtube.com/watch?v=txXoCP8xngQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=135&t=0s", "https://www.youtube.com/watch?v=poWpo76mH_0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=136&t=0s", "https://www.youtube.com/watch?v=v_qQxQJ8rUE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=137&t=0s", "https://www.youtube.com/watch?v=UwjWu3fNkQo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=138&t=0s", "https://www.youtube.com/watch?v=O6q1TpmnbWc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=139&t=0s", "https://www.youtube.com/watch?v=zqF0t0dRrOg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=140&t=0s", "https://www.youtube.com/watch?v=UKjkI_bWJq0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=141&t=0s", "https://www.youtube.com/watch?v=2zyH1A5fgyw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=142&t=0s", "https://www.youtube.com/watch?v=q9LqCb8WnSw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=143&t=0s", "https://www.youtube.com/watch?v=9HeWAuf8ucM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=144&t=0s", "https://www.youtube.com/watch?v=ntyKeEjd46U&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=145&t=0s", "https://www.youtube.com/watch?v=3aeSiPZ9i9I&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=146&t=0s", "https://www.youtube.com/watch?v=dDJDwxsda3E&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=147&t=0s", "https://www.youtube.com/watch?v=nitJh_mDT_8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=148&t=0s", "https://www.youtube.com/watch?v=4_QVIebdlGo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=149&t=0s", "https://www.youtube.com/watch?v=0FWigSmSXHw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=150&t=0s", "https://www.youtube.com/watch?v=2-uZplR-Mbk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=151&t=0s", "https://www.youtube.com/watch?v=yInXkDjmE6o&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=152&t=0s", "https://www.youtube.com/watch?v=UzLcptic_r8&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=153&t=0s", "https://www.youtube.com/watch?v=85mPOfUvV00&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=154&t=0s", "https://www.youtube.com/watch?v=UyyA_DcqCfk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=155&t=0s", "https://www.youtube.com/watch?v=69PRNh1WIBw&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=156&t=0s", "https://www.youtube.com/watch?v=5x2OoliPhOI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=157&t=0s", "https://www.youtube.com/watch?v=KOJaHC3eEbc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=158&t=0s", "https://www.youtube.com/watch?v=3XrbWS5-5cU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=159&t=0s", "https://www.youtube.com/watch?v=77eqdmxSKyI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=160&t=0s", "https://www.youtube.com/watch?v=BZ8y0qx7fWE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=161&t=0s",
+            "https://www.youtube.com/watch?v=sTt026NTQfE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=162&t=0s", "https://www.youtube.com/watch?v=5iuKGMTHqyE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=163&t=0s", "https://www.youtube.com/watch?v=nWzj2YxsRSo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=164&t=0s", "https://www.youtube.com/watch?v=aDJ-bqOkzqY&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=165&t=0s", "https://www.youtube.com/watch?v=4ZROUm581ys&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=166&t=0s", "https://www.youtube.com/watch?v=IZlsHSGKP6g&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=167&t=0s", "https://www.youtube.com/watch?v=ZPLKJOBD04M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=168&t=0s", "https://www.youtube.com/watch?v=0X1Gnum_cEM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=169&t=0s", "https://www.youtube.com/watch?v=8aehhy8Ei48&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=170&t=0s", "https://www.youtube.com/watch?v=UivNH-S7hkM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=171&t=0s", "https://www.youtube.com/watch?v=qql97uZI0-M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=172&t=0s", "https://www.youtube.com/watch?v=1-Hethihxh4&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=173&t=0s", "https://www.youtube.com/watch?v=983ocD7xwBg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=174&t=0s", "https://www.youtube.com/watch?v=iya93XLERm0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=175&t=0s", "https://www.youtube.com/watch?v=tOZNh8veU_Y&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=176&t=0s", "https://www.youtube.com/watch?v=SzKZl7SkNN0&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=177&t=0s", "https://www.youtube.com/watch?v=-Bb8YXoq91M&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=179&t=0s", "https://www.youtube.com/watch?v=hVwW3HHPSvE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=180&t=0s", "https://www.youtube.com/watch?v=ZKwQOAH8-Ao&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=181&t=0s", "https://www.youtube.com/watch?v=dpxKDBk69sg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=182&t=0s", "https://www.youtube.com/watch?v=nllEGaoGBIM&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=183&t=0s", "https://www.youtube.com/watch?v=sDXhJMHnrrg&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=184&t=38s", "https://www.youtube.com/watch?v=G6BaWPC4MQc&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=186&t=0s", "https://www.youtube.com/watch?v=SDiJiGuUeBo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=187&t=0s", "https://www.youtube.com/watch?v=6y_NJg-xoeE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=188&t=0s", "https://www.youtube.com/watch?v=bu9NYAEXnHQ&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=189&t=0s", "https://www.youtube.com/watch?v=wb7xqXciOnE&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=190&t=0s", "https://www.youtube.com/watch?v=9eZ_EEQxNNI&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=191&t=0s", "https://www.youtube.com/watch?v=lRNzBJ8sHak&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=192&t=0s", "https://www.youtube.com/watch?v=LdF0IYHFDZk&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=193&t=0s", "https://www.youtube.com/watch?v=F3B6qKchtzo&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=194&t=0s", "https://www.youtube.com/watch?v=OUkkaqSNduU&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=195&t=0s", "https://www.youtube.com/watch?v=4qqfoMKAmiA&list=PLmqDeXnpymEVIOC83A3coUEY6P9u-1MNN&index=196&t=0s"]
         distube.playCustomPlaylist(message, songs, { title: "COOL!!!" });
 
     }
@@ -1095,51 +1062,97 @@ client.on("message", async (message) => {
             .setFooter(`Usa sempre ${prefix} antes de todos os comandos`, client.user.displayAvatarURL())
         message.channel.send(help)
     }
-    if (message.content === `${prefix}helpinha`) {
-        message.react(":tick:748569437589995731")
-        const infomod = "⚙️"
-        const imagens = "📷"
-        const fun = ":super_mega_laugh:738387807260770347"
-        const meme = ":pepesad:749210746499498015"
-        const musica = ":youtube:748576732642148472"
-        const animais = "🐶"
-        const primeira = new Discord.MessageEmbed()
-            .setAuthor(message.author.tag, message.author.displayAvatarURL())
-            .setTitle("Lista de Comandos")
-            .setColor("RANDOM")
-            .setDescription("**Todas as categorias de comandos:**\n\n⚙️ Info e Moderação;\n📷 Imagens;\n<:super_mega_laugh:738387807260770347> Fun;\n<:pepesad:749210746499498015> Memes;\n<:youtube:748576732642148472> Música;\n🐶 Animais\n")
-            .setFooter(`Pedido por: ${message.author.username}`, message.author.displayAvatarURL())
-            .setTimestamp()
-        const msg = await message.channel.send(primeira);
-        msg.react(infomod)
-        msg.react(imagens)
-        msg.react(fun)
-        msg.react(meme)
-        msg.react(musica)
-        msg.react(animais)
-        const filter = (reaction) => reaction.emoji.name === infomod || reaction.emoji.name === imagens || reaction.emoji.name === fun || reaction.emoji.name === meme || reaction.emoji.name === musica || reaction.emoji.name === animais;
-	    const collector = msg.createReactionCollector(filter);
-	    collector.on("collect", (reaction, user) => {
-            switch (reaction.emoji.name) {
-                case fun: { 
-                    primeira.title = "Fun",
-                    primeira.description = `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`
-                    msg.edit(primeira)
-                    break;
-                }
-            }
-        })
-    }
     if (message.content === `${prefix}help`) {
+        message.react(":tick:748569437589995731")
+        const ajuda = new Discord.MessageEmbed()
+            .setColor("RANDOM")
+            .setTitle("Lista de comandos do Bot!")
+            .setDescription("**Todas as categorias de comandos:**\n``` ℹ️  Info\n⚙️ Moderação\n📷 Imagens\n😆 Fun\n🤣 Memes\n🎵 Música\n🐶 Animais```")
+            .setTimestamp()
+            .setFooter(`Pedido por ${message.member.displayName}`, message.author.displayAvatarURL({Size: 32}))   
+      message.channel.send(ajuda).then(msg => {
+        msg.react('ℹ️').then(r => {
+            msg.react('⚙️').then(r => {
+                msg.react('😆').then(r => {
+                    msg.react('🤣').then(r => {
+                        msg.react('🎵').then(r => {
+                            msg.react('🐶').then(r => {
+                                msg.react('📷').then(r => {
+                                })
+                            })
+                        })
+                    })
+                })
+            })
+        })
+        const infosFilter = (reaction, user) => reaction.emoji.name === 'ℹ️' && user.id === message.author.id;
+        const admFilter = (reaction, user) => reaction.emoji.name === '⚙️' && user.id === message.author.id;
+        const funFilter = (reaction, user) => reaction.emoji.name === '😆' && user.id === message.author.id;
+        const memFilter = (reaction, user) => reaction.emoji.name === '🤣' && user.id === message.author.id;
+        const muFilter = (reaction, user) => reaction.emoji.name === '🎵' && user.id === message.author.id;
+        const aniFilter = (reaction, user) => reaction.emoji.name === '🐶' && user.id === message.author.id;
+        const imaFilter = (reaction, user) => reaction.emoji.name === '📷' && user.id === message.author.id;
+        const infos = msg.createReactionCollector(infosFilter);
+        const adm = msg.createReactionCollector(admFilter);
+        const fun = msg.createReactionCollector(funFilter);
+        const mem = msg.createReactionCollector(memFilter);
+        const mu = msg.createReactionCollector(muFilter);
+        const ani = msg.createReactionCollector(aniFilter);
+        const ima = msg.createReactionCollector(imaFilter);
+        adm.on('collect', (r2, user) => {
+            r2.users.remove(user)
+            ajuda.setTitle(":gear: • Mod [17]")
+            ajuda.setDescription(`\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`, \`setprefix\`, \`createticket\`, \`ticket close\`.`)
+            msg.edit(ajuda)
+        })
+        infos.on('collect', (r2, user) => {
+            r2.users.remove(user)
+            ajuda.setTitle(":information_source: • Info [21]")
+            ajuda.setDescription(`\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\`.`)
+            msg.edit(ajuda)
+        })
+        fun.on('collect', (r2, user) => {
+            r2.users.remove(user)
+            ajuda.setTitle("<:super_mega_laugh:738387807260770347> • Fun [28]")
+            ajuda.setDescription(`\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`, \`istoxic\`, \`no-u\`.`)
+            msg.edit(ajuda)
+        })
+        mem.on('collect', (r2, user) => {
+            r2.users.remove(user)
+            ajuda.setTitle("<:pepesad:749210746499498015> • Meme [12]")
+            ajuda.setDescription(`\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
+            msg.edit(ajuda)
+        })
+        mu.on('collect', (r2, user) => {
+            r2.users.remove(user)
+            ajuda.setTitle("<:youtube:748576732642148472> • Música [30]")
+            ajuda.setDescription(`\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`, \`changevolume ou cv\`, \`loopnow\`, \`autoplaynow\`, \`clearqueue\`, \`remove\`.`)
+            msg.edit(ajuda)
+        })
+        ani.on('collect', (r2, user) => {
+            r2.users.remove(user)
+            ajuda.setTitle(":dog: • Animais [10]")
+            ajuda.setDescription(`\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`, \`snake\`, \`ferret\`, \`goose\`.`)
+            msg.edit(ajuda)
+        })
+        ima.on('collect', (r2, user) => {
+            r2.users.remove(user)
+            ajuda.setTitle(":camera: • Imagens [18]")
+            ajuda.setDescription(`\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
+            msg.edit(ajuda)
+        })
+      }) 
+    }
+    if (message.content === `${prefix}help all`) {
         message.react(":tick:748569437589995731") //131 comandos fds
         const userEmbed = new Discord.MessageEmbed()
             .setColor("RANDOM")
             .setAuthor("Lista de Comandos", client.user.displayAvatarURL())
             .setDescription(`<:discord1:748909489293492376> **Server de Suporte:** [Link](https://discord.gg/fnvdugV)\n<:botdosbostas:748908984181850172> **Invite do Bot:** [Link](https://discord.com/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)\n<:github:748909140084129872> **Github Repository:** [Link](https://github.com/TonaS21/bot-dos-bostas)`)
             .addField(":information_source: • Info [21]", `\`userinfo\`, \`ping\`, \`covid\`, \`uptime\`, \`steam\`, \`invite\`, \`help-eng\`, \`weather\`, \`instagram\`, \`stats\`, \`yt\`, \`math\`, \`urban\`, \`fortnite\`, \`kpop\`, \`name\`, \`define\`, \`acrónimo\`, \`rhymer\`, \`sobre\`, \`categorias\`.`)
-            .addField(":gear: • Mod [15]", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`, \`setprefix\`.`)
+            .addField(":gear: • Mod [17]", `\`clear\`, \`poll\`, \`announce\`, \`report\`, \`ban\`, \`kick\`, \`mute\`, \`warn\`, \`lock\`, \`giveaway\`, \`giverole\`, \`delrole\`, \`hasrole\`, \`slowmode\`, \`setprefix\`, \`createticket\`, \`ticket close\`.`)
             .addField(":camera: • Imagens [18]", `\`inverse\`, \`wanted\`, \`minecraft\`, \`cursedimg\`, \`food\`, \`animepunch\`, \`shit\`, \`delete\`, \`trash\`, \`hitler\`, \`greyscale\`, \`deepfry\`, \`beautiful\`, \`affect\`, \`gif\`, \`randomgif\`, \`sticker\`, \`randomsticker\`.`)
-            .addField("<:super_mega_laugh:738387807260770347> • Fun [26]", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`.`)
+            .addField("<:super_mega_laugh:738387807260770347> • Fun [28]", `\`randomfacts\`, \`8ball\`, \`slap\`, \`roast\`, \`neves\`, \`exposesezul\`, \`p!ng\`, \`pong\`, \`crepper\`, \`rps\`, \`flip\`, \`minesweeper\`, \`badjoke\`, \`advice\`, \`isretarded\`, \`say\`, \`isgamer\`, \`isgay\`, \`issimp\`, \`lenny\`, \`captcha\`, \`pp\`, \`isloli\`, \`iswaifu\`, \`isanimegirl\`, \`isdank\`, \`istoxic\`, \`no-u\`.`)
             .addField("<:pepesad:749210746499498015> • Meme [12]", `\`meme\`, \`reddit\`, \`twitter\`, \`meirl\`, \`comic\`, \`twitter\`, \`wholesome\`, \`discordmeme\`, \`minecraftmeme\`, \`4chan\`, \`sports\`, \`facepalm\`.`)
             .addField("<:youtube:748576732642148472> • Música [30]", `\`play ou p\`, \`search\`, \`stop ou leave\`, \`skip\`, \`pause\`, \`resume\`, \`autoplay\`, \`shuffle\`, \`queue ou q\`, \`volume\`, \`jump\`, \`repeat ou loop\`, \`playSkip\`, \`playlist\`, \`bitch\`, \`3d\`, \`bassboost\`, \`echo\`, \`karaoke\`, \`nightcore\`, \`vaporwave\`, \`haas\`, \`reverse\`, \`flanger\`, \`gate\`, \`np ou nowplaying\`, \`changevolume ou cv\`, \`loopnow\`, \`autoplaynow\`, \`clearqueue\`, \`remove\`.`)
             .addField(":dog: • Animais [10]", `\`dogs\`, \`cats\`, \`quacc\`, \`foxsays\`, \`mrlizard\`, \`panda\`, \`animais\`, \`snake\`, \`ferret\`, \`goose\`.`)
@@ -1337,7 +1350,7 @@ pensava que sabia tudo ahaha.`
         let answers = ["https://media1.tenor.com/images/3c161bd7d6c6fba17bb3e5c5ecc8493e/tenor.gif?itemid=5196956", "https://media1.tenor.com/images/49de17c6f21172b3abfaf5972fddf6d6/tenor.gif?itemid=10206784", "https://tenor.com/view/slap-slow-motion-slap-gif-10048943", "https://media1.tenor.com/images/bc858e69d5022807b84554b2d4583c10/tenor.gif?itemid=5122019", "https://media1.tenor.com/images/725a604e470a6c2768149c64fd166292/tenor.gif?itemid=16095505", "https://media1.tenor.com/images/31f29b3fcc20a486f44454209914266a/tenor.gif?itemid=17942299", "https://media1.tenor.com/images/4c87273e872b4a7fc23a37868b3f3577/tenor.gif?itemid=15003911", "https://thumbs.gfycat.com/ForkedFamousGalapagoshawk-size_restricted.gif"]
         let response = answers[Math.floor(Math.random() * answers.length)];
         const personTagged = message.mentions.members.first();
-        if(!personTagged) {
+        if (!personTagged) {
             message.react(":X:748632517476745226")
             return message.reply('Precisas de especificar uma pessoa para dares uma chapada!');
         }
@@ -1496,11 +1509,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
     if (command === "ping") {
         message.reply('A calcular o ping<a:loading2:751573442037284924>...').then((resultMessage) => {
             const ping = resultMessage.createdTimestamp - message.createdTimestamp
-            resultMessage.edit(`:ping_pong: Pong! :ping_pong:`)
-            const pingembed = new Discord.MessageEmbed()
-                .setDescription(`:signal_strength: | **Bot ping ➜ ${ping}ms**\n:incoming_envelope: | **API ping ➜ ${client.ws.ping}ms**`)
-                .setColor("RANDOM")
-            message.channel.send(pingembed)
+            resultMessage.edit(`:ping_pong: Pong! :ping_pong:\n:signal_strength: | **Bot ping ➜ ${ping}ms**\n:incoming_envelope: | **API ping ➜ ${client.ws.ping}ms**`)
         })
     }
     if (command === "announce") {
@@ -1791,7 +1800,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         message.delete();
     }
     if (command === "steam") {
-        const token = ""; //põe o teu token
+        const token = "";
         if (!args[0]) return message.channel.send("Por favor especifica um nome de conta!");
         const url = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${token}&vanityurl=${args.join(" ")}`;
         fetch(url).then(res => res.json()).then(body => {
@@ -1838,7 +1847,10 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .addFields(
                 { name: "Com:", value: `${client.users.cache.size} pessoas`, inline: true },
                 { name: "Em:", value: `${client.guilds.cache.size} servers`, inline: true },
-                { name: "Com:", value: `${client.options.shards.length} shard(s)`, inline: true }
+                { name: "Com:", value: `${client.options.shards.length} shard(s)`, inline: true },
+                { name: "Discord.js", value: `v12.2.0`, inline: true },
+                { name: "Node.js", value: `v14.5.0`, inline: true },
+                { name: "Distube", value: `v2.5.1`, inline: true }
             )
             .setFooter(client.user.username, client.user.displayAvatarURL())
             .setTimestamp()
@@ -2180,12 +2192,12 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
                 .get("🎉")
                 .users.cache.filter((u) => !u.bot)
                 .random();
-                const prizeembed = new Discord.MessageEmbed()
-                    .setAuthor("Fim do giveaway!")
-                    .setDescription(`O vencedor do giveaway para **${prize}** é... ${winner}! 🎉 Parabéns!`)
-                    .setTimestamp()
-                    .setColor("RANDOM")
-                channel.send(prizeembed)
+            const prizeembed = new Discord.MessageEmbed()
+                .setAuthor("Fim do giveaway!")
+                .setDescription(`O vencedor do giveaway para **${prize}** é... ${winner}! 🎉 Parabéns!`)
+                .setTimestamp()
+                .setColor("RANDOM")
+            channel.send(prizeembed)
         }, ms(args[0]));
     }
     if (command === "fortnite") {
@@ -2329,6 +2341,18 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             .setColor("RANDOM")
             .setTitle(`🏳️‍🌈 Gay Machine 2020 🏳️‍🌈`)
             .setDescription(`${member.user.username} é ${Math.floor(gay)}% gay.`)
+        message.channel.send(embed);
+    }
+    if (command === "istoxic") {
+        let userArray = message.content.split(" ");
+        let userArgs = userArray.slice(1);
+        let member = message.mentions.members.first() || message.guild.members.cache.get(userArgs[0]) || message.guild.members.cache.find(x => x.user.username.toLowerCase() === userArgs.slice(0).join(" ") || x.user.username === userArgs[0]) || message.member;
+        const gay = Math.random() * 100;
+        const gayIndex = Math.floor(gay / 0);
+        const embed = new Discord.MessageEmbed()
+            .setColor("RANDOM")
+            .setTitle(`Toxic Machine 2020`)
+            .setDescription(`${member.user.username} é ${Math.floor(gay)}% tóxico.`)
         message.channel.send(embed);
     }
     if (command === "isgamer") {
@@ -2762,7 +2786,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
         await message.channel.send("A dar restart ao bot!")
         process.exit();
     }
-    if(command === "kitty") {
+    if (command === "kitty") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "cute cats",
             method: "GET",
@@ -2771,25 +2795,25 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
                 "User-Agent": "Chrome"
             }
         }
-            request(options, function (error, _reponse, responseBody) {
-                if (error) {
-                    return;
-                }
-                $ = cheerio.load(responseBody);
-                var links = $(".image a.link");
-                var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
-                if (!urls.length) {
-                    return;
-                }
-                const embed = new Discord.MessageEmbed()
-                    .setAuthor("CATS!", client.user.displayAvatarURL())
-                    .setImage(urls[Math.floor(Math.random() * urls.length)])
-                    .setTimestamp()
-                    .setColor("RANDOM")
-                message.channel.send(embed)
-            });
+        request(options, function (error, _reponse, responseBody) {
+            if (error) {
+                return;
+            }
+            $ = cheerio.load(responseBody);
+            var links = $(".image a.link");
+            var urls = new Array(links.length).fill(0).map((_v, i) => links.eq(i).attr("href"));
+            if (!urls.length) {
+                return;
+            }
+            const embed = new Discord.MessageEmbed()
+                .setAuthor("CATS!", client.user.displayAvatarURL())
+                .setImage(urls[Math.floor(Math.random() * urls.length)])
+                .setTimestamp()
+                .setColor("RANDOM")
+            message.channel.send(embed)
+        });
     }
-    if(command === "mrlizard"){
+    if (command === "mrlizard") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "lizard",
             method: "GET",
@@ -2816,7 +2840,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
-    if(command === "quacc"){
+    if (command === "quacc") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "duck",
             method: "GET",
@@ -2843,7 +2867,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
-    if(command === "minecraft"){
+    if (command === "minecraft") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "cursed minecraft",
             method: "GET",
@@ -2870,7 +2894,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
-    if(command === "foxsays") {
+    if (command === "foxsays") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "fox",
             method: "GET",
@@ -2897,7 +2921,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
-    if(command === "panda") {
+    if (command === "panda") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "cute panda",
             method: "GET",
@@ -2924,7 +2948,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
-    if(command === "ferret") {
+    if (command === "ferret") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "ferret",
             method: "GET",
@@ -2951,7 +2975,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
-    if(command === "goose") {
+    if (command === "goose") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "goose",
             method: "GET",
@@ -2978,7 +3002,7 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
-    if(command === "snake") {
+    if (command === "snake") {
         var options = {
             url: "http://results.dogpile.com/serp?qc=images&q=" + "snakes",
             method: "GET",
@@ -3005,10 +3029,114 @@ You’re like if Al Borland from Home Improvement learned to program a computer.
             message.channel.send(embed)
         });
     }
+    if(command === "sugestão") {
+        const { guild } = message;
+        let MSG = args.join(" ")
+        if (!MSG) return message.channel.send(`Não especificaste uma mensagem para mandar!`).then(msg => {
+            msg.delete({timeout: 7500})
+        })
+        const _ = new Discord.MessageEmbed()
+            .setAuthor(`${message.author.tag} | Quem enviou a sugestão`, message.author.displayAvatarURL())
+            .setTitle(`<a:arrow:753238522995146793> Sugestão para ${guild.name}!`)
+            .setDescription(`\`${MSG}\``)
+            .setTimestamp()
+            .setColor("RANDOM")
+            .setFooter("⬆️ - Concordas | ⬇️ - Discordas")
+            .setTimestamp()
+        message.channel.send(_).then(msg => {
+            msg.react("⬆️")
+            msg.react("⬇️")
+        })
+        message.delete();
+    }
+    if(command === "ticket") {
+        if (args[0] === 'close') {
+            if (!message.member.hasPermission("MANAGE_MESSAGES")) return message.channel.send(new Discord.MessageEmbed().setColor("RANDOM").setAuthor(message.author.tag, client.user.displayAvatarURL).setTimestamp().setDescription("You do not have permission to do this!"));
+            if (message.channel.name.startsWith("ticket-")) {
+                message.channel.delete();
+            } else {
+                message.channel.send(new Discord.MessageEmbed().setColor("RANDOM").setAuthor(message.author.tag, client.user.displayAvatarURL).setTimestamp().setDescription(message.author + ', that command can only be used in a ticket.'))
+                return
+            }
+        }
+    }
+    if (command === "createticket") {
+        if (args[0]) {
+            message.channel.send(new Discord.MessageEmbed().setColor("RANDOM").setDescription('O Ticket foi criado!\nVamos-te contactar em pouco tempo!').setTimestamp().setAuthor('Tickets', client.user.displayAvatarURL()))
+            message.react(":tick:748569437589995731")
+            message.guild.channels.create(`ticket-${data.id}`).then(async c => {
+                let reason = args.join(" ");
+                if (message.guild.channels.cache.find(c => c.name.toLowerCase() === '-= tickets =-')) {
+                    if (message.guild.channels.find(c => c.name.toLowerCase() === '-= tickets =-').type === 'category') {
+                        c.setParent(message.guild.channels.find(c => c.name.toLowerCase() === '-= tickets =-').id)
+                    } else {
+                        c.setParent(message.guild.channels.find(c => c.name.toLowerCase() === '-= tickets =-').id)
+                    }
+                    c.overwritePermissions(message.guild.defaultRole, {
+                        VIEW_CHANNEL: false
+                    })
+                    c.overwritePermissions(message.member, {
+                        VIEW_CHANNEL: true
+                    })
+                    c.overwritePermissions(message.guild.roles.find(r => r.name.toLowerCase() === 'Administrador'), {
+                        VIEW_CHANNEL: true
+                    })
+                    c.overwritePermissions(message.guild.roles.find(r => r.name.toLowerCase() === 'Tipo Fixe'), {
+                        VIEW_CHANNEL: true
+                    })
+                    c.overwritePermissions(message.guild.roles.find(r => r.name.toLowerCase() === 'Dono'), {
+                        VIEW_CHANNEL: true
+                    })
+                    message.delete();
+    
+                }
+                await c.send(new Discord.MessageEmbed().setAuthor(message.author.tag, message.author.displayAvatarURL()).setTimestamp().addField('Razão', `${reason}`).addField('Explica-te', "Explica o porquê de teres criado o ticket!" ).setDescription(`**Obrigado por teres criado o ticket.\nOs Admins vão-te ajudar !**`).setColor("RANDOM"))
+            })
+            data.id++;
+            fs.writeFile('./tickets.json', '{\n"id":' + data.id + "\n}", (err) => {
+                if (!err) return;
+                console.error(err)
+            })
+        }
+    }
+    if (command === "no-u") {
+        if(!args.join("")) {
+            message.channel.send("Não.")
+        }
+        if(args.join(" ")){
+            message.reply("no u.")
+        }
+    }
+    if (command === "setprefix") {
+        if (!message.member.hasPermission("MANAGE_GUILD")) return message.reply("não podes usar isso")
+        if (!args[0] || args[0] === "help") {
+            const helpembed = new Discord.MessageEmbed()
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setDescription(`Como usar: \`${prefix}setprefix <prefix que queres>\``)
+                .setTimestamp()
+                .setColor("RANDOM")
+            return message.channel.send(helpembed)
+        }
+        let prefixes = JSON.parse(fs.readFileSync("./prefixes.json", "utf8"))
+        prefixes[message.guild.id] = {
+            prefixes: args[0]
+        };
+        fs.writeFile("./prefixes.json", JSON.stringify(prefixes), (err) => {
+            if (err) console.log(err)
+        });
+        const embed = new Discord.MessageEmbed()
+            .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
+            .setTitle("Successo!")
+            .setDescription(`<:tick:748569437589995731> Mudaste o prefix do server para ➜ ${args[0]}`)
+            .setTimestamp()
+            .setFooter(client.user.username, client.user.displayAvatarURL())
+            .setColor("RANDOM")
+        message.channel.send(embed)
+    }
 });
 const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
 distube
-    .on("playSong",  async (message, queue, song) => {
+    .on("playSong", async (message, queue, song) => {
         const userEmbed = new Discord.MessageEmbed()
             .setAuthor(`Agora a tocar em: ${queue.connection.channel.name}`, "https://i.pinimg.com/originals/de/1c/91/de1c91788be0d791135736995109272a.png")
             .setDescription(`<:play:748576561837637703> **[${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Filtro: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
@@ -3024,7 +3152,7 @@ distube
                             msg.react("🔀").then(r => {
                                 msg.react("📄").then(r => {
                                     msg.react("🔉").then(r => {
-                                        msg.react("🔊").then(r => {
+                                        msg.react("🔊").then(r => {   
                                         })
                                     })
                                 })
@@ -3080,69 +3208,69 @@ distube
             animais.on('collect', async (r2, user) => {
                 r2.users.remove(user)
                 let queue = distube.getQueue(message.guild.id);
-	            if (!queue) return message.reply("⚠️ Não está nada a tocar!"); // Tell the user no song is being played
-	            const pageBack = "⏪";
+                if (!queue) return message.reply("⚠️ Não está nada a tocar!"); // Tell the user no song is being played
+                const pageBack = "⏪";
                 const pageForward = "⏩";
                 const trash = "🗑️";
-	            const num_per_page = 10; // Number of songs to show in a page
-	            let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
-	            let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
-	            while (queuedVideos.length > 0) {
-		            pageContents.push(queuedVideos.splice(0, num_per_page))
-	            }
-	            let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
-	            let currentPage = 0; // Page starts at 0 because array index starts at 0
-	            let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
-	            let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
-	            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) => 
-		            `**${currentListNum+(index+1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
-	            description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
-	            const embed = new Discord.MessageEmbed()
-		            .setTitle(title)
-		            .setColor('RANDOM')
-		            .setThumbnail(queue.songs[0].thumbnail)
-		            .setDescription(description)
-		            .setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`)
-		            .setTimestamp();
-	            const msg = await message.channel.send(embed);
-	            if (num_pages <= 1) return; 
-	            msg.react(pageBack);
-	            msg.react(pageForward);
-	            const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward;
-	            const collector = msg.createReactionCollector(filter, { time: 150000 });
-	            collector.on("collect", (reaction, user) => {
-		            if (user.bot) return;
-		            queuedVideos = queue.songs.slice();
-		            pageContents = [];
-		            title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
-		            while (queuedVideos.length > 0) {
-			            pageContents.push(queuedVideos.splice(0, num_per_page))
-		            }
-		            num_pages = pageContents.length;
-		            switch (reaction.emoji.name) {
-			            case pageBack: {
-				            currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
-				            break;
-			            }
-			            case pageForward: {
-				            currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
-				            break;
+                const num_per_page = 10; // Number of songs to show in a page
+                let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
+                let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
+                while (queuedVideos.length > 0) {
+                    pageContents.push(queuedVideos.splice(0, num_per_page))
+                }
+                let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
+                let currentPage = 0; // Page starts at 0 because array index starts at 0
+                let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
+                let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
+                let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) =>
+                    `**${currentListNum + (index + 1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
+                description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+                const embed = new Discord.MessageEmbed()
+                    .setTitle(title)
+                    .setColor('RANDOM')
+                    .setThumbnail(queue.songs[0].thumbnail)
+                    .setDescription(description)
+                    .setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+                    .setTimestamp();
+                const msg = await message.channel.send(embed);
+                if (num_pages <= 1) return;
+                msg.react(pageBack);
+                msg.react(pageForward);
+                const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward;
+                const collector = msg.createReactionCollector(filter, { time: 150000 });
+                collector.on("collect", (reaction, user) => {
+                    if (user.bot) return;
+                    queuedVideos = queue.songs.slice();
+                    pageContents = [];
+                    title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
+                    while (queuedVideos.length > 0) {
+                        pageContents.push(queuedVideos.splice(0, num_per_page))
+                    }
+                    num_pages = pageContents.length;
+                    switch (reaction.emoji.name) {
+                        case pageBack: {
+                            currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
+                            break;
                         }
-                            case trash: {
-				                msg.reactions.removeAll()
-				            break;
-			            }
-		            }
-		            reaction.users.remove(user);
-		            currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
-		            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) => 
-                        `**${currentListNum+(index+1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
+                        case pageForward: {
+                            currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
+                            break;
+                        }
+                        case trash: {
+                            msg.reactions.removeAll()
+                            break;
+                        }
+                    }
+                    reaction.users.remove(user);
+                    currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
+                    let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) =>
+                        `**${currentListNum + (index + 1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
                     description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
-		            embed.setTitle(title);
-		            embed.setDescription(description);
-		            embed.setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`);
-		            msg.edit(embed);
-	            });
+                    embed.setTitle(title);
+                    embed.setDescription(description);
+                    embed.setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+                    msg.edit(embed);
+                });
                 if (!message.member.voice.channel && client.voice.connections) {
                     message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
@@ -3179,7 +3307,7 @@ distube
                     })
                 }
                 if (!message.member.voice.channelID && client.voice.connections) {
-                    message.channel.send(":X:748632517476745226 | Precisas de estar no voice channel para usares isto.")
+                    message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
             })
             fun.on('collect', (r2, user) => {
@@ -3245,6 +3373,9 @@ distube
                 msg.reactions.removeAll()
             })
             queue.connection.dispatcher.on("finish", () => {
+                msg.reactions.removeAll()
+            });
+            queue.connection.on("disconnect", () => {
                 msg.reactions.removeAll()
             });
         })
@@ -3329,70 +3460,70 @@ distube
             animais.on('collect', async (r2, user) => {
                 r2.users.remove(user)
                 let queue = distube.getQueue(message.guild.id);
-	            if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!"); // Tell the user no song is being played
-	            const pageBack = "⏪";
+                if (!queue) return message.reply("<:X:748632517476745226> Não está nada a tocar!"); // Tell the user no song is being played
+                const pageBack = "⏪";
                 const pageForward = "⏩";
                 const trash = "🗑️";
-	            const num_per_page = 10; // Number of songs to show in a page
-	            let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
-	            let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
-	            while (queuedVideos.length > 0) {
-		            pageContents.push(queuedVideos.splice(0, num_per_page))
-	            }
-	            let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
-	            let currentPage = 0; // Page starts at 0 because array index starts at 0
-	            let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
-	            let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
-	            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) => 
-		            `**${currentListNum+(index+1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
-	            description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
-	            const embed = new Discord.MessageEmbed()
-		            .setTitle(title)
-		            .setColor('RANDOM')
-		            .setThumbnail(queue.songs[0].thumbnail)
-		            .setDescription(description)
-		            .setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`)
-		            .setTimestamp();
-	            const msg = await message.channel.send(embed);
-	            if (num_pages <= 1) return; 
-	            msg.react(pageBack);
+                const num_per_page = 10; // Number of songs to show in a page
+                let queuedVideos = queue.songs.slice(); // Make a copy of the queue by value
+                let pageContents = []; // This array will contain arrays with length of number of songs to show in a page
+                while (queuedVideos.length > 0) {
+                    pageContents.push(queuedVideos.splice(0, num_per_page))
+                }
+                let num_pages = pageContents.length; // The number of pages is the number of arrays in the pageContent arrays
+                let currentPage = 0; // Page starts at 0 because array index starts at 0
+                let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page; // Calculate the last item's position in a page
+                let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
+                let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) =>
+                    `**${currentListNum + (index + 1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
+                description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
+                const embed = new Discord.MessageEmbed()
+                    .setTitle(title)
+                    .setColor('RANDOM')
+                    .setThumbnail(queue.songs[0].thumbnail)
+                    .setDescription(description)
+                    .setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+                    .setTimestamp();
+                const msg = await message.channel.send(embed);
+                if (num_pages <= 1) return;
+                msg.react(pageBack);
                 msg.react(pageForward);
                 msg.react(trash);
-	            const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward || reaction.emoji.name === trash;
-	            const collector = msg.createReactionCollector(filter, { time: 150000 });
-	            collector.on("collect", (reaction, user) => {
-		            if (user.bot) return;
-		            queuedVideos = queue.songs.slice();
-		            pageContents = [];
-		            title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
-		            while (queuedVideos.length > 0) {
-			            pageContents.push(queuedVideos.splice(0, num_per_page))
-		            }
-		            num_pages = pageContents.length;
-		            switch (reaction.emoji.name) {
-			            case pageBack: {
-				            currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
-				            break;
-			            }
-			            case pageForward: {
-				            currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
-				            break;
+                const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward || reaction.emoji.name === trash;
+                const collector = msg.createReactionCollector(filter, { time: 150000 });
+                collector.on("collect", (reaction, user) => {
+                    if (user.bot) return;
+                    queuedVideos = queue.songs.slice();
+                    pageContents = [];
+                    title = queuedVideos.length > 1 ? `Queue Atual ➜ ${queuedVideos.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queueVideos.length} música`;
+                    while (queuedVideos.length > 0) {
+                        pageContents.push(queuedVideos.splice(0, num_per_page))
+                    }
+                    num_pages = pageContents.length;
+                    switch (reaction.emoji.name) {
+                        case pageBack: {
+                            currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
+                            break;
                         }
-                            case trash: {
-				                msg.reactions.removeAll()
-				            break;
-			            }
-		            }
-		            reaction.users.remove(user);
-		            currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
-		            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) => 
-                        `**${currentListNum+(index+1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
+                        case pageForward: {
+                            currentPage = currentPage == pageContents.length - 1 ? 0 : currentPage += 1;
+                            break;
+                        }
+                        case trash: {
+                            msg.reactions.removeAll()
+                            break;
+                        }
+                    }
+                    reaction.users.remove(user);
+                    currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
+                    let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) =>
+                        `**${currentListNum + (index + 1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
                     description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
-		            embed.setTitle(title);
-		            embed.setDescription(description);
-		            embed.setFooter(`Página ${currentPage+1} de ${num_pages} | Pedido por: ${message.author.tag}`);
-		            msg.edit(embed);
-	            });
+                    embed.setTitle(title);
+                    embed.setDescription(description);
+                    embed.setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+                    msg.edit(embed);
+                });
                 if (!message.member.voice.channel && client.voice.connections) {
                     message.channel.send("<:X:748632517476745226> | Precisas de estar no voice channel para usares isto.")
                 }
@@ -3497,9 +3628,9 @@ distube
             queue.connection.dispatcher.on("finish", () => {
                 msg.reactions.removeAll()
             });
-            queue.connection.dispatcher.on("volumeChange", () => {
-                userEmbed.setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
-            })
+            queue.connection.on("disconnect", () => {
+                msg.reactions.removeAll()
+            });
         })
     })
     .on("addList", (message, queue, playlist) => {
