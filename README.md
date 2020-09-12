@@ -126,7 +126,7 @@ Baseado em Discord.js, com o module DisTube.
 | `rhymer`      | O bot vai mandar uma palavra que rima com a que mandáste                                                                  | -rhymer shit           |
 | `sobre`       | Informações sobre o Bot                                                                                                   | -sobre                 |
 | `categorias`  | Mostra as categorias de comandos do bot                                                                                   | -categorias música     |
-| `wiki`  | Procura o que quiseres na wikipédia (nota: não uses acentos)                                                                    | -wiki benfica          |
+| `wiki`        | Procura o que quiseres na wikipédia (nota: não uses acentos)                                                              | -wiki benfica          |
 
 ### • **Imagens**
 
