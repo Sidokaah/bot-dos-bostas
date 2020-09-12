@@ -125,7 +125,8 @@ Baseado em Discord.js, com o module DisTube.
 | `acrónimo`    | Manda-te informações sobre o acrónimo que especificáste                                                                   | -acrónimo lmfao        |
 | `rhymer`      | O bot vai mandar uma palavra que rima com a que mandáste                                                                  | -rhymer shit           |
 | `sobre`       | Informações sobre o Bot                                                                                                   | -sobre                 |
-| `categorias`  | Mostra as categorias de comandos do bot                                                                                   | -categorias            |
+| `categorias`  | Mostra as categorias de comandos do bot                                                                                   | -categorias música     |
+| `wiki`  | Procura o que quiseres na wikipédia (nota: não uses acentos)                                                                    | -wiki benfica          |
 
 ### • **Imagens**
 
