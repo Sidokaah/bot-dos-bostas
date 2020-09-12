@@ -2,7 +2,7 @@
 
 # 🤖 Bot dos Bostas (PaulBot) 🤖
 
-[![Discord](https://discordapp.com/api/guilds/701819425728233530/embed.png)](https://discord.gg/fnvdugV)
+[![Discord](https://discordapp.com/api/guilds/252317073814978561/embed.png)](https://discord.gg/fnvdugV)
 [![Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
 [![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
 
