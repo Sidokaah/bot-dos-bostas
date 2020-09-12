@@ -1,5 +1,5 @@
 # 🤖 Bot dos Bostas (PaulBot) 🤖
-https://cdn.discordapp.com/avatars/733694571866882098/0167c27d1c8ed29094c9a227d3102a3b.png
+
 [![forthebadge](https://forthebadge.com/images/badges/made-with-javascript.svg)](https://forthebadge.com)
 [![Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
 [![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
