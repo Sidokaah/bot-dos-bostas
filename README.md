@@ -135,7 +135,7 @@ Baseado em Discord.js, com o module DisTube.
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `inverse`     | Factos random que eu fix                                                                                                  | -randomfacts           |
+| `inverse`     | Inverte as cores da tua ou a imagem de perfil de alguém                                                                   | -inverse @TonaS        |
 | `minecraft`   | Imagens de minecraft                                                                                                      | -minecraft             |
 | `animepunch`  | Uma imagem aleatória de um murro em anime. Yep, só isso.                                                                  | -animepunch            |
 | `wanted`      | Uma imagem de wanted                                                                                                      | -wanted @someone       |
@@ -152,6 +152,11 @@ Baseado em Discord.js, com o module DisTube.
 | `randomgif`   | Proucra um gif aleatório no giphy                                                                                         | -randomgif             |
 | `sticker`     | Procura um sticker no gipht sobre alguma coisa que quiseres                                                               | -sticker gay           |
 | `randomsticker`| Procura um sticker aleatório no giphy                                                                                    | -randomsticker         |
+| `trumptweet`  | Uma imagem de um tweet do trump com o texto que quiseres                                                                  | -trumptweet a zu é rainha|
+| `supreme`     | Uma imagem do logo da supreme com o texto que quiseres                                                                    | -supreme dois anos     |
+| `tweet`       | Uma imagem de um tweet com o texto que tu quiseres                                                                        | -tweet benfica é o melhor|
+| `changemymind`| Uma imagem do meme Change my Mind                                                                                         | -changemymind o neves é gay|
+| `clyde`       | Procura um sticker aleatório no giphy                                                                                     | -randomsticker         |
 
 ### • **Animais**
 
@@ -180,13 +185,13 @@ Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas p
 - Um editor de texto como: `Visual Studio Code <-- Recomendo; Notepad++, entre outros.`
 # Links Importantes:
 
-[Discord.js](https://discord.js.org/#/) - Library em que o bot foi baseado. Caso não saibas o significado de alguma coisa no código do Bot, podes procurar aqui nos Docs deles ---> [Link](https://discord.js.org/#/docs/main/stable/general/welcome).
+**[Discord.js](https://discord.js.org/#/)** - Library em que o bot foi baseado. Caso não saibas o significado de alguma coisa no código do Bot, podes procurar aqui nos Docs deles ---> [Link](https://discord.js.org/#/docs/main/stable/general/welcome).
 
-[DisTube](https://distube.js.org/) - Module para a música. Muito fácil de usar, e é Open Source! Se tiveres alguma dúvida ou precisares de ajuda relacionada com o DisTube, podes entrar no Server de Suporte, O Owner do Bot (ya ele fez um bot) vai-te sempre responder, mas lembra-te, ele não fala português ---> [Link](https://discord.gg/X3NY853).
+**[DisTube](https://distube.js.org/)** - Module para a música. Muito fácil de usar, e é Open Source! Se tiveres alguma dúvida ou precisares de ajuda relacionada com o DisTube, podes entrar no Server de Suporte, O Owner do Bot (ya ele fez um bot) vai-te sempre responder, mas lembra-te, ele não fala português ---> [Link](https://discord.gg/X3NY853).
 
-[Server de Suporte do Bot](https://discord.gg/DRnnZPS) - Caso venhas a ter alguma dúvida ou o Bot não esteja a funcionar bem, entra no server e faz a tua pergunta ou diz o erro que está a acontecer.
+**[Server de Suporte do Bot](https://discord.gg/DRnnZPS)** - Caso venhas a ter alguma dúvida ou o Bot não esteja a funcionar bem, entra no server e faz a tua pergunta ou diz o erro que está a acontecer.
 
-[Invite do bot](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot) - Convida o Bot para o teu server!
+**[Invite do bot](https://discord.com/api/oauth2/authorize?client_id=733694571866882098&permissions=8&scope=bot)** - Convida o Bot para o teu server!
 
 
 **Nota:** Se não souberes muito de JavaScript ou código em geral, não te aconselho a mudares muita coisa do código do bot, só o que eu digo que podes no index.js!
