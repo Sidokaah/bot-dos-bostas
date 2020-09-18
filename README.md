@@ -176,12 +176,14 @@ Baseado em Discord.js, com o module DisTube.
 
 Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas para o Bot funcionar bem. Entre elas estão `discord.js, node-fetch, fs, distube`, entre outros.
 
-**Nota**: Precisas de ter instalado:
+Precisas de ter instalado:
 
 
 - `node.js`;
 - `ffmpeg`;
 - Um editor de texto como: `Visual Studio Code <-- Recomendo; Notepad++, entre outros.`
+
+**IMPORTANTE:** Precisas de ter experiência com este tipo de programas e linguagem para usares o bot. Aprende primeiro JavaScript e Discord.js antes de mudares alguma coisa no código do Bot, porque ainda podes fazer com que o bot tenha erros e não funcione bem!
 # Links Importantes:
 
 **[Discord.js](https://discord.js.org/#/)** - Library em que o bot foi baseado. Caso não saibas o significado de alguma coisa no código do Bot, podes procurar aqui nos Docs deles ---> [Link](https://discord.js.org/#/docs/main/stable/general/welcome).
