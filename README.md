@@ -12,9 +12,20 @@ O Bot tem diversas features como reaction controller na música, páginas no que
 
 Baseado em Discord.js, com o module DisTube.
 
+1. [Command Categories](#Categories) 
+    * [Voice Commands](#Música)
+    * [Reddit Commands](#Reddit)
+    * [General Commands](#General)
+    * [Nsfw Commands](#Nsfw)
+    * [Meme Commands](#Meme)
+    * [Mod Commands](#Mod)
+    * [Alias Commands](#Aliases)
+    * [Scheduling Commands](#Scheduling)
+    * [Subscriptions](#Subscriptions)
+
 # Comandos
 
-### • **Música**
+## Música
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -43,7 +54,7 @@ Baseado em Discord.js, com o module DisTube.
 | `autoplaynow` | Vês o estado do autoplay no momento                                                                                       | -autoplaynow           |
 | `loopnow`     | Vês o estado do loop no momento                                                                                           | -loopnow               |
 
-### • **Memes**
+## Memes
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -58,7 +69,7 @@ Baseado em Discord.js, com o module DisTube.
 | `sports`      | Um meme aleatório sobre desporto                                                                                          | -sports                |
 | `facepalm`    | Um meme aleatório do subreddit `r/facepalm`                                                                               | -facepalm              |
 
-### • **Diversão**
+## Diversão
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -89,7 +100,7 @@ Baseado em Discord.js, com o module DisTube.
 | `isanimegirl` | Percentagem se tu ou alguém é uma anime girl                                                                              | -isanimegirl @someone  |
 | `isdank`      | Percentagem se tu ou alguém é um dank memer                                                                               | -isdank @someone       |
 
-### • **Moderação e Informação**
+## Moderação e Informação
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -130,7 +141,7 @@ Baseado em Discord.js, com o module DisTube.
 | `categorias`  | Mostra as categorias de comandos do bot                                                                                   | -categorias música     |
 | `wiki`        | Procura o que quiseres na wikipédia (nota: não uses acentos)                                                              | -wiki benfica          |
 
-### • **Imagens**
+## Imagens
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
@@ -157,7 +168,7 @@ Baseado em Discord.js, com o module DisTube.
 | `changemymind`| Uma imagem do meme Change my Mind                                                                                         | -changemymind o neves é gay|
 | `clyde`       | Procura um sticker aleatório no giphy                                                                                     | -randomsticker         |
 
-### • **Animais**
+## Animais
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
