@@ -12,16 +12,13 @@ O Bot tem diversas features como reaction controller na música, páginas no que
 
 Baseado em Discord.js, com o module DisTube.
 
-1. [Command Categories](#Categories) 
-    * [Voice Commands](#Música)
-    * [Reddit Commands](#Reddit)
-    * [General Commands](#General)
-    * [Nsfw Commands](#Nsfw)
-    * [Meme Commands](#Meme)
-    * [Mod Commands](#Mod)
-    * [Alias Commands](#Aliases)
-    * [Scheduling Commands](#Scheduling)
-    * [Subscriptions](#Subscriptions)
+1. Categorias de Comandos 
+    * [Comandos de Música](#Música)
+    * [Comandos de Memes](#Memes)
+    * [General Commands](#Diversão)
+    * [Comandos de Imagens](#Imagens)
+    * [Comandos de Moderação e Info](#Moderação+e+Informação)
+    * [Comandos de Animais](#Animais)
 
 # Comandos
 
