@@ -17,7 +17,7 @@ Baseado em Discord.js, com o module DisTube.
     * [Comandos de Memes](#Memes)
     * [General Commands](#Diversão)
     * [Comandos de Imagens](#Imagens)
-    * [Comandos de Moderação e Info](#Moderação+e+Informação)
+    * [Comandos de Moderação e Info](#Moderação e Informação)
     * [Comandos de Animais](#Animais)
 
 # Comandos
