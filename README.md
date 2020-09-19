@@ -15,7 +15,7 @@ Baseado em Discord.js, com o module DisTube.
 1. Categorias de Comandos 
     * [Comandos de Música](#Música)
     * [Comandos de Memes](#Memes)
-    * [General Commands](#Diversão)
+    * [Comandos de Diversão](#Diversão)
     * [Comandos de Imagens](#Imagens)
     * [Comandos de Moderação e Info](#Moderação)
     * [Comandos de Animais](#Animais)
