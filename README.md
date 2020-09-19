@@ -17,7 +17,7 @@ Baseado em Discord.js, com o module DisTube.
     * [Comandos de Memes](#Memes)
     * [General Commands](#Diversão)
     * [Comandos de Imagens](#Imagens)
-    * [Comandos de Moderação e Info](#Moderação e Informação)
+    * [Comandos de Moderação e Info](#Moderação)
     * [Comandos de Animais](#Animais)
 
 # Comandos
@@ -97,7 +97,7 @@ Baseado em Discord.js, com o module DisTube.
 | `isanimegirl` | Percentagem se tu ou alguém é uma anime girl                                                                              | -isanimegirl @someone  |
 | `isdank`      | Percentagem se tu ou alguém é um dank memer                                                                               | -isdank @someone       |
 
-## Moderação e Informação
+## Moderação
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
