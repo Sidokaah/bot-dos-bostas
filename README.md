@@ -37,12 +37,11 @@ Baseado em Discord.js, com o module DisTube.
 | `skip`        | Passa para a música a seguir                                                                                              | -skip                  |
 | `clearqueue`  | Tira todas as músicas do queue menos a que está a tocar                                                                   | clearqueue             |
 | `jump`        | Passa para uma música específica no queue                                                                                 | -jump 5                |
-| `volume`      | Adjust song volume                                                                                                        | -volume                |
-| `changevolume`| Muda o volume da música                                                                                                   | -cv 150                |
+| `volume`      | Muda o volume da música                                                                                                   | -volume 150            |
 | `loop`        | Repetir a música, o queue ou nada. 0 - Nada; 1 - A música que está a tocar; 2 - Todo o queue                              | -loop 0, 1 ou 2        |
 | `playskip`    | Dá skip à música que estava a tocar e toca uma música que quiseres                                                        | -playskip godzilla     |
 | `lyrics`      | Procura a letra da música que está a tocar ou de uma música em específico                                                 | -lyrics song-name      |
-| `np ou nowplaying`| Mostra o que está a tocar com uma barra sempre a mudar o tempo restante                                               | -np                    |
+| `np`          | Mostra o que está a tocar com uma barra sempre a mudar o tempo restante                                                   | -np                    |
 | `playlist`    | Uma playlist minha                                                                                                        | -playlist              |
 | `bitch`       | Uma playlist de bitch lasagna                                                                                             | -bitch                 |
 | `cool`        | Uma playlist dum amigo meu com muitos dubsteps, mas mesmo muitos.                                                         | -cool                  |
@@ -50,6 +49,7 @@ Baseado em Discord.js, com o module DisTube.
 | `autoplay`    | Ativa o autoplay                                                                                                          | -autoplay              |
 | `autoplaynow` | Vês o estado do autoplay no momento                                                                                       | -autoplaynow           |
 | `loopnow`     | Vês o estado do loop no momento                                                                                           | -loopnow               |
+| `lyrics`      | Procura a letra da música que está a tocar ou de uma música à escolha                                                     | -lyrics | -lyrics Hello|
 
 ## Memes
 
@@ -76,8 +76,6 @@ Baseado em Discord.js, com o module DisTube.
 | `roast`       | Dás roast a alguém                                                                                                        | -roast @someone        |
 | `neves`       | O neves é paneleiro...                                                                                                    | -neves                 |
 | `exposesezul` | Expose que o mister Star a.k.a Tomás Estrela fez ao Sezul                                                                 | -exposesezul           |
-| `p!ng`        | Ping!                                                                                                                     | -p!ng                  |
-| `pong`        | Imagens aleatórias de panda                                                                                               | -pong                  |
 | `creeper`     | Imagens aleatórias de raposas                                                                                             | -creeper               |
 | `rps`         | Imagens aleatórias de animais em geral                                                                                    | -rps pedra             |
 | `flip`        | Cara ou coroa                                                                                                             | -flip                  |
@@ -96,6 +94,7 @@ Baseado em Discord.js, com o module DisTube.
 | `iswaifu`     | Percentagem se tu ou alguém é uma waifu                                                                                   | -iswaifu @someone      |
 | `isanimegirl` | Percentagem se tu ou alguém é uma anime girl                                                                              | -isanimegirl @someone  |
 | `isdank`      | Percentagem se tu ou alguém é um dank memer                                                                               | -isdank @someone       |
+| `chat`        | Falas com o Bot ahahahah                                                                                                  | -chat                  |
 
 ## Moderação
 
@@ -137,6 +136,7 @@ Baseado em Discord.js, com o module DisTube.
 | `sobre`       | Informações sobre o Bot                                                                                                   | -sobre                 |
 | `categorias`  | Mostra as categorias de comandos do bot                                                                                   | -categorias música     |
 | `wiki`        | Procura o que quiseres na wikipédia (nota: não uses acentos)                                                              | -wiki benfica          |
+| `csgo`        | Procura os stats de csgo de um id64 da steam                                                                              | -csgo <id aqui>        |
 
 ## Imagens
 
