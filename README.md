@@ -1,6 +1,6 @@
 <img width="150" height="150" align="left" style="float: left; margin: 0 10px 0 0;" alt="Xiao" src="https://cdn.discordapp.com/avatars/733694571866882098/0167c27d1c8ed29094c9a227d3102a3b.png">
 
-<iframe src="https://discordapp.com/widget?id=577155568699965444&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+https://discordapp.com/api/guilds/577155568699965444/widget.json
 
 # 🤖 Bot dos Bostas (PaulBot) 🤖
 
