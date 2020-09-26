@@ -1,6 +1,4 @@
 <img width="150" height="150" align="left" style="float: left; margin: 0 10px 0 0;" alt="Xiao" src="https://cdn.discordapp.com/avatars/733694571866882098/0167c27d1c8ed29094c9a227d3102a3b.png">
-<script src="https://discordbotlist.com/widget/index.js" async></script>
-<dbl-widget bot-id="bot-paulbot" centered></dbl-widget>
 
 # 🤖 Bot dos Bostas (PaulBot) 🤖
 
