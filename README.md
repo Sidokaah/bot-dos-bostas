@@ -1,7 +1,5 @@
 <img width="150" height="150" align="left" style="float: left; margin: 0 10px 0 0;" alt="Xiao" src="https://cdn.discordapp.com/avatars/733694571866882098/0167c27d1c8ed29094c9a227d3102a3b.png">
 
-https://discordapp.com/api/guilds/577155568699965444/widget.json
-
 # 🤖 Bot dos Bostas (PaulBot) 🤖
 
 [![Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
