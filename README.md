@@ -37,7 +37,7 @@ Baseado em Discord.js, com o module DisTube.
 | `shuffle`     | Mistura o queue                                                                                                           | -shuffle               |
 | `skip`        | Passa para a música a seguir                                                                                              | -skip                  |
 | `clearqueue`  | Tira todas as músicas do queue menos a que está a tocar                                                                   | clearqueue             |
-| `jump`        | Passa para uma música específica no queue                                                                                 | -jump 5                |
+| `jump`        | Passa o número de músicas no queue á tua escolha                                                                          | -jump 5                |
 | `volume`      | Muda o volume da música                                                                                                   | -volume 150            |
 | `loop`        | Repetir a música, o queue ou nada. 0 - Nada; 1 - A música que está a tocar; 2 - Todo o queue                              | -loop 0, 1 ou 2        |
 | `playskip`    | Dá skip à música que estava a tocar e toca uma música que quiseres                                                        | -playskip godzilla     |
@@ -51,6 +51,8 @@ Baseado em Discord.js, com o module DisTube.
 | `autoplaynow` | Vês o estado do autoplay no momento                                                                                       | -autoplaynow           |
 | `loopnow`     | Vês o estado do loop no momento                                                                                           | -loopnow               |
 | `lyrics`      | Procura a letra da música que está a tocar ou de uma música à escolha                                                     | -lyrics | -lyrics Hello|
+| `skipto`      | Passa para uma música à tua escolha no queue                                                                              | -skipto 12             |
+| `move`        | O Bot vai mover a música que quiseres para outra posição no queue à tua escolha                                           | -move 4 23             |
 
 ## Memes
 
@@ -66,6 +68,8 @@ Baseado em Discord.js, com o module DisTube.
 | `wholesome`   | Um meme aleatório do subreddit `r/wholesomememes`                                                                         | -wholesome             |
 | `sports`      | Um meme aleatório sobre desporto                                                                                          | -sports                |
 | `facepalm`    | Um meme aleatório do subreddit `r/facepalm`                                                                               | -facepalm              |
+| `starwars`    | Um meme aleatório do subreddit `r/starwarsmemes`                                                                          | -starwars              |
+| `amongus`     | Um meme aleatório do subreddit `r/amongus`                                                                                | -amongus               |
 
 ## Diversão
 
@@ -96,6 +100,9 @@ Baseado em Discord.js, com o module DisTube.
 | `isanimegirl` | Percentagem se tu ou alguém é uma anime girl                                                                              | -isanimegirl @someone  |
 | `isdank`      | Percentagem se tu ou alguém é um dank memer                                                                               | -isdank @someone       |
 | `chat`        | Falas com o Bot ahahahah                                                                                                  | -chat                  |
+| `tic-tac-toe` | Jogo do Galo!                                                                                                             | -tic-tac-toe | -tic-tac-toe @TonaS|
+| `snake-game`  | O jogo do Snake dos grandes Nokias!                                                                                       | -snake-game            |
+| `hangman`     | Jogo da Forca, todos podem jogar!                                                                                         | -hangman               |
 
 ## Moderação
 
@@ -103,8 +110,6 @@ Baseado em Discord.js, com o module DisTube.
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | `kick`        | Kickas alguém do teu server                                                                                               | -kick @TonaS           |
 | `ban`         | Dás ban a alguém do server                                                                                                | -ban @Sezul            |
-| `mute`        | Dás mute a alguém                                                                                                         | -mute @someone         |
-| `warn`        | Avisas alguém                                                                                                             | -warn @someone         |
 | `userinfo`    | Informação sobre uma pessoa do server                                                                                     | -userinfo, -userinfo @TonaS|
 | `clear`       | Apagas um número específico de mensagens                                                                                  | -clear 69              |
 | `ping`        | Ping do bot                                                                                                               | -ping                  |
@@ -118,11 +123,9 @@ Baseado em Discord.js, com o module DisTube.
 | `invite`      | Dá o invite do bot                                                                                                        | -invite                |
 | `weather`     | Mostra a meteorologia numa cidade do mundo à escolha                                                                      | -weather Lisboa        |
 | `instagram`   | Procura uma conta do instagram                                                                                            | -instagram tonas_21    |
-| `lock`        | Dá lock ao server (Anti-Raid).                                                                                            | -lock on | off         |
 | `serverinfo`  | Mostra estatísticas e informação sobre um server                                                                          | -serverinfo            |
 | `yt`          | Procura um canal do Youtube                                                                                               | -yt PewDiePie          |
 | `math`        | Faz matemática por ti seu burro (+, -, *, :)                                                                              | -math 1 + 1            |
-| `giveaway`    | Crias um giveaway no teu server                                                                                           | -giveaway #general 5m nitro|
 | `delrole`     | Tiras um role a uma pessoa                                                                                                | -delrole @someone Membro|
 | `giverole`    | Dás um role a alguém do server                                                                                            | -giverole @someone Gay |
 | `hasrole`     | Vês se uma pessoa tem um role                                                                                             | -hasrole @someone Fixe |
@@ -144,7 +147,7 @@ Baseado em Discord.js, com o module DisTube.
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
 | `inverse`     | Inverte as cores da tua ou a imagem de perfil de alguém                                                                   | -inverse @TonaS        |
-| `minecraft`   | Imagens de minecraft                                                                                                      | -minecraft             |
+| `cursedminecraft`| Imagens de minecraft                                                                                                   | -minecraft             |
 | `animepunch`  | Uma imagem aleatória de um murro em anime. Yep, só isso.                                                                  | -animepunch            |
 | `wanted`      | Uma imagem de wanted                                                                                                      | -wanted @someone       |
 | `cursedimg`   | Uma imagem ahhm... Assustadora!                                                                                           | -cursedimg             |
@@ -170,10 +173,10 @@ Baseado em Discord.js, com o module DisTube.
 
 | Comandos      | Descrição                                                                                                                 | Como usar              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
-| `cats`        | Imagens aleatórias de gatos                                                                                               | -cats                  |
+| `kitty`        | Imagens aleatórias de gatos                                                                                               | -cats                  |
 | `dogs`        | Imagens aleatórias de cães                                                                                                | -dogs                  |
 | `quacc`       | Imagens aleatórias de patos                                                                                               | -quacc                 |
-| `mrlizard`    | Imagens aleatórias de lagartos                                                                                            | -mrlizard              |
+| `lizardboi`    | Imagens aleatórias de lagartos                                                                                            | -mrlizard              |
 | `goose`       | Imagens aleatórias de gansos                                                                                              | -goose                 |
 | `ferret`      | Imagens aleatórias de furões                                                                                              | -ferret                |
 | `snake`       | Imagens aleatórias de cobras                                                                                              | -snake                 |
