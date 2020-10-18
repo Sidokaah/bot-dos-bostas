@@ -88,7 +88,6 @@ Baseado em Discord.js, com o module DisTube.
 | `badjoke`     | Uma piada que não tem graça xD                                                                                            | -badjoke               |
 | `advice`      | Dá-te um conselho para a vida                                                                                             | -advice                |
 | `isretarded`  | Percentagem se tu ou alguém é retardado                                                                                   | -isretarded @someone   |
-| `say`         | O bot vai dizer o que quiseres                                                                                            | -say something         |
 | `isgamer`     | Percentagem se tu ou alguém é gamer                                                                                       | -isgamer @someone      |
 | `isgay`       | Percentagem se tu ou alguém é gay                                                                                         | -isgay @someone        |
 | `issimp`      | Percentagem se tu ou alguém é um simp                                                                                     | -issimp @someone       |
@@ -186,18 +185,18 @@ Baseado em Discord.js, com o module DisTube.
 
 # Como Instalar e usar o Bot
 
-~~Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas para o Bot funcionar bem. Entre elas estão `discord.js, node-fetch, fs, distube`, entre outros.
+~~Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas para o Bot funcionar bem. Entre elas estão `discord.js, node-fetch, fs, distube`, entre outros.~~
 
-~~Precisas de ter instalado:
+~~Precisas de ter instalado:~~
 
 
-~~- `node.js`;
-- `ffmpeg`;
-~~- Um editor de texto como: `Visual Studio Code <-- Recomendo; Notepad++, entre outros.`
+~~- `node.js`;~~
+~~- `ffmpeg`;~~
+~~- Um editor de texto como: `Visual Studio Code <-- Recomendo; Notepad++, entre outros.`~~
 
-~~**IMPORTANTE:** Precisas de ter experiência com este tipo de programas e linguagem para usares o bot. Aprende primeiro JavaScript e Discord.js antes de mudares alguma coisa no código do Bot, porque ainda podes fazer com que o bot tenha erros e não funcione bem!
+~~**IMPORTANTE:** Precisas de ter experiência com este tipo de programas e linguagem para usares o bot. Aprende primeiro JavaScript e Discord.js antes de mudares alguma coisa no código do Bot, porque ainda podes fazer com que o bot tenha erros e não funcione bem!~~
 
-Dar ao Host localmente ao Bot já não é 100% seguro, por poder haver algum erro, o que leva a eu não poder mais suporte a esta parte do Bot :/ 
+__**Dar ao Host localmente ao Bot já não é 100% seguro, por poder haver algum erro, o que leva a eu não poder mais suporte a esta parte do Bot :/**__ 
 # Links Importantes:
 
 **[Discord.js](https://discord.js.org/#/)** - Library em que o bot foi baseado. Caso não saibas o significado de alguma coisa no código do Bot, podes procurar aqui nos Docs deles ---> [Link](https://discord.js.org/#/docs/main/stable/general/welcome).
