@@ -176,7 +176,7 @@ Baseado em Discord.js, com o module DisTube.
 | `kitty`        | Imagens aleatórias de gatos                                                                                               | -cats                  |
 | `dogs`        | Imagens aleatórias de cães                                                                                                | -dogs                  |
 | `quacc`       | Imagens aleatórias de patos                                                                                               | -quacc                 |
-| `lizardboi`    | Imagens aleatórias de lagartos                                                                                            | -mrlizard              |
+| `lizardboi`   | Imagens aleatórias de lagartos                                                                                            | -mrlizard              |
 | `goose`       | Imagens aleatórias de gansos                                                                                              | -goose                 |
 | `ferret`      | Imagens aleatórias de furões                                                                                              | -ferret                |
 | `snake`       | Imagens aleatórias de cobras                                                                                              | -snake                 |
@@ -186,16 +186,18 @@ Baseado em Discord.js, com o module DisTube.
 
 # Como Instalar e usar o Bot
 
-Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas para o Bot funcionar bem. Entre elas estão `discord.js, node-fetch, fs, distube`, entre outros.
+~~Fazes `npm i`. O que isto faz? Instala todas as dependencies que são precisas para o Bot funcionar bem. Entre elas estão `discord.js, node-fetch, fs, distube`, entre outros.
 
-Precisas de ter instalado:
+~~Precisas de ter instalado:
 
 
-- `node.js`;
+~~- `node.js`;
 - `ffmpeg`;
-- Um editor de texto como: `Visual Studio Code <-- Recomendo; Notepad++, entre outros.`
+~~- Um editor de texto como: `Visual Studio Code <-- Recomendo; Notepad++, entre outros.`
 
-**IMPORTANTE:** Precisas de ter experiência com este tipo de programas e linguagem para usares o bot. Aprende primeiro JavaScript e Discord.js antes de mudares alguma coisa no código do Bot, porque ainda podes fazer com que o bot tenha erros e não funcione bem!
+~~**IMPORTANTE:** Precisas de ter experiência com este tipo de programas e linguagem para usares o bot. Aprende primeiro JavaScript e Discord.js antes de mudares alguma coisa no código do Bot, porque ainda podes fazer com que o bot tenha erros e não funcione bem!
+
+Dar ao Host localmente ao Bot já não é 100% seguro, por poder haver algum erro, o que leva a eu não poder mais suporte a esta parte do Bot :/ 
 # Links Importantes:
 
 **[Discord.js](https://discord.js.org/#/)** - Library em que o bot foi baseado. Caso não saibas o significado de alguma coisa no código do Bot, podes procurar aqui nos Docs deles ---> [Link](https://discord.js.org/#/docs/main/stable/general/welcome).
