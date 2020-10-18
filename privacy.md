@@ -15,4 +15,4 @@ Só os Developers do Bot (eu), é que têm acesso à informação de prefixes.
 Se estiveres preocupado com a informação que é guardada, manda DM para TonaS#9344.
 
 ## Como remover a informação que é guardada?
-Se quiseres remover a informação, manda-me DM ou entra no Server de Suporte do Bot - https://discord.gg/g2unvs4
+Se quiseres remover a informação, manda-me DM ou entra no Server de Suporte do Bot - https://discord.gg/c5EuetX
