@@ -6,7 +6,7 @@
 [![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
 [![Discord](https://discordapp.com/api/guilds/577155568699965444/embed.png)](https://discord.gg/ZMaW8bG)
 
-O meu grande Bot do discord.
+O meu grande Bot do Discord.
 Com cerca de 130 comandos, desde música até memes.
 
 O Bot tem diversas features como reaction controller na música, páginas no queue e comando help interativo 👀.
