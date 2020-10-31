@@ -3,11 +3,19 @@
 # 🤖 Bot dos Bostas (PaulBot) 🤖
 
 [![Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas.svg)](https://david-dm.org/TonaS21/bot-dos-bostas)
-[![Dev Dependencies](https://david-dm.org/TonaS21/bot-dos-bostas/dev-status.svg)](https://david-dm.org/TonaS21/bot-dos-bostas?type=dev)
 [![Discord](https://discordapp.com/api/guilds/577155568699965444/embed.png)](https://discord.gg/ZMaW8bG)
+<a href="https://top.gg/bot/733694571866882098">
+    <img src="https://top.gg/api/widget/status/733694571866882098.svg" alt="PaulBot" />
+</a>
+<a href="https://top.gg/bot/733694571866882098">
+    <img src="https://top.gg/api/widget/servers/733694571866882098.svg" alt="PaulBot" />
+</a>
+<a href="https://top.gg/bot/733694571866882098">
+    <img src="https://top.gg/api/widget/lib/733694571866882098.svg" alt="PaulBot" />
+</a>
 
 O meu grande Bot do Discord.
-Com cerca de 170 comandos, desde música até memes.
+Com cerca de 165 comandos, desde música até memes.
 
 O Bot tem diversas features como reaction controller na música, páginas no queue e comando help interativo 👀.
 
