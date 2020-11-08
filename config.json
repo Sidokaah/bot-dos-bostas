@@ -3,5 +3,8 @@
     "token": "TOKEN DO BOT AQUI",
     "wolfram_alpha_id": "WOLFRAM APLHA ID AQUI",
     "google": "GOOGLE API KEY AQUI", 
-    "giphy_api_key": "GIPHY API KEY AQUI"
+    "giphy_api_key": "GIPHY API KEY AQUI",
+    "dbl_token": "TOKEN DO TOP.GG AQUI",
+    "bfd_token": "TOKEN DO BOTSFORDISCORD AQUI",
+    "pastebin_key": "API KEY DO PASTEBIN AQUI"
 }
