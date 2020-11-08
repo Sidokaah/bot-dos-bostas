@@ -12,7 +12,7 @@ module.exports = {
     run: async (client, message, args) => {
         const { body } = await request
 			.get(`https://api.github.com/repos/TonaS21/bot-dos-bostas/commits`)
-			.set({ Authorization: `Basic ${base64(`TonaS21:tonasfoot5`)}` });
+			.set({ Authorization: `Basic ${base64(`coisas aqui`)}` });
 		const commits = body.slice(0, 10);
 		const embed = new MessageEmbed()
 			.setTitle(`[bot-dos-bostas:master] Latest 10 commits`)
