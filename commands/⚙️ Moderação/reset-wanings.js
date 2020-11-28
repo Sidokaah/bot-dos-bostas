@@ -1,5 +1,4 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 
 module.exports = {
     name: "reset-warnings",
@@ -18,11 +17,11 @@ module.exports = {
           if(message.author.id === user.id) {
             return message.channel.send("<:X:748632517476745226> Não podes resetar os teus próprios avisos!")
           }
-          let warnings = db.get(`warnings_${message.guild.id}_${user.id}`)
+          let warnings = client.db.get(`warnings_${message.guild.id}_${user.id}`)
           if(warnings === null) {
             return message.channel.send(`${message.mentions.users.first().username} não tem nenhum aviso!`)
           }
-          db.delete(`warnings_${message.guild.id}_${user.id}`)
+          client.db.delete(`warnings_${message.guild.id}_${user.id}`)
           user.send(`**Todos os teus avisos foram resetados em ${message.guild.name}!**`)
           const suc = new Discord.MessageEmbed()
             .setDescription(`**<:tick:748569437589995731> Avisos do usuário resetados com sucesso!**`)

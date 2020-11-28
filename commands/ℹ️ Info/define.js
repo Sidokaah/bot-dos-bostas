@@ -1,7 +1,5 @@
 const Discord = require("discord.js")
 const fetch = require("node-fetch")
-const config = require("../../config.json")
-const db = require("quick.db")
 
 module.exports = {
     name: "define",
@@ -11,8 +9,8 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
         var text = args;
         if (args.length < 1) {
             message.react(":X:748632517476745226")
@@ -22,7 +20,7 @@ module.exports = {
             var search_term = text;
             search_term = "define" + search_term;
             var url_encoded_search_term = search_term.split(" ").join("%20")
-            var ask_link = `http://api.wolframalpha.com/v2/query?appid=${config.wolfram_alpha_id}&input=${url_encoded_search_term}&output=json`
+            var ask_link = `http://api.wolframalpha.com/v2/query?appid=${client.config.wolfram_alpha_id}&input=${url_encoded_search_term}&output=json`
             fetch(ask_link)
                 .then(res => res.json())
                 .then((out) => {

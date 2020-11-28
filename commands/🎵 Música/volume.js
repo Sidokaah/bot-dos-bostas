@@ -4,6 +4,7 @@ module.exports = {
   name: "volume",
   aliases: [`Volume`, `VOLUME`, `v`, `V`, ` Volume`, ` VOLUME`, ` v`, ` V`, "set", "set-volume"],
   usage: ["[número]"],
+  cooldown: "7",
   description: "Vê ou muda o volume da música",
   clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
   userPermissions: [],
@@ -30,7 +31,7 @@ module.exports = {
         }
       	if(!args[0] || isNaN(args[0])) {
       		const embed1 = new Discord.MessageEmbed()
-          		.setDescription(`:loud_sound: O volume da música está a: **${queue.volume}%**`)
+          		.setDescription(`<:volumeup:772391748999577600> O volume da música está a: **${queue.volume}%**`)
           		.setColor("RANDOM")
       		message.channel.send(embed1)
     	} else {
@@ -43,7 +44,7 @@ module.exports = {
       		} else {
           		client.distube.setVolume(message, args[0]);
           		const embed1 = new Discord.MessageEmbed()
-              		.setDescription(`:loud_sound: O volume da música está agora a: **${queue.volume}%**`)
+              		.setDescription(`<:volumeup:772391748999577600> O volume da música está agora a: **${queue.volume}%**`)
               		.setColor("RANDOM")
           		message.channel.send(embed1)
       		}

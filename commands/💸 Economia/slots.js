@@ -1,7 +1,5 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 const ms1 = require("parse-ms")
-const config = require("../../config.json")
 
 module.exports = {
     name: "slots",
@@ -13,7 +11,7 @@ module.exports = {
     run: async (client, message, args) => {
         const slotItems = ["🍇", "🍉", "🍊", "🍎", "🍌", "🍓", "🍒"];
         let user = message.author;
-        let moneydb = await db.fetch(`money_${message.guild.id}_${user.id}`)
+        let moneydb = await client.db.fetch(`money_${message.guild.id}_${user.id}`)
         let money = parseInt(args[0]);
         let win = false;
         let moneyhelp = new Discord.MessageEmbed()
@@ -42,13 +40,13 @@ module.exports = {
                 .setDescription(`${slotItems[number[0]]} | ${slotItems[number[1]]} | ${slotItems[number[2]]}\n\nGanhaste ${money} moedas!`)
                 .setColor("RANDOM")
             message.channel.send(slotsEmbed1)
-            db.add(`money_${message.guild.id}_${user.id}`, money)
+            client.db.add(`money_${message.guild.id}_${user.id}`, money)
         } else {
             let slotsEmbed = new Discord.MessageEmbed()
                 .setDescription(`${slotItems[number[0]]} | ${slotItems[number[1]]} | ${slotItems[number[2]]}\n\nPerdeste ${money} moedas!`)
                 .setColor("RANDOM")
             message.channel.send(slotsEmbed)
-            db.subtract(`money_${message.guild.id}_${user.id}`, money)
+            client.db.subtract(`money_${message.guild.id}_${user.id}`, money)
         }
     }
 }

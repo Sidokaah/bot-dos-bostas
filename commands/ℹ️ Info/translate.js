@@ -1,6 +1,4 @@
 const Discord = require("discord.js")
-const config = require("../../config.json")
-const db = require("quick.db")
 const translate = require('@k3rn31p4nic/google-translate-api');
 
 module.exports = {
@@ -11,8 +9,8 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
         try {
             if (args.length < 2) {
               return message.channel.send("Como usar:" + "`" + `${prefix}translate <língua> <texto>` + "`")

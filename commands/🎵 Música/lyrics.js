@@ -6,6 +6,7 @@ module.exports = {
     aliases: ["LYRICS", "Lyrics", " lyrics", " Lyrics", " LYRICS"],
     description: "Procura a letra de uma música à tua escolha ou a música que está a tocar",
     usage: ["[nada (música que está a tocar) | nome da música]"],
+    cooldown: "5",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {

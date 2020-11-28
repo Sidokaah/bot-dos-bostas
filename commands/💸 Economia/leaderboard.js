@@ -1,7 +1,5 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 const ms1 = require("parse-ms")
-const config = require("../../config.json")
 
 module.exports = {
     name: "leaderboard",
@@ -11,14 +9,14 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-      let prefix = db.get(`prefix_${message.guild.id}`)
-      if(prefix === null) prefix = config.prefix;
+      let prefix = client.db.get(`prefix_${message.guild.id}`)
+      if(prefix === null) prefix = client.config.prefix;
       const embed = new Discord.MessageEmbed()
       .setDescription(`**Escolhe uma opção de LeaderBoard**\n\nMoedas: ${prefix}leaderboard moedas\nNikes: ${prefix}leaderboard nikes\nCarro: ${prefix}leaderboard carro\nMansão: ${prefix}leaderboard mansão\nDragon Lore: ${prefix}leaderboard dragonlore\nPC Gamer: ${prefix}leaderboard pcgamer\nUnusual Team Captain: ${prefix}leaderboard teamcaptain`)
       .setColor("RANDOM")
       if(!args[0]) return message.channel.send(embed)
       if (args[0] == 'moedas') {
-        let money = db.startsWith(`money_${message.guild.id}`, { sort: '.data'})
+        let money = client.db.startsWith(`money_${message.guild.id}`, { sort: '.data'})
         let content = "";
         for (let i = 0; i < money.length; i++) {
           let user = client.users.cache.get(money[i].ID.split('_')[2]).username
@@ -30,7 +28,7 @@ module.exports = {
           .setColor("RANDOM")
         message.channel.send(embed)
       } else if(args[0] == 'nikes') {
-        let nike = db.startsWith(`nikes_${message.guild.id}`, { sort: '.data'})
+        let nike = client.db.startsWith(`nikes_${message.guild.id}`, { sort: '.data'})
         let content = "";
         for (let i = 0; i < nike.length; i++) {
           let user = client.users.cache.get(nike[i].ID.split('_')[2]).username
@@ -42,7 +40,7 @@ module.exports = {
           .setColor("RANDOM")
         message.channel.send(embed)
       } else if(args[0] == 'carros') {
-        let cars = db.startsWith(`car_${message.guild.id}`, { sort: '.data'})
+        let cars = client.db.startsWith(`car_${message.guild.id}`, { sort: '.data'})
         let content = "";
         for (let i = 0; i < cars.length; i++) {
           let user = client.users.cache.get(cars[i].ID.split('_')[2]).username
@@ -54,7 +52,7 @@ module.exports = {
           .setColor("RANDOM")
         message.channel.send(embed)
       } else if(args[0] == 'mansão') {
-        let mansions = db.startsWith(`house_${message.guild.id}`, { sort: '.data'})
+        let mansions = client.db.startsWith(`house_${message.guild.id}`, { sort: '.data'})
         let content = "";
         for (let i = 0; i < mansions.length; i++) {
           let user = client.users.cache.get(mansions[i].ID.split('_')[2]).username
@@ -66,7 +64,7 @@ module.exports = {
           .setColor("RANDOM")
         message.channel.send(embed)
       } else if(args[0] == 'dragonlore') {
-          let mansions = db.startsWith(`dragon_${message.guild.id}`, { sort: '.data'})
+          let mansions = client.db.startsWith(`dragon_${message.guild.id}`, { sort: '.data'})
           let content = "";
           for (let i = 0; i < mansions.length; i++) {
               let user = client.users.cache.get(mansions[i].ID.split('_')[2]).username
@@ -78,7 +76,7 @@ module.exports = {
               .setColor("RANDOM")
           message.channel.send(embed)
       } else if(args[0] == 'pcgamer') {
-          let mansions = db.startsWith(`pc_${message.guild.id}`, { sort: '.data'})
+          let mansions = client.db.startsWith(`pc_${message.guild.id}`, { sort: '.data'})
           let content = "";
           for (let i = 0; i < mansions.length; i++) {
               let user = client.users.cache.get(mansions[i].ID.split('_')[2]).username
@@ -90,7 +88,7 @@ module.exports = {
               .setColor("RANDOM")
           message.channel.send(embed)
       } else if(args[0] == 'teamcaptain') {
-          let mansions = db.startsWith(`team_${message.guild.id}`, { sort: '.data'})
+          let mansions = client.db.startsWith(`team_${message.guild.id}`, { sort: '.data'})
           let content = "";
           for (let i = 0; i < mansions.length; i++) {
               let user = client.users.cache.get(mansions[i].ID.split('_')[2]).username

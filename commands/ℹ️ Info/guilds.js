@@ -1,6 +1,5 @@
 const Discord = require("discord.js");
 const PastebinAPI = require('pastebin-js');
-const config = require("../../config.json")
 
 module.exports = {
     name: "guilds",
@@ -10,7 +9,7 @@ module.exports = {
     userPermissions: [],
     ownerOnly: true,
     run: async (client, message, args) => {
-        let key = config.pastebin_key
+        let key = client.config.pastebin_key
         const pastebin = new PastebinAPI({
             'api_dev_key' : key
         });

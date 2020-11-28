@@ -4,6 +4,7 @@ module.exports = {
     name: "filter",
     usage: ["[filtro]"],
     description: "Ativa um filro à tua escolha",
+    cooldown: "7",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
@@ -21,6 +22,7 @@ module.exports = {
         let clientVoiceConnection = message.guild.me.voice;
         if (userVoiceChannel === clientVoiceConnection.channel) {
             try {
+                if(!filters.includes(command)) return message.channel.send("<:X:748632517476745226> Filtro inválido!")
                 let filter = client.distube.setFilter(message, command);
             	message.channel.send("<:tick:748569437589995731> Filtro do queue atual: **" + (filter || "Off") + "**");
             } catch(e) {

@@ -1,11 +1,11 @@
 const Discord = require("discord.js")
 
 module.exports = {
-    name: "jumpto",
-    aliases: ["JumpTo", "JUMPTO", "skipto", "SkipTo", "SKIPTO", " jumpto", " JumpTo", " JUMPTO", " skipto", " SkipTo", " SKIPTO"],
+    name: "seek",
+    aliases: ["Seek", "SEEK", " seek", " Seek", " SEEK"],
+    description: "Salta o número de músicas que quiseres",
     usage: ["[número]"],
     cooldown: "7",
- 	description: "Salta para o número que quiseres no queue",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
@@ -24,37 +24,19 @@ module.exports = {
         let clientVoiceConnection = message.guild.me.voice;
         if (userVoiceChannel === clientVoiceConnection.channel) {
             try {
-                if (!args.length){
+                if (!args[0]) {
                     const erroembed = new Discord.MessageEmbed()
-                        .setDescription("<:X:748632517476745226> Precisas de especificar um número para saltares.")
+                        .setDescription("Precisas de especificar um valor para passares à frente a música.")
                         .setColor("RANDOM")
                     message.channel.send(erroembed)
                 }
-                if (isNaN(args[0])) {
+                if (!IsNaN(args[0])) {
                     const erroembed = new Discord.MessageEmbed()
-                        .setDescription("<:X:748632517476745226> Isso não é um número.")
+                        .setDescription("Isso não é um número.")
                         .setColor("RANDOM")
                     message.channel.send(erroembed)
                 }
-                if(args[0].includes("-")) {
-                    const erroembed = new Discord.MessageEmbed()
-                        .setDescription("Não posso saltar número negativos.")
-                        .setColor("RANDOM")
-                    message.channel.send(erroembed)
-                }
-                queue.playing = true;
-                if (queue.repeatMode) {
-                    for (let i = 0; i < args[0] - 2; i++) {
-                    queue.songs.push(queue.songs.shift());
-                }
-                } else {
-                    queue.songs = queue.songs.slice(args[0] - 2);
-                }
-                queue.connection.dispatcher.end();
-                const embed1 = new Discord.MessageEmbed()
-                    .setDescription(`⬆️ Saltei para o número **${parseInt(args[0])}** no queue!`)
-                    .setColor("RANDOM")
-                message.channel.send(embed1)
+                client.distube.seek(message, Number(args[0] * 1000))
             } catch {
                 return;
             }

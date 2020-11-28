@@ -5,6 +5,7 @@ module.exports = {
     aliases: ["Move", "MOVE", " move", " Move", " MOVE"],
     usage: ["[número]"],
     description: "Move uma música para outra posição no queue",
+    cooldown: "5",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {

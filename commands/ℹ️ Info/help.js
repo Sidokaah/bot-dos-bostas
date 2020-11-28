@@ -1,6 +1,4 @@
 const { MessageEmbed } = require("discord.js");
-const config = require("../../config.json")
-const db = require("quick.db")
 const { readdirSync } = require("fs");
 
 module.exports = {
@@ -9,8 +7,8 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
 		if (!args[0]) {
       	let categories = [];
       	readdirSync("./commands/").forEach((dir) => {

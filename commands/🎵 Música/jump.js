@@ -5,6 +5,7 @@ module.exports = {
     aliases: ["Jump", "JUMP", "j", "J", " jump", " Jump", " JUMP", " j", " J"],
     description: "Salta o número de músicas que quiseres",
     usage: ["[número]"],
+    cooldown: "7",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
@@ -26,19 +27,19 @@ module.exports = {
                 if (!parseInt(args[0])) {
                     const erroembed = new Discord.MessageEmbed()
                         .setDescription("Precisas de especificar um número para saltares.")
-                        .setColor("RANDOm")
+                        .setColor("RANDOM")
                     message.channel.send(erroembed)
                 }
                 if (isNaN(args[0])) {
                     const erroembed = new Discord.MessageEmbed()
                         .setDescription("Isso não é um número.")
-                        .setColor("RANDOm")
+                        .setColor("RANDOM")
                     message.channel.send(erroembed)
                 }
                 if(args[0].includes("-")) {
                     const erroembed = new Discord.MessageEmbed()
                         .setDescription("Não posso saltar número negativos.")
-                        .setColor("RANDOm")
+                        .setColor("RANDOM")
                     message.channel.send(erroembed)
                 }
                 client.distube.jump(message, parseInt(args[0]))

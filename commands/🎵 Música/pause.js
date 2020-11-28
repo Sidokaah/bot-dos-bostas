@@ -4,6 +4,7 @@ module.exports = {
     name: "pause",
     aliases: ["Pause", "PAUSE", " pause", " Pause", " PAUSE"],
     description: "Pausa a música",
+    cooldown: "6",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {

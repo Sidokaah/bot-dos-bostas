@@ -1,5 +1,3 @@
-const db = require("quick.db")
-
 module.exports = {
     name: "disablewelcome",
     aliases: ["disable-welcome"],
@@ -7,7 +5,7 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES"],
     userPermissions: ["ADMINISTRATOR"],
     run: async (client, message, args) => {
-        db.delete(`welchannel_${message.guild.id}`)
+        client.db.delete(`welchannel_${message.guild.id}`)
         message.channel.send(`<:tick:748569437589995731> Welcome Channel foi deletado!`)
     }
 }

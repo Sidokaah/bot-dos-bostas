@@ -5,8 +5,6 @@ const { wrapText } = require('../../util/Canvas');
 registerFont(path.join(__dirname, '..', '..', 'assets', 'fonts', 'Noto-Regular.ttf'), { family: 'Noto' });
 registerFont(path.join(__dirname, '..', '..', 'assets', 'fonts', 'Noto-CJK.otf'), { family: 'Noto' });
 registerFont(path.join(__dirname, '..', '..', 'assets', 'fonts', 'Noto-Emoji.ttf'), { family: 'Noto' });
-const db = require("quick.db")
-const config = require("../../config.json")
 
 module.exports = {
     name: "panik-kalm-panik",
@@ -15,14 +13,14 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
     userPermissions: [],
     run: async (client, message, args) => {
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
 		try {
             let splitarg = args.join(" ").split(" | ")
         	let panik = splitarg[0]
         	let kalm = splitarg[1]
             let panik2 = splitarg[2]
-            if(!panik) return message.channel.send("Como usar o comando: `" + prefix + `panik-kalm-panik | <panik> | <kalm> | <panik>` + "`")
+            if(!panik) return message.channel.send("Como usar o comando: `" + prefix + `panik-kalm-panik <panik> | <kalm> | <panik>` + "`")
             if(!kalm) return message.channel.send("Especifica texto para a parte do Kalm!")
             if(!panik2) return message.channel.send("Especifica texto para a segunda parte do Panik!")
 			const base = await loadImage(path.join(__dirname, '..', '..', 'assets', 'images', 'panik-kalm-panik.png'));

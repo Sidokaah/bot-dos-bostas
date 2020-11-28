@@ -11,7 +11,6 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
     userPermissions: [],
     run: async (client, message, args) => {
-        if(!message.guild.me.hasPermission("ATTACH_FILES")) return message.channel.send("<:X:748632517476745226> Não tenho permissões para mandar ficheiros como imagens neste server!")
 		try {
             if(!args.join(" ")) return message.channel.send("<:X:748632517476745226> Por favor especifica texto para pôr na imagem!")
             const text = args.join(" ")

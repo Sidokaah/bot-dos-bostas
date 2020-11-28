@@ -1,7 +1,5 @@
 const Discord = require("discord.js")
 const requests = require("../../modules/requests")
-const config = require("../../config.json")
-const db = require("quick.db")
 
 module.exports = {
     name: "wiki",
@@ -12,8 +10,8 @@ module.exports = {
     userPermissions: [],
     nsfw: true,
     run: async (client, message, args) => {
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
 		let requestLang = 'pt';
 		if (!args[0]) {
 			message.react(':X:748632517476745226').catch(e => Logger.error(e))

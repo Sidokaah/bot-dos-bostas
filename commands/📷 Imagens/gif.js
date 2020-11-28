@@ -1,5 +1,4 @@
 const fetch = require("node-fetch")
-const config = require("../../config.json")
 
 module.exports = {
     name: "gif",
@@ -18,7 +17,7 @@ module.exports = {
             else {
                 var limit = 5;
                 var search_term = text;
-                var giphy_endpoint = `https://api.giphy.com/v1/gifs/search?rating=g&api_key=${config.giphy_api_key}&limit=${limit}&q=${search_term}`
+                var giphy_endpoint = `https://api.giphy.com/v1/gifs/search?rating=g&api_key=${client.config.giphy_api_key}&limit=${limit}&q=${search_term}`
                 fetch(giphy_endpoint)
                     .then(res => res.json())
                     .then((out) => {

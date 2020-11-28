@@ -4,6 +4,7 @@ module.exports = {
   name: "loop",
   aliases: ["repeat", "Repeat", "Loop", "REPEAT", "LOOP", " repeat", " loop", " Repeat", " Loop", " REPEAT", " LOOP"],
   usage: ["[0 | 1 | 2]"],
+  cooldown: "5",
   description: "Ativa e desativa o loop",
   clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
   userPermissions: [],

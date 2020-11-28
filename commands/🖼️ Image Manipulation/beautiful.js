@@ -9,7 +9,6 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "ATTACH_FILES"],
     userPermissions: [],
     run: async (client, message, args) => {
-        if(!message.guild.me.hasPermission("ATTACH_FILES")) return message.channel.send("<:X:748632517476745226> Não tenho permissões para mandar ficheiros como imagens neste server!")
         const user = message.mentions.users.first() || message.author
         let avatar = user.displayAvatarURL({ dynamic: false, format: 'png' });
         let image = await canva.beautiful(avatar);

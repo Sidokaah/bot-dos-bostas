@@ -2,6 +2,7 @@ module.exports = {
     name: "autoplay",
     aliases: ["Autoplay", "AUTOPLAY", "ap", "AP", " autoplay", " Autoplay", " AUTOPLAY", " ap", " AP"],
     description: "Ativa e desativa o autoplay",
+    cooldown: "5",
     clientPermissions: ["SEND_MESSAGES"],
     userPermissions: [],
     run: async (client, message, args) => {

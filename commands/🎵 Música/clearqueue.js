@@ -4,6 +4,7 @@ module.exports = {
     name: "clearqueue",
     aliases: ["Clearqueue", "ClearQueue", "CLEARQUEUE", " clearqueue", " Clearqueue", " ClearQueue", " CLEARQUEUE"],
     description: "Apaga o queue (menos a música que está a tocar)",
+    cooldown: "7",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {

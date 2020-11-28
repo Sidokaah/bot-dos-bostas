@@ -1,7 +1,5 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 const ms1 = require("parse-ms")
-const config = require("../../config.json")
 
 module.exports = {
     name: "roulette",
@@ -12,8 +10,8 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-      let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+      let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
       let user = message.author;
       function isOdd(num) { 
         if ((num % 2) == 0) return false;
@@ -21,7 +19,7 @@ module.exports = {
       }
       let colour = args[0];
       let money = parseInt(args[1]);
-      let moneydb = await db.fetch(`money_${message.guild.id}_${user.id}`)
+      let moneydb = await client.db.fetch(`money_${message.guild.id}_${user.id}`)
       let random = Math.floor(Math.random() * 37);
       let moneyhelp = new Discord.MessageEmbed()
           .setColor("RANDOM")
@@ -46,27 +44,27 @@ module.exports = {
       else return message.channel.send(colorbad); 
       if (random == 0 && colour == 2) { // Green
           money *= 15
-          db.add(`money_${message.guild.id}_${user.id}`, money)
+          client.db.add(`money_${message.guild.id}_${user.id}`, money)
           let moneyEmbed1 = new Discord.MessageEmbed()
               .setColor("RANDOM")
               .setDescription(`🟢 Ganhaste ${money} Moedas!\nMultiplicador: 15x`);
           message.channel.send(moneyEmbed1)
       } else if (isOdd(random) && colour == 1) { // Red
           money = parseInt(money * 1.5)
-          db.add(`money_${message.guild.id}_${user.id}`, money)
+          client.db.add(`money_${message.guild.id}_${user.id}`, money)
           let moneyEmbed2 = new Discord.MessageEmbed()
               .setColor("RANDOM")
               .setDescription(`🔴 Ganhaste ${money} moedas!\nMultiplicador: 1.5x`);
           message.channel.send(moneyEmbed2)
       } else if (!isOdd(random) && colour == 0) { // Black
           money = parseInt(money * 2)
-          db.add(`money_${message.guild.id}_${user.id}`, money)
+          client.db.add(`money_${message.guild.id}_${user.id}`, money)
           let moneyEmbed3 = new Discord.MessageEmbed()
               .setColor("RANDOM")
               .setDescription(`⚫ Ganhaste ${money} moedas!\nMultiplicador: 2x`);
           message.channel.send(moneyEmbed3)
-      } else { // Wrong
-          db.subtract(`money_${message.guild.id}_${user.id}`, money)
+      } else {
+          client.db.subtract(`money_${message.guild.id}_${user.id}`, money)
           let moneyEmbed4 = new Discord.MessageEmbed()
               .setColor("RANDOM")
               .setDescription(`<:X:748632517476745226> Perdeste ${money} moedas!\nMultiplicador: 0x`);

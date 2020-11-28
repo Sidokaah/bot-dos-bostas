@@ -1,5 +1,4 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 const ms1 = require("parse-ms")
 
 module.exports = {
@@ -10,7 +9,7 @@ module.exports = {
     userPermissions: [],
     run: async (client, message, args) => {
       let user = message.author;
-      let author = await db.fetch(`work_${message.guild.id}_${user.id}`)
+      let author = await client.db.fetch(`work_${message.guild.id}_${user.id}`)
       let timeout = 1800000;
       if (author !== null && timeout - (Date.now() - author) > 0) {
         let time = ms1(timeout - (Date.now() - author));
@@ -26,8 +25,8 @@ module.exports = {
         .setColor("RANDOM")
         .setDescription(`<:tick:748569437589995731> Trabalhaste como **${replies[result]}** e recebeste **${amount} moedas!**`);
         message.channel.send(embed1)
-        db.add(`money_${message.guild.id}_${user.id}`, amount)
-        db.set(`work_${message.guild.id}_${user.id}`, Date.now())
+        client.db.add(`money_${message.guild.id}_${user.id}`, amount)
+        client.db.set(`work_${message.guild.id}_${user.id}`, Date.now())
       };
     }
 }

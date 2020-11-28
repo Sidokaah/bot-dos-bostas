@@ -1,7 +1,5 @@
 const Discord = require("discord.js")
 const fetch = require("node-fetch")
-const config = require("../../config.json")
-const db = require("quick.db")
 
 module.exports = {
     name: "name",
@@ -11,8 +9,8 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
         var text = args;
         if (args.length < 1) {
             message.react(":X:748632517476745226")
@@ -27,7 +25,7 @@ module.exports = {
             else {
                 var name_query = message.content.slice(1, message.content.length);
                 var name_query_encoded = name_query.split(" ").join("%20");
-                var ask_link = `http://api.wolframalpha.com/v2/query?appid=${config.wolfram_alpha_id}&input=${name_query}&output=json`
+                var ask_link = `http://api.wolframalpha.com/v2/query?appid=${client.config.wolfram_alpha_id}&input=${name_query}&output=json`
                 fetch(ask_link)
                     .then(res => res.json())
                     .then((out) => {

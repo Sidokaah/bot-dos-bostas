@@ -4,6 +4,7 @@ module.exports = {
     name: "resume",
     aliases: ["Resume", "RESUME", " resume", " Resume", " RESUME"],
     description: "Resume uma música",
+    cooldown: "6",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {

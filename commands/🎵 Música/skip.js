@@ -4,6 +4,7 @@ module.exports = {
   name: "skip",
   aliases: ["Skip", "SKIP", " skip", " Skip", " SKIP"],
   description: "Dá skip à música que está a tocar",
+  cooldown: "7",
   clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
   userPermissions: [],
   run: async (client, message, args) => {

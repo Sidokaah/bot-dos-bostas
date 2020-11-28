@@ -28,15 +28,17 @@ module.exports = {
             .setColor('RANDOM')
             .setThumbnail(args[0] ? corona.countryInfo.flag : 'https://www.jdv.com.br/midias/artigos/Imagens/1200px-sars-cov-2_without_background.png')
             .addFields(
-                { name: 'Casos Confirmados:', value: `${corona.cases.toLocaleString()}`, inline: true },
-                { name: 'Mortes:', value: `${corona.deaths.toLocaleString()}\n(${((corona.deaths / corona.cases) * 100).toFixed(2)}%)`, inline: true },
-                { name: 'Recuperados:', value: `${corona.recovered.toLocaleString()}\n(${((corona.recovered / corona.cases) * 100).toFixed(2)}%)`, inline: true },
-                { name: 'Casos Ativos:', value: `${corona.active.toLocaleString()}\n(${((corona.active / corona.cases) * 100).toFixed(2)}%)`, inline: true },
-                { name: 'Testes:', value: `${corona.tests.toLocaleString()}`, inline: true },
-                { name: 'Cuidados Intensi.:', value: `${corona.critical.toLocaleString()}\n(${((corona.critical / corona.cases) * 100).toFixed(2)}%)`, inline: true },
-                { name: 'Casos Hoje:', value: `${corona.todayCases.toLocaleString()}`, inline: true },
-                { name: 'Mortes Hoje:', value: `${corona.todayDeaths.toLocaleString()}`, inline: true },
-                { name: 'Hoje Recuperados:', value: `${corona.todayRecovered.toLocaleString().replace("-", "")}`, inline: true })
+                { name: 'Casos Confirmados:', value: `**${corona.cases.toLocaleString()}**`, inline: true },
+                { name: 'Mortes:', value: `**${corona.deaths.toLocaleString()}**\n(${((corona.deaths / corona.cases) * 100).toFixed(2)}%)`, inline: true },
+                { name: 'Recuperados:', value: `**${corona.recovered.toLocaleString()}**\n(${((corona.recovered / corona.cases) * 100).toFixed(2)}%)`, inline: true },
+                { name: 'Casos Ativos:', value: `**${corona.active.toLocaleString()}**\n(${((corona.active / corona.cases) * 100).toFixed(2)}%)`, inline: true },
+                { name: 'Testes:', value: `**${corona.tests.toLocaleString()}**`, inline: true },
+                { name: 'Cuidados Intensivos:', value: `**${corona.critical.toLocaleString()}**\n(${((corona.critical / corona.cases) * 100).toFixed(2)}%)`, inline: true },
+                { name: 'Casos Hoje:', value: `**${corona.todayCases.toLocaleString()}**`, inline: true },
+                { name: 'Mortes Hoje:', value: `**${corona.todayDeaths.toLocaleString()}**`, inline: true },
+                { name: 'Hoje Recuperados:', value: `**${corona.todayRecovered.toLocaleString().replace("-", "")}**`, inline: true })
+        	.setFooter(client.user.username, client.user.displayAvatarURL())	
+        	.setTimestamp()
         await message.channel.send(embed)
     }
 }

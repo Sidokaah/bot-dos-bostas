@@ -1,5 +1,4 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 const ms1 = require("parse-ms")
 
 module.exports = {
@@ -12,7 +11,7 @@ module.exports = {
       let user = message.author;
       let timeout = 604800000;
       let amount = 800;
-      let daily = await db.fetch(`weekly_${message.guild.id}_${user.id}`);
+      let daily = await client.db.fetch(`weekly_${message.guild.id}_${user.id}`);
       if (daily !== null && timeout - (Date.now() - daily) > 0) {
           let time = ms1(timeout - (Date.now() - daily));
           let timeEmbed = new Discord.MessageEmbed()
@@ -24,8 +23,8 @@ module.exports = {
               .setColor("RANDOM")
               .setDescription(`<:tick:748569437589995731> Coletaste a tua recompensa semanal de ${amount} moedas!`);
           message.channel.send(moneyEmbed)
-          db.add(`money_${message.guild.id}_${user.id}`, amount)
-          db.set(`weekly_${message.guild.id}_${user.id}`, Date.now())
+          client.db.add(`money_${message.guild.id}_${user.id}`, amount)
+          client.db.set(`weekly_${message.guild.id}_${user.id}`, Date.now())
       }
     }
 }

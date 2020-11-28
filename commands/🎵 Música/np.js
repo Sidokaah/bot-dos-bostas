@@ -4,6 +4,7 @@ module.exports = {
     name: "np",
     aliases: ["NP", "Np", "nowplaying", "Nowplaying", "NowPlaying", "NOWPLAYING", "current", "Current", "CURRENT", " np", " NP", " Np", " nowplaying", " Nowplaying", " NowPlaying", " NOWPLAYING", " current", " Current", " CURRENT"],
     description: "Mostra a música que está a tocar",
+    cooldown: "10",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS", "MANAGE_MESSAGES"],
     userPermissions: [],
     run: async (client, message, args) => {
@@ -32,8 +33,8 @@ module.exports = {
             let description = `[${vidTitle}](${vidUrl})\n`;
             description += `\`\`\`${util.replaceStrChar(lengthBar, timePosition, timeIndicator)} ${timeString}\`\`\``;
             const embed = new Discord.MessageEmbed()
-                .setColor("RANDOM")
-                .setTitle("Agora a tocar:")
+                .setColor("#00ddff")
+                .setTitle("<:musical_note:779660919802036245> Agora a tocar <:musical_note:779660919802036245>")
                 .setThumbnail(currentVideo.thumbnail)
                 .setDescription(`${description}`)
                 .addFields(

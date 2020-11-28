@@ -1,6 +1,3 @@
-const db = require("quick.db")
-const config = require("../../config.json")
-
 module.exports = {
     name: "rps",
     aliases: ["Rps", "RPS"],
@@ -13,8 +10,8 @@ module.exports = {
         const random = Math.floor((Math.random() * acceptedReplies.length));
         const result = acceptedReplies[random];
         const choice = args[0];
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
         if (!choice) {
             message.react(":X:748632517476745226")
             return message.channel.send(`Como jogar: \`${prefix}rps <pedra|papel|tesoura>\``);

@@ -1,8 +1,6 @@
 const Discord = require("discord.js")
 const fortnite = require("simple-fortnite-api")
 const Client = new fortnite("7f72eb91-2fb4-4143-b75d-a0d0fa6d1306");
-const db = require("quick.db")
-const config = require("../../config.json")
 
 module.exports = {
     name: "fortnite",
@@ -12,8 +10,8 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-        let prefix = db.get(`prefix_${message.guild.id}`)
-    	if(prefix === null) prefix = config.prefix;
+        let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
         if (!args[0]) return message.channel.send("Por favor especifica um nome.");
         if (args[1] && !["lifetime", "solo", "duo", "squad"].includes(args[1])) return message.channel.send(`Como usar: ${prefix}fortnite <username> <gametype>``\nModos de Jogo: Lifetime, Solo, Duo, Squad`);
         let gametype = args[1] ? args[1].toLowerCase() : "lifetime";

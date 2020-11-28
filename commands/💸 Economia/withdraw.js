@@ -1,5 +1,4 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 const ms1 = require("parse-ms")
 
 module.exports = {
@@ -11,12 +10,12 @@ module.exports = {
     userPermissions: [],
     run: async (client, message, args) => {
       let user = message.author;
-      let member = db.fetch(`money_${message.guild.id}_${user.id}`)
-      let member2 = db.fetch(`bank_${message.guild.id}_${user.id}`)
+      let member = client.db.fetch(`money_${message.guild.id}_${user.id}`)
+      let member2 = client.db.fetch(`bank_${message.guild.id}_${user.id}`)
       if (args[0] == 'all') {
-        let money = await db.fetch(`bank_${message.guild.id}_${user.id}`)
-        db.subtract(`bank_${message.guild.id}_${user.id}`, money)
-        db.add(`money_${message.guild.id}_${user.id}`, money)
+        let money = await client.db.fetch(`bank_${message.guild.id}_${user.id}`)
+        client.db.subtract(`bank_${message.guild.id}_${user.id}`, money)
+        client.db.add(`money_${message.guild.id}_${user.id}`, money)
         let embed5 = new Discord.MessageEmbed()
           .setColor("RANDOM")
           .setDescription(`<:tick:748569437589995731> Levantaste todas as moedas que estavam no banco!`);
@@ -44,8 +43,8 @@ module.exports = {
           .setColor("RANDOM")
           .setDescription(`<:tick:748569437589995731> Levantaste ${args[0]} moedas do teu banco!`);
         message.channel.send(embed5)
-        db.subtract(`bank_${message.guild.id}_${user.id}`, args[0])
-        db.add(`money_${message.guild.id}_${user.id}`, args[0])
+        client.db.subtract(`bank_${message.guild.id}_${user.id}`, args[0])
+        client.db.add(`money_${message.guild.id}_${user.id}`, args[0])
       }
     }
 }

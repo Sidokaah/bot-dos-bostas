@@ -1,5 +1,4 @@
 const Discord = require("discord.js")
-const db = require("quick.db")
 const ms1 = require("parse-ms")
 
 module.exports = {
@@ -16,9 +15,9 @@ module.exports = {
       if(!user) {
           return message.channel.send(moneyEmbed3)
       }
-      let targetuser = await db.fetch(`money_${message.guild.id}_${user.id}`)
-      let author = await db.fetch(`rob_${message.guild.id}_${message.author.id}`)
-      let author2 = await db.fetch(`money_${message.guild.id}_${message.author.id}`)
+      let targetuser = await client.db.fetch(`money_${message.guild.id}_${user.id}`)
+      let author = await client.db.fetch(`rob_${message.guild.id}_${message.author.id}`)
+      let author2 = await client.db.fetch(`money_${message.guild.id}_${message.author.id}`)
       let timeout = 1800000;
       if (author !== null && timeout - (Date.now() - author) > 0) {
         let time = ms1(timeout - (Date.now() - author));
@@ -40,27 +39,28 @@ module.exports = {
           return message.channel.send(moneyEmbed1)
         }
         let testChance = Math.random() * 100;
-        if ((testChance -= 35) < 0) {
-        	let vip = await db.fetch(`bronze_${user.id}`)
+        if ((testChance -= 40) < 0) {
+        	let vip = await client.db.fetch(`bronze_${user.id}`)
         	if(vip === true) random = Math.floor(Math.random() * 200) + 1;
         	if (vip === null) random = Math.floor(Math.random() * 400) + 1;
         	let embed = new Discord.MessageEmbed()
           		.setDescription(`<:tick:748569437589995731> Roubaste ${user.user.username} e conseguiste ${random} moedas!`)
           		.setColor("RANDOM")
         	message.channel.send(embed)
-        	db.add(`money_${message.guild.id}_${message.author.id}`, random)
-        	db.set(`rob_${message.guild.id}_${message.author.id}`, Date.now())
+        	client.db.add(`money_${message.guild.id}_${message.author.id}`, random)
+            client.db.subtract(`money_${message.guild.id}_${user.id}`, random)
+        	client.db.set(`rob_${message.guild.id}_${message.author.id}`, Date.now())
         } else { 
-			let vip = await db.fetch(`bronze_${user.id}`)
+			let vip = await client.db.fetch(`bronze_${user.id}`)
         	if(vip === true) random = Math.floor(Math.random() * 200) + 1;
         	if (vip === null) random = Math.floor(Math.random() * 400) + 1;
         	let embed = new Discord.MessageEmbed()
           		.setDescription(`<:X:748632517476745226> Falhaste o roubo ao ${user.user.username} por isso perdeste ${random} moedas que foram para ele!`)
           		.setColor("RANDOM")
         	message.channel.send(embed)
-        	db.subtract(`money_${message.guild.id}_${message.author.id}`, random)
-        	db.add(`money_${message.guild.id}_${user.id}`, random)
-        	db.set(`rob_${message.guild.id}_${message.author.id}`, Date.now())
+        	client.db.subtract(`money_${message.guild.id}_${message.author.id}`, random)
+        	client.db.add(`money_${message.guild.id}_${user.id}`, random)
+        	client.db.set(`rob_${message.guild.id}_${message.author.id}`, Date.now())
         }
       }
     }

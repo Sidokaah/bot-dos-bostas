@@ -4,6 +4,7 @@ module.exports = {
     name: "shuffle",
     aliases: ["Shuffle", "SHUFFLE", " shuffle", " Shuffle", " SHUFFLE"],
     description: "Mistura o queue",
+    cooldown: "6",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
@@ -30,7 +31,7 @@ module.exports = {
             if(queue.songs.length >= 3) {
                 client.distube.shuffle(message)
                 const embed1 = new Discord.MessageEmbed()
-                    .setDescription(`:twisted_rightwards_arrows: Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+                    .setDescription(`<:shuffle:779829491207897158> Misturei as **${queue.songs.length} músicas** que estão no queue!`)
                     .setColor("RANDOM")
                 message.channel.send(embed1)
             }

@@ -4,6 +4,7 @@ module.exports = {
     name: "remove",
     aliases: ["Remove", "REMOVE", " remove", " Remove", " REMOVE"],
     usage: ["[número]"],
+    cooldown: "7",
     description: "Remove uma música do queue",
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
