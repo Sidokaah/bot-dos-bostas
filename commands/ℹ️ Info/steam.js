@@ -10,7 +10,7 @@ module.exports = {
     clientPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
     userPermissions: [],
     run: async (client, message, args) => {
-        const token = "F8BEC15D1BCE2CBB0F182E8F47B6D683";
+        const token = ""; //steam api token aqui
         if (!args[0]) return message.channel.send("Por favor especifica um nome de conta!");
         const url = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${token}&vanityurl=${args.join(" ")}`;
         fetch(url).then(res => res.json()).then(body => {
