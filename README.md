@@ -14,7 +14,7 @@
 </a>
 
 O meu grande Bot do Discord.
-Com cerca de 175 comandos, desde música até memes.
+Com cerca de 180 comandos, desde música até memes.
 
 O Bot tem diversas features como reaction controller na música, páginas no queue e comando help interativo 👀.
 
