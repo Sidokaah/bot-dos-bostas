@@ -1,28 +1,28 @@
 const Discord = require('discord.js');
 const DisTube = require('distube')
 const client = new Discord.Client();
-const config = require("./config.json")
 const fs = require("fs")
-const db = require("quick.db")
 const { formatDate } = require("./functions");
 const cooldowns = new Discord.Collection();
+const config = require("./config.json")
 
 const DBL = require("dblapi.js");
 const dbl = new DBL(config.dbl_token, client);
 dbl.on('posted', () => {
   	console.log('Server count posted!');
-})
+});
 dbl.on('error', e => {
  	console.log(`Oops! ${e}`);
-})
+});
 
 const BFDAPI = require("bfdapi.js");
-const bfd = new BFDAPI("client_id_aqui", config.bfd_token);
+const bfd = new BFDAPI("733694571866882098", config.bfd_token);
 
 bfd.postServerCount(`${client.guilds.cache.size}`).then((res) => console.log(res));
 
+client.db = require("quick.db")
 client.config = require("./config.json")
-client.distube = new DisTube(client, { searchSongs: true, emitNewSongOnly: true, highWaterMark: 1 << 23, youtubeCookie: "cookie_aqui" }) //cookie é opcional
+client.distube = new DisTube(client, { searchSongs: true, emitNewSongOnly: true, highWaterMark: 1 << 24, youtubeCookie: "Cookie do Youtube aqui" }) //cookie é opcional
 client.commands = new Discord.Collection()
 client.aliases = new Discord.Collection()
 const Canvas = require("discord-canvas"),
@@ -49,8 +49,8 @@ process.on('uncaughtException', error => logger.log('error', error));
 process.on("unhandledRejection", error => logger.log('error', error));
 
 client.on("message", async (message) => {
-    let prefix = db.get(`prefix_${message.guild.id}`)
-    if(prefix === null) prefix = config.prefix;
+    let prefix = client.db.get(`prefix_${message.guild.id}`)
+    if(prefix === null) prefix = client.config.prefix;
     if (message.author.bot) return;
     if (!message.content.startsWith(prefix)) return;
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
@@ -96,7 +96,7 @@ client.on("message", async (message) => {
 	}
     try {
         cmd.run(client, message, args)
-        db.add("comandos_usados", 1)
+        client.db.add("comandos_usados", 1)
     }
     catch (e) {
         logger.log('error', e)
@@ -104,7 +104,7 @@ client.on("message", async (message) => {
     }
 });
 client.on("guildMemberAdd", async (member) => {
-    let chx = db.get(`welchannel_${member.guild.id}`)   
+    let chx = client.db.get(`welchannel_${member.guild.id}`)   
     let image = await welcomeCanvas
         .setUsername(member.user.username)
         .setDiscriminator(member.user.discriminator)
@@ -130,7 +130,7 @@ client.on("guildMemberAdd", async (member) => {
     }
 });
 client.on("guildMemberRemove", async (member) => {
-    let chx = db.get(`leavchannel_${member.guild.id}`)
+    let chx = client.db.get(`leavchannel_${member.guild.id}`)
     let image = await goodbyeCanvas
         .setUsername(member.user.username)
         .setDiscriminator(member.user.discriminator)
@@ -157,32 +157,24 @@ client.on("guildMemberRemove", async (member) => {
 });
 client.on("guildCreate", async (guild) => {
     let joinLeaveChannel = await client.channels.cache.get("746067012341596231");
-    let totalMembers = 0
-    for (const guild of client.guilds.cache) {
-      totalMembers += (await guild[1].members.fetch()).size
-    }
 	const embed = new Discord.MessageEmbed()
 		.setColor("RANDOM")
         .setThumbnail(client.user.displayAvatarURL({ format: 'png' }))
 		.setTitle(`Entrei em ${guild.name}!`)
 		.setFooter(`ID: ${guild.id}`)
 		.setTimestamp()
-		.setDescription(`**❯ Membros: ${guild.memberCount}\n❯ Estou agora em: ${client.guilds.cache.size} servers\n❯ Com: ${totalMembers} pessoas**`);
+		.setDescription(`**❯ Membros: ${guild.memberCount}\n❯ Estou agora em: ${client.guilds.cache.size} servers\n❯ Com: ${client.users.cache.size} pessoas**`);
 	joinLeaveChannel.send(embed)
 });
 client.on("guildDelete", async (guild) => {
     let joinLeaveChannel = await client.channels.cache.get("746067012341596231");
-    let totalMembers = 0
-    for (const guild of client.guilds.cache) {
-      totalMembers += (await guild[1].members.fetch()).size
-    }
 	const embed = new Discord.MessageEmbed()
 		.setColor("RANDOM")
         .setThumbnail(client.user.displayAvatarURL({ format: 'png' }))
 		.setTitle(`Saí de ${guild.name}!`)
 		.setFooter(`ID: ${guild.id}`)
 		.setTimestamp()
-		.setDescription(`**❯ Membros: ${guild.memberCount}\n❯ Estou agora em: ${client.guilds.cache.size} servers\n❯ Com: ${totalMembers} pessoas**`);
+		.setDescription(`**❯ Membros: ${guild.memberCount}\n❯ Estou agora em: ${client.guilds.cache.size} servers\n❯ Com: ${client.users.cache.size} pessoas**`);
 	joinLeaveChannel.send(embed)
 });
 
@@ -270,29 +262,30 @@ fs.readdir("./commands/🖼️ Image Manipulation/", (err, files) => {
 
 //Parte do DisTube
 
-const status = (queue) => `Volume: \`${queue.volume}%\` | Filter: \`${queue.filter || "Off"}\` | Loop: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` | Autoplay: \`${queue.autoplay ? "On" : "Off"}\``;
 client.distube
     .on("playSong", async (message, queue, song) => {
         try {
             if(!message.guild.me.hasPermission("ADD_REACTIONS")) return message.channel.send("<:X:748632517476745226> Não tenho permissão para adicionar reações a mensagens!")
-            db.add("music_played", 1)
-            const img = song.youtube ? "https://i.pinimg.com/originals/de/1c/91/de1c91788be0d791135736995109272a.png" : message.member.user.displayAvatarURL()
+            client.db.add("music_played", 1)
+            const img = song.youtube ? "https://logodownload.org/wp-content/uploads/2014/10/youtube-logo-6-2.png" : message.member.user.displayAvatarURL()
             const color = song.youtube ? "ff0000" : "#00ffdd"
             const userEmbed = new Discord.MessageEmbed()
                 .setAuthor(`Agora a tocar em: ${queue.connection.channel.name}`, img)
-                .setDescription(`<:play:748576561837637703> **[${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Filtro: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
+                .setDescription(`<:play:748576561837637703> **[${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado"}**\n❯ **Filtro: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
                 .setThumbnail(song.thumbnail)
                 .setColor(color)
                 .setTimestamp()
                 .setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
             message.channel.send(userEmbed).then(msg => {
-                msg.react('⏸').then(r => {
-                    msg.react('⏹️').then(r => {
-                        msg.react('⏭️').then(r => {
-                                msg.react("🔀").then(r => {
-                                    msg.react("📄").then(r => {
-                                        msg.react("🔉").then(r => {
-                                            msg.react("🔊").then(r => {   
+                msg.react(':pause:772391602332631050').then(r => {
+                    msg.react(':stop:772391560595505162').then(r => {
+                        msg.react(':skip:777678145025343529').then(r => {
+                                msg.react(":shuffle:779829491207897158").then(r => {
+                                    msg.react(":repeat:779662600996782090").then(r => {
+                                    	msg.react(":queue:772391486960566272").then(r => {
+                                        	msg.react(":volumedown:772391690383917068").then(r => {
+                                            	msg.react(":volumeup:772391748999577600").then(r => {
+                                            })
                                         })
                                     })
                                 })
@@ -300,13 +293,14 @@ client.distube
                         })
                     })
                 })
-                const infosFilter = (reaction, user) => reaction.emoji.name === '⏸' && user.id === message.author.id
-                const imagensFilter = (reaction, user) => reaction.emoji.name === '⏹️' && user.id === message.author.id;
-                const funFilter = (reaction, user) => reaction.emoji.name === '⏭️' && user.id === message.author.id;
-                const musicaFilter = (reaction, user) => reaction.emoji.name === '🔀' && user.id === message.author.id;
-                const animaisFilter = (reaction, user) => reaction.emoji.name === '📄' && user.id === message.author.id;
-                const volumeFilter = (reaction, user) => reaction.emoji.name === '🔉' && user.id === message.author.id;
-                const volumemaisFilter = (reaction, user) => reaction.emoji.name === '🔊' && user.id === message.author.id;
+                const infosFilter = (reaction, user) => reaction.emoji.id === '772391602332631050' && user.id === message.author.id
+                const imagensFilter = (reaction, user) => reaction.emoji.id === '772391560595505162' && user.id === message.author.id;
+                const funFilter = (reaction, user) => reaction.emoji.id === '777678145025343529' && user.id === message.author.id;
+                const musicaFilter = (reaction, user) => reaction.emoji.id === '779829491207897158' && user.id === message.author.id;
+                const animaisFilter = (reaction, user) => reaction.emoji.id === '772391486960566272' && user.id === message.author.id;
+                const volumeFilter = (reaction, user) => reaction.emoji.id === '772391690383917068' && user.id === message.author.id;
+                const repeatFilter = (reaction, user) => reaction.emoji.id === '779662600996782090' && user.id === message.author.id;
+                const volumemaisFilter = (reaction, user) => reaction.emoji.id === '772391748999577600' && user.id === message.author.id;
                 const infos = msg.createReactionCollector(infosFilter);
                 const imagens = msg.createReactionCollector(imagensFilter);
                 const fun = msg.createReactionCollector(funFilter);
@@ -314,6 +308,7 @@ client.distube
                 const animais = msg.createReactionCollector(animaisFilter);
                 const volume = msg.createReactionCollector(volumeFilter);
                 const volumemais = msg.createReactionCollector(volumemaisFilter);
+                const repeat = msg.createReactionCollector(repeatFilter);
                 infos.on('collect', (r2, user) => {
                     r2.users.remove(user)
                     if (!message.member.voice.channelID) {
@@ -354,9 +349,9 @@ client.distube
                     let userVoiceChannel = message.member.voice.channel;
                     let clientVoiceConnection = message.guild.me.voice;
                     if (userVoiceChannel === clientVoiceConnection.channel) {
-                        const pageBack = "⏪";
-                        const pageForward = "⏩";
-                        const trash = "🗑️";
+                        const pageBack = "778721943318036510";
+          				const pageForward = "778721875290357780";
+          				const trash = "778721979061633035";
                         const num_per_page = 10; // Número de músicas por página
                         let queuedVideos = queue.songs.slice();
                         let pageContents = []; 
@@ -367,21 +362,22 @@ client.distube
                         let currentPage = 0;
                         let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
                         let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
-                        let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) =>
+                        let description = `<:musical_note:779660919802036245> **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})** <:musical_note:779660919802036245>\n\n${pageContents[currentPage].map((song, index) =>
                             `**${currentListNum + (index + 1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
                         description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
                         const embed = new Discord.MessageEmbed()
                             .setTitle(title)
-                            .setColor('RANDOM')
+                            .setColor('#ff7700')
                             .setThumbnail(queue.songs[0].thumbnail)
                             .setDescription(description)
-                            .setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+                            .setFooter(`Página ${currentPage + 1}/${num_pages} | Pedido por: ${message.author.tag}`)
                             .setTimestamp();
                         const msg = await message.channel.send(embed);
                         if (num_pages <= 1) return;
                         msg.react(pageBack);
+                        msg.react(trash);
                         msg.react(pageForward);
-                        const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward || reaction.emoji.name === trash;
+                        const filter = (reaction) => reaction.emoji.id === pageBack || reaction.emoji.id === trash || reaction.emoji.id === pageForward;
                         const collector = msg.createReactionCollector(filter, { time: 150000 });
                         collector.on("collect", (reaction, user) => {
                             if (user.bot) return;
@@ -392,7 +388,7 @@ client.distube
                                 pageContents.push(queuedVideos.splice(0, num_per_page))
                             }
                             num_pages = pageContents.length;
-                            switch (reaction.emoji.name) {
+                            switch (reaction.emoji.id) {
                                 case pageBack: {
                                     currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
                                     break;
@@ -408,12 +404,12 @@ client.distube
                             }
                             reaction.users.remove(user);
                             currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
-                            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) =>
+                            let description = `<:musical_note:779660919802036245> **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})** <:musical_note:779660919802036245>\n\n${pageContents[currentPage].map((video, index) =>
                                 `**${currentListNum + (index + 1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
                             description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
                             embed.setTitle(title);
                             embed.setDescription(description);
-                            embed.setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+                            embed.setFooter(`Página ${currentPage + 1}/${num_pages} | Pedido por: ${message.author.tag}`);
                             msg.edit(embed);
                         });
                     } else {
@@ -445,7 +441,7 @@ client.distube
                         if(queue.songs.length >= 3) {
                             client.distube.shuffle(message)
                             const embed1 = new Discord.MessageEmbed()
-                                .setDescription(`:twisted_rightwards_arrows: Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+                                .setDescription(`<:shuffle:779829491207897158> Misturei as **${queue.songs.length} músicas** que estão no queue!`)
                                 .setColor("RANDOM")
                             message.channel.send(embed1)
                         }
@@ -524,7 +520,7 @@ client.distube
                     if (userVoiceChannel === clientVoiceConnection.channel) {
                         client.distube.setVolume(message, queue.volume - 10)
                         const embed1 = new Discord.MessageEmbed()
-                            .setDescription(`:loud_sound: O volume da música está agora a: **${queue.volume}%**`)
+                            .setDescription(`<:volumedown:772391690383917068> O volume da música está agora a: **${queue.volume}%**`)
                             .setColor("RANDOM")
                         message.channel.send(embed1).then(msg1 => {
                             msg1.delete({ timeout: 25000 })
@@ -543,7 +539,7 @@ client.distube
                     if (userVoiceChannel === clientVoiceConnection.channel) {
                         client.distube.setVolume(message, queue.volume + 10)
                         const embed1 = new Discord.MessageEmbed()
-                            .setDescription(`:loud_sound: O volume da música está agora a: **${queue.volume}%**`)
+                            .setDescription(`<:volumeup:772391748999577600> O volume da música está agora a: **${queue.volume}%**`)
                             .setColor("RANDOM")
                         message.channel.send(embed1).then(msg1 => {
                             msg1.delete({ timeout: 25000 })
@@ -552,14 +548,59 @@ client.distube
                         message.channel.send('<:X:748632517476745226> Só podes usar esse comando se estiveres no mesmo voice channel do Bot!');
                     }
                 })
+                repeat.on('collect', (r2, user) => {
+                    r2.users.remove(user)
+                    if (!message.member.voice.channelID) {
+      					message.react(":X:748632517476745226")
+      					const embed = new Discord.MessageEmbed()
+          					.setColor("RANDOM")
+          					.setDescription(`Precisas de estar num voice chat para repetires música!`)
+      					return message.channel.send(embed).then(msg => {
+          					msg.delete({ timeout: 25000 })
+      					})
+    				}
+    				let queue = client.distube.getQueue(message);
+    				if (!queue) return message.channel.send("<:X:748632517476745226> Não está nada a tocar!");
+    				let userVoiceChannel = message.member.voice.channel;
+    				let clientVoiceConnection = message.guild.me.voice;
+    				if (userVoiceChannel === clientVoiceConnection.channel) {
+        				let mode = null;
+                        mode = mode ? mode == 2 ? "Repetir o queue" : "Repetir música" : "Desligado";
+    					mode = client.distube.setRepeatMode(message, mode);
+        				const embed = new Discord.MessageEmbed()
+        					.setDescription("O Loop agora está: `" + mode + "`")
+        					.setColor("RANDOM")
+      					message.channel.send(embed)
+    				} else {
+      					message.channel.send('<:X:748632517476745226> Só podes usar esse comando se estiveres no mesmo voice channel do Bot!');
+    				}
+                })
                 client.distube.on("empty", (song) => {
-                    msg.delete()
+                    volume.stop()
+                	volumemais.stop()
+                	fun.stop()
+                	imagens.stop()
+                	musica.stop()
+                	animais.stop()
+                	infos.stop()
                 })
                 queue.connection.dispatcher.on("finish", () => {
-                    msg.delete()
+                    volume.stop()
+                	volumemais.stop()
+                	fun.stop()
+                	imagens.stop()
+                	musica.stop()
+                	animais.stop()
+                	infos.stop()
                 });
                 queue.connection.on("disconnect", () => {
-                    msg.delete()
+                    volume.stop()
+                	volumemais.stop()
+                	fun.stop()
+                	imagens.stop()
+                	musica.stop()
+                	animais.stop()
+                	infos.stop()
                 });
             })
         } catch {
@@ -579,24 +620,26 @@ client.distube
     .on("playList", async (message, queue, playlist, song) => {
         try {
             if(!message.guild.me.hasPermission("ADD_REACTIONS")) return message.channel.send("<:X:748632517476745226> Não tenho permissão para adicionar reações a mensagens!")
-            db.add("music_played", 1)
-            const img = song.youtube ? "https://i.pinimg.com/originals/de/1c/91/de1c91788be0d791135736995109272a.png" : message.member.user.displayAvatarURL()
+            client.db.add("music_played", 1)
+            const img = song.youtube ? "https://logodownload.org/wp-content/uploads/2014/10/youtube-logo-6-2.png" : message.member.user.displayAvatarURL()
             const color = song.youtube ? "ff0000" : "#00ffdd"
             const userEmbed = new Discord.MessageEmbed()
                 .setAuthor(`Agora a tocar em: ${queue.connection.channel.name}`, img)
-                .setDescription(`**[${playlist.name}](${playlist.url}) playlist - (${playlist.songs.length} músicas)\n<:play:748576561837637703> Agora a tocar ➜ [${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Filtros: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
+                .setDescription(`**[${playlist.name}](${playlist.url}) playlist - (${playlist.songs.length} músicas)\n<:play:748576561837637703> [${song.name}](${song.url})**\n❯ **Duração da Música: ${song.formattedDuration}**\n❯ **Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o Queue" : "Esta música" : "Desligado"}**\n❯ **Filtro: ${queue.filter || "Nenhum"}**\n❯ **Duração do Queue: ${queue.formattedDuration} - ${queue.songs.length} música(s)**\n❯ **Pedido por: ${message.member.user}**`)
                 .setThumbnail(playlist.thumbnail)
                 .setColor(color)
                 .setTimestamp()
                 .setFooter(`Volume: ${queue.volume}%`, "https://images.emojiterra.com/twitter/v13.0/512px/1f4e3.png")
             message.channel.send(userEmbed).then(msg => {
-                msg.react('⏸').then(r => {
-                    msg.react('⏹️').then(r => {
-                        msg.react('⏭️').then(r => {
-                                msg.react("🔀").then(r => {
-                                    msg.react("📄").then(r => {
-                                        msg.react("🔉").then(r => {
-                                            msg.react("🔊").then(r => {   
+                msg.react(':pause:772391602332631050').then(r => {
+                    msg.react(':stop:772391560595505162').then(r => {
+                        msg.react(':skip:777678145025343529').then(r => {
+                                msg.react(":shuffle:779829491207897158").then(r => {
+                                    msg.react("<:repeat:779662600996782090>").then(r => {
+                                    	msg.react(":queue:772391486960566272").then(r => {
+                                        	msg.react(":volumedown:772391690383917068").then(r => {
+                                            	msg.react(":volumeup:772391748999577600").then(r => {
+                                            })
                                         })
                                     })
                                 })
@@ -604,13 +647,14 @@ client.distube
                         })
                     })
                 })
-                const infosFilter = (reaction, user) => reaction.emoji.name === '⏸' && user.id === message.author.id
-                const imagensFilter = (reaction, user) => reaction.emoji.name === '⏹️' && user.id === message.author.id;
-                const funFilter = (reaction, user) => reaction.emoji.name === '⏭️' && user.id === message.author.id;
-                const musicaFilter = (reaction, user) => reaction.emoji.name === '🔀' && user.id === message.author.id;
-                const animaisFilter = (reaction, user) => reaction.emoji.name === '📄' && user.id === message.author.id;
-                const volumeFilter = (reaction, user) => reaction.emoji.name === '🔉' && user.id === message.author.id;
-                const volumemaisFilter = (reaction, user) => reaction.emoji.name === '🔊' && user.id === message.author.id;
+                const infosFilter = (reaction, user) => reaction.emoji.id === '772391602332631050' && user.id === message.author.id
+                const imagensFilter = (reaction, user) => reaction.emoji.id === '772391560595505162' && user.id === message.author.id;
+                const funFilter = (reaction, user) => reaction.emoji.id === '777678145025343529' && user.id === message.author.id;
+                const musicaFilter = (reaction, user) => reaction.emoji.id === '779829491207897158' && user.id === message.author.id;
+                const animaisFilter = (reaction, user) => reaction.emoji.id === '772391486960566272' && user.id === message.author.id;
+                const volumeFilter = (reaction, user) => reaction.emoji.id === '772391690383917068' && user.id === message.author.id;
+                const repeatFilter = (reaction, user) => reaction.emoji.id === '779662600996782090' && user.id === message.author.id;
+                const volumemaisFilter = (reaction, user) => reaction.emoji.id === '772391748999577600' && user.id === message.author.id;
                 const infos = msg.createReactionCollector(infosFilter);
                 const imagens = msg.createReactionCollector(imagensFilter);
                 const fun = msg.createReactionCollector(funFilter);
@@ -618,6 +662,7 @@ client.distube
                 const animais = msg.createReactionCollector(animaisFilter);
                 const volume = msg.createReactionCollector(volumeFilter);
                 const volumemais = msg.createReactionCollector(volumemaisFilter);
+                const repeat = msg.createReactionCollector(repeatFilter);
                 infos.on('collect', (r2, user) => {
                     r2.users.remove(user)
                     if (!message.member.voice.channelID) {
@@ -658,9 +703,9 @@ client.distube
                     let userVoiceChannel = message.member.voice.channel;
                     let clientVoiceConnection = message.guild.me.voice;
                     if (userVoiceChannel === clientVoiceConnection.channel) {
-                        const pageBack = "⏪";
-                        const pageForward = "⏩";
-                        const trash = "🗑️";
+                        const pageBack = "778721943318036510";
+                        const trash = "778721979061633035";
+          				const pageForward = "778721875290357780";
                         const num_per_page = 10; // Número de músicas por página
                         let queuedVideos = queue.songs.slice();
                         let pageContents = []; 
@@ -671,21 +716,22 @@ client.distube
                         let currentPage = 0;
                         let currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
                         let title = queue.songs.length > 1 ? `Queue Atual ➜ ${queue.songs.length} músicas - ${queue.formattedDuration}` : `Queue Atual - ${queue.songs.length} música`;
-                        let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((song, index) =>
+                        let description = `<:musical_note:779660919802036245> **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})** <:musical_note:779660919802036245>\n\n${pageContents[currentPage].map((song, index) =>
                             `**${currentListNum + (index + 1)} - [${song.name}](${song.url})**`).join('\n')}\n\n`;
                         description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
                         const embed = new Discord.MessageEmbed()
                             .setTitle(title)
-                            .setColor('RANDOM')
+                            .setColor('#ff7700')
                             .setThumbnail(queue.songs[0].thumbnail)
                             .setDescription(description)
-                            .setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`)
+                            .setFooter(`Página ${currentPage + 1}/${num_pages} | Pedido por: ${message.author.tag}`)
                             .setTimestamp();
                         const msg = await message.channel.send(embed);
                         if (num_pages <= 1) return;
                         msg.react(pageBack);
+                        msg.react(trash)
                         msg.react(pageForward);
-                        const filter = (reaction) => reaction.emoji.name === pageBack || reaction.emoji.name === pageForward || reaction.emoji.name === trash;
+                        const filter = (reaction) => reaction.emoji.id === pageBack || reaction.emoji.id === trash || reaction.emoji.id === pageForward;
                         const collector = msg.createReactionCollector(filter, { time: 150000 });
                         collector.on("collect", (reaction, user) => {
                             if (user.bot) return;
@@ -696,7 +742,7 @@ client.distube
                                 pageContents.push(queuedVideos.splice(0, num_per_page))
                             }
                             num_pages = pageContents.length;
-                            switch (reaction.emoji.name) {
+                            switch (reaction.emoji.id) {
                                 case pageBack: {
                                     currentPage = currentPage == 0 ? pageContents.length - 1 : currentPage -= 1;
                                     break;
@@ -706,18 +752,18 @@ client.distube
                                     break;
                                 }
                                 case trash: {
-                                    msg.delete()
+                                    msg.reactions.removeAll()
                                     break;
                                 }
                             }
                             reaction.users.remove(user);
                             currentListNum = ((currentPage + 1) * num_per_page) - num_per_page;
-                            let description = `🎵 **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})**\n\n${pageContents[currentPage].map((video, index) =>
+                            let description = `<:musical_note:779660919802036245> **Agora a tocar: [${queue.songs[0].name}](${queue.songs[0].url})** <:musical_note:779660919802036245>\n\n${pageContents[currentPage].map((video, index) =>
                                 `**${currentListNum + (index + 1)} - [${video.name}](${video.url})**`).join('\n')}\n\n`;
                             description += `**Loop: ${queue.repeatMode ? queue.repeatMode == 2 ? "Todo o queue" : "Esta música" : "Desligado"}**`;
                             embed.setTitle(title);
                             embed.setDescription(description);
-                            embed.setFooter(`Página ${currentPage + 1} de ${num_pages} | Pedido por: ${message.author.tag}`);
+                            embed.setFooter(`Página ${currentPage + 1}/${num_pages} | Pedido por: ${message.author.tag}`);
                             msg.edit(embed);
                         });
                     } else {
@@ -749,7 +795,7 @@ client.distube
                         if(queue.songs.length >= 3) {
                             client.distube.shuffle(message)
                             const embed1 = new Discord.MessageEmbed()
-                                .setDescription(`:twisted_rightwards_arrows: Misturei as **${queue.songs.length} músicas** que estão no queue!`)
+                                .setDescription(`<:shuffle:779829491207897158> Misturei as **${queue.songs.length} músicas** que estão no queue!`)
                                 .setColor("RANDOM")
                             message.channel.send(embed1)
                         }
@@ -828,7 +874,7 @@ client.distube
                     if (userVoiceChannel === clientVoiceConnection.channel) {
                         client.distube.setVolume(message, queue.volume - 10)
                         const embed1 = new Discord.MessageEmbed()
-                            .setDescription(`:loud_sound: O volume da música está agora a: **${queue.volume}%**`)
+                            .setDescription(`<:volumedown:772391690383917068> O volume da música está agora a: **${queue.volume}%**`)
                             .setColor("RANDOM")
                         message.channel.send(embed1).then(msg1 => {
                             msg1.delete({ timeout: 25000 })
@@ -847,7 +893,7 @@ client.distube
                     if (userVoiceChannel === clientVoiceConnection.channel) {
                         client.distube.setVolume(message, queue.volume + 10)
                         const embed1 = new Discord.MessageEmbed()
-                            .setDescription(`:loud_sound: O volume da música está agora a: **${queue.volume}%**`)
+                            .setDescription(`<:volumeup:772391748999577600> O volume da música está agora a: **${queue.volume}%**`)
                             .setColor("RANDOM")
                         message.channel.send(embed1).then(msg1 => {
                             msg1.delete({ timeout: 25000 })
@@ -856,14 +902,59 @@ client.distube
                         message.channel.send('<:X:748632517476745226> Só podes usar esse comando se estiveres no mesmo voice channel do Bot!');
                     }
                 })
+                repeat.on('collect', (r2, user) => {
+                    r2.users.remove(user)
+                    if (!message.member.voice.channelID) {
+      					message.react(":X:748632517476745226")
+      					const embed = new Discord.MessageEmbed()
+          					.setColor("RANDOM")
+          					.setDescription(`Precisas de estar num voice chat para repetires música!`)
+      					return message.channel.send(embed).then(msg => {
+          					msg.delete({ timeout: 25000 })
+      					})
+    				}
+    				let queue = client.distube.getQueue(message);
+    				if (!queue) return message.channel.send("<:X:748632517476745226> Não está nada a tocar!");
+    				let userVoiceChannel = message.member.voice.channel;
+    				let clientVoiceConnection = message.guild.me.voice;
+    				if (userVoiceChannel === clientVoiceConnection.channel) {
+        				let mode = null;
+                        mode = mode ? mode == 2 ? "Repetir o queue" : "Repetir música" : "Desligado";
+    					mode = client.distube.setRepeatMode(message, mode);
+        				const embed = new Discord.MessageEmbed()
+        					.setDescription("O Loop agora está: `" + mode + "`")
+        					.setColor("RANDOM")
+      					message.channel.send(embed)
+    				} else {
+      					message.channel.send('<:X:748632517476745226> Só podes usar esse comando se estiveres no mesmo voice channel do Bot!');
+    				}
+                })
                 client.distube.on("empty", (song) => {
-                    msg.delete()
+                    volume.stop()
+                	volumemais.stop()
+                	fun.stop()
+                	imagens.stop()
+                	musica.stop()
+                	animais.stop()
+                	infos.stop()
                 })
                 queue.connection.dispatcher.on("finish", () => {
-                    msg.delete()
+                    volume.stop()
+                	volumemais.stop()
+                	fun.stop()
+                	imagens.stop()
+                	musica.stop()
+                	animais.stop()
+                	infos.stop()
                 });
                 queue.connection.on("disconnect", () => {
-                    msg.delete()
+                    volume.stop()
+                	volumemais.stop()
+                	fun.stop()
+                	imagens.stop()
+                	musica.stop()
+                	animais.stop()
+                	infos.stop()
                 });
             })
         } catch {
@@ -883,9 +974,9 @@ client.distube
     .on("searchResult", (message, result) => {
         let i = 0;
         const embed = new Discord.MessageEmbed()
-            .setAuthor(`${message.member.user.username}, Escolhe uma opção abaixo:`, message.member.user.displayAvatarURL())
-            .setDescription(`\n${result.map(song => `**${++i}** - [${song.name}](${song.url}) - \`${song.formattedDuration}\``).join("\n")}\n`)
-            .setColor("#00ffdd")
+            .setTitle(`<:youtube2:780204479445991444> A procurar no Youtube <:youtube2:780204479445991444>`)
+            .setDescription(`\n${result.map(song => `**${++i} -** **[${song.name}](${song.url})** - \`[${song.formattedDuration}]\``).join("\n")}\n`)
+            .setColor("ff0000")
             .setFooter(`Escreve uma coisa qualquer nada haver ou espera 60 segundos para cancelar.`)
         message.channel.send(embed)
     })
@@ -899,7 +990,7 @@ client.distube
         const embed = new Discord.MessageEmbed()
             .setAuthor(message.member.user.tag, message.member.user.displayAvatarURL())
             .setTitle(`<:X:748632517476745226> Ocorreu um erro <:X:748632517476745226>`)
-            .setDescription("```\n" + "Ocorreu um erro: " + err + "```")
+            .setDescription("Se erro continua a acontecer, entra no **[Servidor de Suporte](https://discord.gg/25RTJnNbmS)**" + "\n" + "```\n" + "Ocorreu um erro: " + err + "```")
             .setColor("ff0000")
             .setFooter(`Pedido por(a): ${message.member.user.username}`, message.member.user.displayAvatarURL())
             .setTimestamp()
@@ -910,9 +1001,13 @@ client.distube
         queue.volume = 50;
     })
     .on("finish", message => {
+    	let prefix = client.db.get(`prefix_${message.guild.id}`)
+    	if(prefix === null) prefix = client.config.prefix;
         const userEmbed = new Discord.MessageEmbed()
-            .setAuthor("Mais nenhuma música no queue, A sair do voice channel.", client.user.displayAvatarURL())
-            .setColor("#00ffdd")
+        	.setDescription(`Mais nenhuma música no queue.\nFaz \`${prefix}leave\` para eu sair do voice channel\nFaz \`${prefix}play\` para voltar a tocar alguma coisa`)
+        	.setFooter(client.user.username)
+        	.setTimestamp()
+            .setColor("RANDOM")
         message.channel.send(userEmbed);
     })
     .on("empty", message => {
