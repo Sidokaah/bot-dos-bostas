@@ -256,8 +256,6 @@ __**Dar Host localmente ao Bot já não é 100% seguro, por poder haver algum er
 **[Top.gg Link](https://top.gg/bot/733694571866882098)** - Sim! O Bot foi aprovado pelo Top.gg! E está quase a ser pelo Discord em si (83 servers em 28/11/2020). Não percas mais tempo, vota nele!
 
 
-**Nota:** Se não souberes muito de JavaScript ou código em geral, não te aconselho a mudares muita coisa do código do bot.
-
 # 💬 Redes Sociais 💬
 
 Bot feito por TonaS#9344
